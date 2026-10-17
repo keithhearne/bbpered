@@ -295,9 +295,16 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 
 /* Översikt: next match outline, last match card, last-3 summary */
 .ticket.next-up { border: 3px solid var(--accent); }
-.ticket.last { background: var(--row-grey); }
-.datetile.grey { background: var(--ink); }
-.ticket h2.dark { color: var(--ink); }
+.ticket.last { background: #f8dde1; border: 3px solid var(--accent); padding: 14px 16px 12px; gap: 10px; }
+.ticket.last .tag { background: var(--accent); color: #fff; }
+.head3 { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.head3 .min0 { min-width: 0; }
+.ticket.last .datetile { width: 62px; padding: 6px 0 5px; }
+.ticket.last .datetile b { font-size: 2.2rem; }
+.ticket.last h2 { font-size: clamp(1.5rem, 6.5vw, 2rem); overflow-wrap: anywhere; }
+.ticket.last .bigscore { gap: 8px; }
+.ticket.last .bigscore .pill { width: 30px; height: 30px; font-size: 1.2rem; }
+.ticket.last .bigscore .n { font-size: 2.4rem; white-space: nowrap; }
 .bigscore { display: flex; align-items: center; gap: 12px; }
 .bigscore .pill { width: 40px; height: 40px; font-size: 1.6rem; }
 .bigscore .n { font-family: var(--display); font-size: 3.4rem; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -486,7 +493,6 @@ function renderOverview() {
   const n = upcoming[0];
   const days = daysUntil(n.d);
   const L = played[played.length - 1];
-  const lTop = L ? gameScorers(L).slice(0, 3) : [];
   const last3 = played.slice(-3);
   const maxDiff = Math.max(10, ...last3.map(m => Math.abs(m.us - m.them)));
   const w3 = last3.filter(m => m.win).length;
@@ -499,10 +505,9 @@ function renderOverview() {
       <p class="eyebrow" style="margin-bottom:10px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
       <article class="ticket last">
         <span class="tag">${esc(compLabel(L))} · ${L.home ? "Hemma" : "Borta"}</span>
-        <div class="head"><div class="datetile grey"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
-          <div><p class="vs">Blackeberg Röd ${L.win ? "vann mot" : "förlorade mot"}</p><h2 class="dark">${esc(L.opp)}</h2></div></div>
-        <div class="bigscore ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span><span class="diff">${L.us - L.them > 0 ? "+" : ""}${L.us - L.them}</span></div>
-        ${lTop.length ? `<div class="tops"><span class="k">Flest poäng</span>${lTop.map(p => `<span class="tp"><b>${p.pts}</b> #${esc(p.num)} ${esc(p.name)}</span>`).join("")}</div>` : ""}
+        <div class="head3"><div class="datetile"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
+          <div class="min0"><p class="vs">${L.win ? "Vinst mot" : "Förlust mot"}</p><h2>${esc(L.opp)}</h2></div>
+          <div class="bigscore ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div></div>
         <div class="foot"><span>${esc(L.venue || "")}</span><span class="mlinks">${L.id && PBP[L.id] ? `<button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(L)}" target="_blank" rel="noopener">Profixio ↗</a></span></div>
       </article>
     </div>` : ""}
