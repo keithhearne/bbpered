@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P11 Röd</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#e3e4e8">
+<meta name="description" content="Matcher, resultat, tabell och statistik för Blackeberg P11 Röd.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font-size: 14px; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Barlow:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: navy club bar with four tabs, one column of match rows below; red is the accent, logo red for wins and our row. */
+:root {
+  color-scheme: light;
+  --bar: #e3e4e8;          /* light grey menu bar */
+  --bar-ink: #c8102e;      /* club red text */
+  --bar-muted: #c27a85;
+  --card: #ffffff;
+  --card-ink: #c8102e;
+  --card-soft: #fdf0f1;
+  --card-muted: #6b6f7f;
+  --court: #c8102e;
+  --accent: #d0142c;       /* club red */
+  --logo-red: #a8182e;     /* badge red */
+  --bg: #ffffff;           /* white page, as in the logo */
+  --surface: #ffffff;
+  --ink: #15161c;
+  --muted: #5d6070;
+  --line: #e1e2e8;
+  --win: #1d6b45;
+  --loss: #a8182e;
+  --hi: #f5c9d0;           /* our row, stronger than the stripes */
+  --row-grey: #f9f9fa;
+  --row-red: #fdeef0;
+  --chip: #efeff2;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bar); }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Header */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bar); color: var(--bar-ink); border-bottom: 1px solid var(--line); box-shadow: 0 6px 18px rgb(20 24 39 / .08); }
+.brand { display: flex; align-items: center; gap: 12px; padding-block: 12px 4px; }
+.brand img { width: 44px; height: 44px; border-radius: 50%; flex: none; }
+.brand .name { font-family: var(--display); font-size: 1.7rem; line-height: 1; letter-spacing: .02em; }
+.brand .sub { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--bar-muted); }
+nav.tabs { display: flex; justify-content: space-between; gap: 4px; }
+nav.tabs button { flex: 1 1 0; min-width: 0; background: none; border: 0; color: var(--bar-muted); font-family: var(--display); font-size: clamp(1.05rem, 4.6vw, 1.6rem); letter-spacing: .03em; padding: 10px 2px 12px; cursor: pointer; position: relative; }
+nav.tabs button[aria-selected="true"] { color: var(--bar-ink); }
+nav.tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 4px; border-radius: 4px 4px 0 0; background: var(--accent); }
+
+main { padding-block: 20px 48px; }
+section[role="tabpanel"] { display: grid; gap: 28px; }
+.page-title { font-family: var(--display); font-size: 3rem; line-height: .95; margin: 0; text-wrap: balance; }
+.lede { margin: 6px 0 0; color: var(--muted); }
+
+.eyebrow { font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.eyebrow b { color: var(--ink); }
+.eyebrow.red { color: var(--accent); }
+
+.h2 { display: flex; align-items: center; gap: 14px; font-family: var(--display); font-size: 2rem; line-height: 1; margin: 0 0 4px; }
+.h2::before { content: ""; width: 22px; height: 5px; background: var(--accent); border-radius: 2px; flex: none; }
+.h2.rule::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* Next-match card */
+.next { border-radius: 16px; overflow: hidden; background: var(--card); color: var(--card-ink); position: relative; border: 2px solid var(--accent); box-shadow: 0 10px 24px rgb(168 24 46 / .14); }
+.next .band { display: flex; justify-content: space-between; gap: 12px; padding: 14px 20px; background: var(--logo-red); font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.next .body { position: relative; padding: 20px 20px 22px; display: grid; gap: 16px; }
+.next svg.court { position: absolute; right: -40px; top: 0; height: 100%; width: auto; opacity: .12; pointer-events: none; color: var(--court); }
+.next .date { font-size: .9rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--card-muted); margin: 0; }
+.next .opp { font-family: var(--display); font-size: clamp(2.3rem, 10vw, 3.2rem); line-height: .95; margin: 2px 0 0; text-wrap: balance; position: relative; }
+.times { display: flex; gap: 12px; flex-wrap: wrap; position: relative; }
+.time { border-radius: 10px; padding: 10px 16px 6px; min-width: 120px; }
+.time .k { font-size: .7rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.time .v { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+.time.start { background: var(--accent); color: #fff; }
+.time.count { background: var(--card-soft); color: var(--card-ink); }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; position: relative; }
+.facts dt { color: var(--card-muted); }
+.facts dd { margin: 0; font-weight: 700; min-width: 0; }
+.cta { color: var(--card-ink); font-weight: 700; position: relative; }
+
+/* Match rows */
+.list { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.day { text-align: center; line-height: 1; }
+.day .wd { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.day .d { font-family: var(--display); font-size: 2.1rem; display: block; margin: 2px 0; }
+.day .m { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.mid { min-width: 0; }
+.mid .t { font-weight: 700; font-size: 1.1rem; overflow-wrap: anywhere; }
+.mid .s { color: var(--muted); font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.right { text-align: right; }
+.right .clock { font-family: var(--display); font-size: 2rem; line-height: 1; }
+.ha { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.ha.home { color: var(--accent); }
+.score { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+.score .n { font-family: var(--display); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.score.w .n { color: var(--win); }
+.score.l .n { color: var(--loss); }
+.pill { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #fff; font-family: var(--display); font-size: 1.2rem; flex: none; }
+.pill.w { background: var(--win); }
+.pill.l { background: var(--loss); }
+
+/* Summary chips */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.stat .k { font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font-family: var(--display); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.form { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Table */
+.tbl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tbl-head .h2 { font-size: 1.8rem; }
+.place { font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .85rem; }
+.tbl-wrap { overflow-x: auto; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+thead th { background: var(--surface); color: var(--accent); border-bottom: 3px solid var(--accent); font-family: var(--display); font-weight: 400; font-size: 1.3rem; letter-spacing: .04em; padding: 12px 8px; text-align: right; }
+thead th.l { text-align: left; }
+td { padding: 11px 8px; border-top: 1px solid var(--line); text-align: right; }
+td.l { text-align: left; }
+td.pos { color: var(--muted); width: 2.2em; text-align: center; }
+td.team { font-weight: 600; }
+tbody td { background: var(--row-grey); border-top: 2px solid var(--bg); }
+.tbl-wrap { border: 0; }
+.roster { gap: 2px !important; border-radius: 14px; overflow: hidden; }
+.roster .player { background: var(--row-grey); border-bottom: 0; padding-left: 10px; padding-right: 12px; }
+tr.us td { background: var(--hi) !important; font-weight: 800; }
+#kalender .list .row, #oversikt .list .row, #resultat .list .row { padding-left: 10px; padding-right: 12px; background: var(--row-grey); border-bottom: 2px solid var(--bg); }
+#kalender .list .row:last-child, #oversikt .list .row:last-child, #resultat .list .row:last-child { border-bottom: 0; }
+#oversikt .list, #resultat .list { border-radius: 14px; overflow: hidden; }
+.stat { background: var(--card-soft); border: 0; border-radius: 14px; padding: 12px 14px; }
+.stat .v { color: var(--accent); }
+.board .stat { background: var(--surface); }
+#oversikt .list, #resultat .list, #kalender .list, .roster { border-top: 3px solid var(--accent); border-radius: 0 0 14px 14px !important; }
+#tabeller tbody td { background: var(--row-grey); border-top: 2px solid var(--bg); }
+#tabeller .tbl-wrap { border: 0; }
+#kalender .list { border-radius: 14px; overflow: hidden; }
+tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+.plus { color: var(--win); } .minus { color: var(--loss); }
+.extra { display: none; }
+.wide .extra { display: table-cell; }
+.toggle { background: var(--chip); border: 0; border-radius: 999px; padding: 8px 14px; font: 700 .85rem var(--body); color: var(--ink); cursor: pointer; }
+.note { color: var(--muted); font-size: .85rem; }
+.src { color: var(--muted); font-size: .85rem; }
+.example { background: var(--chip); border-radius: 10px; padding: 10px 12px; font-size: .85rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { section[role="tabpanel"] { animation: in .25s ease-out; } @keyframes in { from { transform: translateY(6px); opacity: .6; } } }
+
+/* Laget */
+.team-hero { display: flex; align-items: center; gap: 16px; }
+.team-hero img { width: 84px; height: 84px; border-radius: 50%; flex: none; }
+.team-hero .n { font-family: var(--display); font-size: 2.6rem; line-height: .95; margin: 0; color: var(--accent); }
+.team-hero .s { color: var(--muted); font-weight: 600; }
+.photo-slot { border: 2px dashed var(--line); border-radius: 14px; padding: 18px; color: var(--muted); font-size: .9rem; text-align: center; }
+.roster { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 20px; }
+.player { display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.jersey { width: 46px; height: 46px; border-radius: 10px; display: grid; place-items: center; background: var(--accent); color: #fff; font-family: var(--display); font-size: 1.6rem; line-height: 1; }
+.jersey.none { background: var(--chip); color: var(--muted); font-size: 1.1rem; }
+.player .pn { font-weight: 700; overflow-wrap: anywhere; }
+.player .py { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.staff { display: flex; flex-wrap: wrap; gap: 10px; }
+.staff span { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-weight: 600; }
+.staff b { color: var(--accent); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; margin-right: 6px; }
+
+/* Next match v3: notched ticket on a full-court plan */
+.ticket { position: relative; background: var(--card-soft); color: var(--ink); padding: 22px 20px 18px; display: grid; gap: 18px; border-radius: 18px; overflow: hidden; }
+.ticket svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
+.ticket > *:not(svg) { position: relative; }
+.ticket .tag { justify-self: start; border: 1.5px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 4px 12px; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.ticket .head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.datetile { background: var(--accent); color: #fff; border-radius: 4px 4px 22px 4px; width: 78px; padding: 8px 0 6px; text-align: center; line-height: 1; }
+.datetile span { display: block; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.datetile b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.9rem; margin: 2px 0; }
+.ticket .vs { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.ticket h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9.5vw, 3rem); line-height: .95; color: var(--accent); text-wrap: balance; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tiles div { background: var(--surface); border-radius: 10px; padding: 10px 12px; min-width: 0; box-shadow: 0 1px 0 var(--line); }
+.tiles .k { font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.tiles .v { font-family: var(--display); font-size: 1.9rem; line-height: 1; color: var(--ink); }
+.tiles .v.sm { font-family: var(--body); font-size: .92rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: anywhere; }
+.ticket .foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .88rem; color: var(--muted); }
+.ticket .foot a { color: var(--accent); font-weight: 700; }
+
+/* Matchspel */
+.mlinks { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.mplay { background: var(--card-soft); border: 0; border-radius: 999px; padding: 4px 11px; font: 700 .85rem var(--body); color: var(--muted); cursor: pointer; transition: color .15s; }
+.mplay:hover, .mplay:focus-visible, .mplay:active { color: var(--accent); }
+.mid .s.links { white-space: normal; }
+.back { justify-self: start; background: var(--card-soft); border: 0; border-radius: 999px; padding: 8px 14px; font: 700 .9rem var(--body); color: var(--muted); cursor: pointer; transition: color .15s; }
+.back:hover, .back:focus-visible, .back:active { color: var(--accent); }
+#match { display: grid; gap: 26px; }
+#match[hidden] { display: none; }
+.board { background: var(--card-soft); border-radius: 18px; padding: 18px 18px 16px; display: grid; gap: 14px; }
+.board .meta { font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.vsrow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 12px; align-items: center; }
+.vsrow .tm { font-weight: 800; font-size: 1rem; line-height: 1.2; overflow-wrap: anywhere; }
+.vsrow .tm.r { text-align: right; }
+.vsrow .tm.us { color: var(--accent); }
+.big { font-family: var(--display); font-size: 3.2rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.qs { display: grid; grid-template-columns: auto repeat(4, minmax(0,1fr)); gap: 4px 8px; font-variant-numeric: tabular-nums; font-size: .9rem; }
+.qs .hd { font-size: .68rem; font-weight: 800; letter-spacing: .12em; color: var(--muted); text-align: center; }
+.qs .nm { font-weight: 700; white-space: nowrap; }
+.qs .c { text-align: center; background: var(--surface); border-radius: 6px; padding: 3px 0; }
+.qs .c.won { color: var(--accent); font-weight: 800; }
+.flow { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 12px 8px; }
+.flow svg { width: 100%; height: auto; display: block; }
+.flow .cap { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: 6px; }
+.scorers { display: grid; gap: 10px; }
+.scorer { display: grid; grid-template-columns: 46px minmax(0,1fr) auto; gap: 4px 12px; align-items: center; }
+.scorer .jersey { grid-row: span 2; }
+.scorer .bar { grid-column: 2 / 4; height: 6px; border-radius: 3px; background: var(--chip); overflow: hidden; }
+.scorer .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.scorer .pn { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.scorer .py { color: var(--muted); font-weight: 400; font-size: .85rem; }
+.scorer .pts { font-family: var(--display); font-size: 1.6rem; line-height: 1; }
+.seg { display: flex; background: var(--chip); border-radius: 999px; padding: 4px; gap: 4px; }
+.seg button { flex: 1; min-width: 0; border: 0; background: none; border-radius: 999px; padding: 8px 6px; font: 700 .85rem var(--body); color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: 0 1px 3px rgb(0 0 0 / .1); }
+.tl { list-style: none; margin: 0; padding: 0; position: relative; }
+.tl::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--line); }
+.ev { display: grid; grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr); align-items: center; gap: 6px; padding: 4px 0; position: relative; }
+.ev .sc { grid-column: 2; grid-row: 1; justify-self: center; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ev .sc b { color: var(--accent); }
+.card { grid-row: 1; border-radius: 10px; padding: 7px 10px; min-width: 0; font-size: .85rem; line-height: 1.25; }
+.card .what { font-weight: 800; }
+.card .who { overflow-wrap: anywhere; }
+.card .tm { font-size: .72rem; opacity: .75; }
+.ev.us .card { grid-column: 1; text-align: right; }
+.ev.them .card { grid-column: 3; }
+.card.p { background: var(--accent); color: #fff; }
+.ev.them .card.p { background: #5d6070; }
+.card.f { background: var(--chip); color: var(--ink); }
+.card.t { background: var(--bg); border: 1.5px dashed var(--muted); color: var(--muted); }
+.card.p.three { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ev.them .card.p.three { outline-color: #5d6070; }
+.mark { display: flex; justify-content: center; padding: 10px 0; position: relative; }
+.mark span { background: var(--ink); color: var(--bg); border-radius: 8px; padding: 5px 12px; font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; text-align: center; }
+.mark span b { display: block; font-family: var(--display); font-size: 1.3rem; letter-spacing: .02em; font-weight: 400; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+
+/* Säsongsstatistik */
+.leaders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.leader { text-align: left; background: var(--card-soft); border: 0; border-radius: 14px; padding: 12px 14px; cursor: pointer; display: grid; gap: 2px; font: inherit; color: var(--ink); min-width: 0; }
+.leader .k { font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.leader .v { font-family: var(--display); font-size: 2.2rem; line-height: 1; color: var(--accent); }
+.leader .who { font-weight: 700; font-size: .88rem; overflow-wrap: anywhere; }
+.pstats.tbl-wrap { margin-top: 4px; }
+.tbl-wrap.pstats table { min-width: 100%; }
+.tbl-wrap.pstats.wide table { min-width: 640px; }
+.tbl-wrap.pstats th, .tbl-wrap.pstats td { padding-left: 6px; padding-right: 6px; white-space: nowrap; }
+.tbl-wrap.pstats td.team { white-space: normal; min-width: 8.5em; }
+.sorth { background: none; border: 0; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; cursor: pointer; }
+tr.prow { cursor: pointer; }
+tr.prow:hover td, tr.prow:focus td { background: var(--hi); }
+tr.dnp td { color: var(--muted); }
+tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
+.capt { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .65rem; font-weight: 800; vertical-align: 1px; }
+.phead { display: flex; align-items: center; gap: 14px; }
+.jersey.big-j { width: 64px; height: 64px; font-size: 2.3rem; flex: none; }
+.pname { margin: 0; font-family: var(--display); font-weight: 400; font-size: 2.4rem; line-height: .95; color: var(--accent); }
+.mix { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.perbars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; height: 150px; }
+.pb { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 4px; }
+.pb .pv { font-family: var(--display); font-size: 1.4rem; line-height: 1; }
+.pb .pbar { width: 100%; max-width: 54px; background: var(--chip); border-radius: 8px; display: flex; align-items: flex-end; overflow: hidden; }
+.pb .pbar i { display: block; width: 100%; background: var(--accent); border-radius: 8px 8px 0 0; }
+.pb .pk { font-size: .72rem; font-weight: 800; letter-spacing: .12em; color: var(--muted); }
+.glink { background: none; border: 0; padding: 0; font: 700 .95rem var(--body); color: var(--ink); text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.quiet { background: none; border: 0; padding: 0; font: 600 .95rem var(--body); color: var(--muted); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.quiet:hover { color: var(--accent); }
+
+.cupbadge { display: inline-block; background: var(--accent); color: #fff; font-family: var(--display); font-size: 1.15rem; letter-spacing: .04em; line-height: 1; padding: 6px 10px 5px; border-radius: 8px; }
+.row.cup .t a { text-decoration: none; }
+.row.cup .t a:hover { color: var(--accent); }
+.compt { color: var(--accent); font-weight: 700; }
+.ha.cupha { color: var(--accent); }
+.mid .s.cupd { white-space: normal; font-size: .82rem; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <img src="data:image/webp;base64,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" alt="Blackeberg Basket">
+      <div><div class="name">P11 Röd</div><div class="sub">Pojkar U16 · Nivå 1</div></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sektioner">
+      <button role="tab" id="t-oversikt" aria-controls="oversikt" data-tab="oversikt">Översikt</button>
+      <button role="tab" id="t-kalender" aria-controls="kalender" data-tab="kalender">Kalender</button>
+      <button role="tab" id="t-tabeller" aria-controls="tabeller" data-tab="tabeller">Tabeller</button>
+      <button role="tab" id="t-resultat" aria-controls="resultat" data-tab="resultat">Resultat</button>
+      <button role="tab" id="t-laget" aria-controls="laget" data-tab="laget">Laget</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="match" hidden aria-live="polite"></section>
+  <section role="tabpanel" id="oversikt" aria-labelledby="t-oversikt"></section>
+  <section role="tabpanel" id="kalender" aria-labelledby="t-kalender" hidden></section>
+  <section role="tabpanel" id="tabeller" aria-labelledby="t-tabeller" hidden></section>
+  <section role="tabpanel" id="resultat" aria-labelledby="t-resultat" hidden></section>
+  <section role="tabpanel" id="laget" aria-labelledby="t-laget" hidden></section>
+</main>
+
+<script>
+// Snapshot from Profixio (team page, read 17 Oct 2026). Later this comes from data.json, refreshed by the fetch job.
+const DATA = {
+  updated: "2026-10-17T21:40",
+  team: "KFUM Blackebergs IK Röd",
+  league: "Pojkar U16 · Nivå 1",
+  teamUrl: "https://www.profixio.com/app/leagueid27806/teams/1586476?k=1184305",
+  tableUrl: "https://www.profixio.com/app/leagueid27806/teams/1586476?k=1184305&tab=table",
+  // Cups and other events outside the league
+  cups: [
+    { start: "2026-10-30", end: "2026-11-01", name: "Södertälje Open", place: "Boys U16 Competition · Grupp A", url: "https://sodertaljeopen.cupmanager.net/2026,sv/result/division/88323406" },
+    { start: "2026-10-31", end: "2026-10-31", name: "Slutspel, Södertälje Open", place: "Tid och hall beror på gruppplacering", url: "https://sodertaljeopen.cupmanager.net/2026,sv/result/division/88323406", overview: true,
+      detail: "1:a i gruppen: kvartsfinal 17:50 · 2:a: åttondelsfinal 15:55 · 3:a: B-slutspel 16:25 · 4:a: B-slutspel 13:40" }
+  ],
+  // Cup group games (Cup Manager). Listed team first = "home" on the schedule.
+  cupGames: [
+    ["2026-10-30","11:15","Södertälje BBK EF","KFUM Blackebergs IK Röd","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323409"],
+    ["2026-10-30","17:15","KFUM Blackebergs IK Röd","BMS Herlev","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323411"],
+    ["2026-10-31","11:05","Viby Basket 2","KFUM Blackebergs IK Röd","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323414"]
+  ],
+  matches: [
+    ["2026-09-12","12:00","KFUM Blackebergs IK Röd","Uppsala Basket Snakes","",81,63,"32726246"],
+    ["2026-09-27","15:45","KFUM Blackebergs IK Röd","Västerås Basket P11","",54,122,"32726271"],
+    ["2026-10-04","15:30","KFUM Örebro Basket","KFUM Blackebergs IK Röd","",93,77,"32726284"],
+    ["2026-10-17","17:30","KFUM Central Basket Vinröd","KFUM Blackebergs IK Röd","",89,61,"32726293"],
+    ["2026-11-22","14:15","Lidingö Basket","KFUM Blackebergs IK Röd","Hersby Sporthall"],
+    ["2026-11-28","15:15","KFUM Blackebergs IK Röd","Alvik Grön","Vinstahallen 1"],
+    ["2026-11-29","14:00","KFUM Blackebergs IK Röd","SBBK P11 EF","Vinstahallen 1"],
+    ["2026-12-05","14:00","Skuru Basket U16 Grön","KFUM Blackebergs IK Röd","Nacka Sporthall"],
+    ["2026-12-06","14:30","KFUM Blackebergs IK Röd","Fryshuset Svart","Vinstahallen 1"],
+    ["2026-12-19","12:00","Tyresö Basket","KFUM Blackebergs IK Röd","Forellhallen"],
+    ["2027-01-10","12:00","KFUM Blackebergs IK Röd","Norrköping Dolphins DIU","Vinstahallen 1"],
+    ["2027-01-15","18:00","KFUM Blackebergs IK Röd","Duvbo Svart (P12)","Löthallen"],
+    ["2027-01-16","17:00","AIK","KFUM Blackebergs IK Röd","Vasalundshallen A"],
+    ["2027-01-24","14:15","KFUM Huddinge Basketklubb VIt N1","KFUM Blackebergs IK Röd","Edbohallen"],
+    ["2027-02-06","13:30","Stockholm Nordväst Vit","KFUM Blackebergs IK Röd","Bro Sporthall"],
+    ["2027-02-14","12:15","KFUM Blackebergs IK Röd","Basketklubben Gladan","Vinstahallen 1"],
+    ["2027-02-20","13:30","KFUM Blackebergs IK Röd","Hammarby Grön","Vinstahallen 1"],
+    ["2027-03-21","13:30","KFUM Blackebergs IK Röd","Viby Röd","Vinstahallen 1"]
+  ].map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id})),
+  // pos, team, M, V, F, for, against, +/-, last5
+  table: [
+    [1,"KFUM Central Basket Vinröd",5,5,0,395,268,127,"VVVVV"],
+    [2,"Stockholm Nordväst Vit",5,5,0,483,392,91,"VVVVV"],
+    [3,"Västerås Basket P11",7,6,1,681,508,173,"VVVVV"],
+    [4,"KFUM Örebro Basket",7,5,2,636,526,110,"FFVVV"],
+    [5,"Basketklubben Gladan",3,2,1,265,245,20,"VFV"],
+    [6,"Duvbo Svart (P12)",3,2,1,246,247,-1,"FVV"],
+    [7,"Viby Röd",5,3,2,461,422,39,"VFVVF"],
+    [8,"Alvik Grön",5,3,2,413,379,34,"VFFVV"],
+    [9,"SBBK P11 EF",4,2,2,295,300,-5,"FVFV"],
+    [10,"Uppsala Basket Snakes",5,2,3,408,401,7,"FFVVF"],
+    [11,"Skuru Basket U16 Grön",3,1,2,219,223,-4,"FFV"],
+    [12,"Tyresö Basket",3,1,2,223,241,-18,"FFV"],
+    [13,"Fryshuset Svart",4,1,3,298,332,-34,"FVFF"],
+    [14,"KFUM Blackebergs IK Röd",4,1,3,273,367,-94,"VFFF"],
+    [15,"Norrköping Dolphins DIU",5,1,4,372,422,-50,"FVFFF"],
+    [16,"Lidingö Basket",5,1,4,308,403,-95,"VFFFF"],
+    [17,"KFUM Huddinge Basketklubb VIt N1",5,1,4,367,453,-86,"FFFVF"],
+    [18,"Hammarby Grön",3,0,3,205,248,-43,"FFF"],
+    [19,"AIK",3,0,3,165,336,-171,"FFF"]
+  ]
+};
+
+
+// Play-by-play from Profixio's match log. Per event: period, side (h/a/-), code (1/2/3 points, F foul, T timeout, S start, E break, X end, ?other), shirt no, home score, away score, time (UTC hhmm).
+const PBP = {"32726246":{"names":{"a25":"Hugo Wiborg","h24":"Tyler Iguchi","a15":"Felix Parmklev","h14":"Alfred Kartano","h2":"Vidar Sjösvärd","a22":"Emil Dahl","h9":"Sufyan Mohamed Ali","a6":"Kristaps Vaivads","h23":"Albert Solman","a23":"Ludvig Sjöberg","h29":"Zaccarias Roman","h7":"Axel Jürss","a5":"Kiril Light","a34":"Theo Egemalm","a10":"Vincent Hafstad","h11":"Keelan Hearne Leander","a0":"Fredrik Rosén","a12":"Dexter Rosén"},"ev":"1,-,S,,0,0,0959;1,a,F,25,0,0,1002;1,h,F,24,0,0,1003;1,a,2,15,0,2,1003;1,a,1,15,0,3,1003;1,a,F,15,0,3,1003;1,h,F,14,0,3,1005;1,h,T,,0,3,1005;1,h,F,2,0,3,1006;1,a,1,25,0,4,1007;1,h,3,2,3,4,1007;1,a,F,22,3,4,1009;1,h,1,9,4,4,1010;1,a,F,15,4,4,1010;1,h,1,9,5,4,1010;1,h,1,9,6,4,1011;1,a,F,6,6,4,1011;1,h,1,9,7,4,1012;1,h,1,9,8,4,1012;1,h,F,23,8,4,1013;1,a,1,22,8,5,1014;1,h,3,14,11,5,1014;1,a,2,23,11,7,1014;1,h,2,9,13,7,1016;1,h,F,29,13,7,1017;1,a,1,23,13,8,1018;1,h,2,9,15,8,1018;1,a,2,6,15,10,1019;1,-,E,,15,10,1020;2,-,S,,15,10,1022;2,h,F,7,15,10,1023;2,a,F,22,15,10,1024;2,h,3,2,18,10,1024;2,h,F,9,18,10,1025;2,a,1,25,18,11,1025;2,h,3,2,21,11,1027;2,a,F,22,21,11,1029;2,a,T,,21,11,1029;2,h,1,9,22,11,1031;2,h,F,23,22,11,1032;2,a,2,5,22,13,1033;2,a,F,34,22,13,1033;2,a,F,5,22,13,1034;2,h,2,23,24,13,1034;2,a,2,6,24,15,1035;2,a,F,6,24,15,1035;2,h,1,9,25,15,1035;2,h,F,14,25,15,1037;2,a,1,15,25,16,1037;2,a,1,15,25,17,1038;2,h,3,24,28,17,1038;2,a,2,15,28,19,1038;2,a,F,15,28,19,1039;2,h,1,9,29,19,1039;2,h,3,24,32,19,1040;2,a,2,25,32,21,1040;2,a,3,34,32,24,1041;2,a,2,5,32,26,1042;2,h,F,2,32,26,1045;2,a,1,25,32,27,1046;2,-,E,,32,27,1046;3,-,S,,32,27,1053;3,h,2,14,34,27,1053;3,h,3,29,37,27,1056;3,a,2,23,37,29,1056;3,a,2,25,37,31,1058;3,h,3,7,40,31,1058;3,h,2,7,42,31,1059;3,a,3,6,42,34,1059;3,a,2,34,42,36,1100;3,h,3,7,45,36,1101;3,a,2,10,45,38,1101;3,h,2,11,47,38,1101;3,a,2,25,47,40,1101;3,h,F,2,47,40,1102;3,a,1,34,47,41,1102;3,a,1,34,47,42,1103;3,h,F,9,47,42,1103;3,a,T,,47,42,1104;3,h,3,14,50,42,1106;3,a,2,5,50,44,1106;3,a,F,15,50,44,1106;3,h,1,9,51,44,1107;3,a,?Coachteknisk,0,51,44,1108;3,h,1,14,52,44,1109;3,a,2,22,52,46,1110;3,a,2,5,52,48,1110;3,a,F,5,52,48,1110;3,h,F,23,52,48,1112;3,h,2,23,54,48,1113;3,a,2,25,54,50,1113;3,-,E,,54,50,1115;4,-,S,,54,50,1117;4,h,2,2,56,50,1117;4,h,2,9,58,50,1118;4,h,2,2,60,50,1118;4,a,2,25,60,52,1118;4,h,3,9,63,52,1118;4,a,F,34,63,52,1119;4,h,2,23,65,52,1120;4,a,F,22,65,52,1120;4,h,1,9,66,52,1121;4,a,2,22,66,54,1121;4,h,F,14,66,54,1122;4,h,2,9,68,54,1123;4,h,3,2,71,54,1123;4,a,T,,71,54,1124;4,a,2,22,71,56,1126;4,h,F,9,71,56,1127;4,h,F,9,71,56,1127;4,a,1,25,71,57,1128;4,a,F,22,71,57,1128;4,h,1,2,72,57,1128;4,h,1,2,73,57,1128;4,h,F,24,73,57,1129;4,a,2,25,73,59,1130;4,h,2,2,75,59,1131;4,a,F,10,75,59,1132;4,a,F,34,75,59,1133;4,a,2,15,75,61,1134;4,h,2,14,77,61,1134;4,a,2,12,77,63,1135;4,h,2,29,79,63,1136;4,a,F,6,79,63,1137;4,h,1,29,80,63,1138;4,h,1,29,81,63,1138;4,-,X,,81,63,1138"},"32726271":{"names":{"a77":"Elliott Sendow","h91":"Hugo Lundberg","h29":"Zaccarias Roman","a12":"Yann Samuel Baranyizigiye","a3":"Elton Gardell","h2":"Vidar Sjösvärd","a4":"Adam Östlund","a22":"Darlington Adeyefa","h23":"Albert Solman","a11":"Rio Solomon","a21":"Léon Eklund","h9":"Sufyan Mohamed Ali","a1":"Loui Wilson","a5":"Alfred Frost","h7":"Axel Jürss","a30":"Ville Lillvist","h14":"Alfred Kartano","h11":"Keelan Hearne Leander","h24":"Tyler Iguchi","a7":"Caleb Nkurikiye","h49":"Max Palmkvist"},"ev":"1,-,S,,0,0,1341;1,a,2,77,0,2,1346;1,h,2,91,2,2,1346;1,h,2,29,4,2,1348;1,a,2,12,4,4,1348;1,a,2,12,4,6,1348;1,h,2,29,6,6,1349;1,a,2,77,6,8,1349;1,a,2,3,6,10,1349;1,h,T,,6,10,1350;1,h,2,2,8,10,1352;1,a,2,4,8,12,1352;1,a,2,22,8,14,1353;1,h,2,23,10,14,1353;1,a,2,4,10,16,1353;1,a,2,11,10,18,1354;1,a,2,21,10,20,1354;1,a,F,22,10,20,1355;1,a,2,21,10,22,1356;1,a,F,22,10,22,1356;1,h,2,9,12,22,1356;1,h,F,29,12,22,1358;1,a,1,1,12,23,1358;1,a,2,5,12,25,1359;1,h,2,2,14,25,1359;1,a,2,5,14,27,1359;1,h,2,7,16,27,1400;1,a,2,21,16,29,1400;1,a,2,5,16,31,1400;1,a,F,21,16,31,1400;1,a,3,30,16,34,1401;1,-,E,,16,34,1402;2,-,S,,16,34,1403;2,a,F,4,16,34,1405;2,h,1,2,17,34,1405;2,h,1,2,18,34,1405;2,a,3,4,18,37,1405;2,a,2,77,18,39,1406;2,h,2,14,20,39,1407;2,h,F,11,20,39,1407;2,a,1,4,20,40,1408;2,a,1,4,20,41,1408;2,a,2,11,20,43,1408;2,h,2,14,22,43,1409;2,h,2,11,24,43,1410;2,h,2,24,26,43,1411;2,h,2,14,28,43,1411;2,h,3,29,31,43,1413;2,h,F,2,31,43,1413;2,a,1,5,31,44,1414;2,a,T,,31,44,1416;2,h,F,91,31,44,1418;2,a,2,11,31,46,1419;2,a,2,11,31,48,1419;2,a,2,5,31,50,1420;2,a,2,11,31,52,1421;2,h,2,91,33,52,1421;2,a,2,21,33,54,1421;2,-,E,,33,54,1421;3,-,S,,33,54,1430;3,a,2,12,33,56,1431;3,a,2,4,33,58,1431;3,h,2,91,35,58,1432;3,h,F,9,35,58,1434;3,a,2,77,35,60,1435;3,a,2,4,35,62,1435;3,a,2,77,35,64,1435;3,a,F,4,35,64,1436;3,a,2,21,35,66,1436;3,a,2,5,35,68,1437;3,h,3,11,38,68,1437;3,a,F,21,38,68,1438;3,a,F,3,38,68,1439;3,h,1,24,39,68,1439;3,h,1,24,40,68,1439;3,h,F,14,40,68,1440;3,h,3,24,43,68,1440;3,a,2,5,43,70,1441;3,a,2,5,43,72,1441;3,h,2,14,45,72,1441;3,h,F,9,45,72,1442;3,a,2,11,45,74,1442;3,a,2,21,45,76,1442;3,a,2,21,45,78,1445;3,a,F,30,45,78,1446;3,h,1,24,46,78,1446;3,-,E,,46,78,1447;4,-,S,,46,78,1448;4,a,3,7,46,81,1449;4,a,2,4,46,83,1449;4,a,2,1,46,85,1450;4,a,2,4,46,87,1451;4,a,3,1,46,90,1451;4,a,F,77,46,90,1452;4,h,F,29,46,90,1453;4,a,3,1,46,93,1453;4,a,3,1,46,96,1454;4,a,2,77,46,98,1454;4,h,F,2,46,98,1455;4,a,1,1,46,99,1455;4,a,1,1,46,100,1455;4,a,2,22,46,102,1456;4,a,2,21,46,104,1456;4,h,F,9,46,104,1457;4,a,2,3,46,106,1457;4,a,2,21,46,108,1458;4,a,2,22,46,110,1459;4,h,2,2,48,110,1459;4,a,2,7,48,112,1500;4,h,F,9,48,112,1500;4,a,2,5,48,114,1500;4,a,F,11,48,114,1501;4,h,1,2,49,114,1501;4,a,2,21,49,116,1501;4,a,2,21,49,118,1502;4,h,2,49,51,118,1502;4,a,2,7,51,120,1502;4,h,3,2,54,120,1502;4,a,2,11,54,122,1503;4,-,X,,54,122,1503"},"32726284":{"names":{"a2":"Vidar Sjösvärd","a20":"Simon Carlén","h5":"Harry Selimbasic","h2":"Adrian Hasani","a33":"Noel Tesfaye","h7":"Mirza Vegar","h3":"Melker Lindqvist","a34":"Axel Borglund","h0":"Ludvig Fagerberg","h45":"Ture Blomgren","h24":"Helmer Åberg","h9":"Ilias Rudenko","a11":"Keelan Hearne Leander","a7":"Axel Jürss","a18":"Elliot Engvall","h21":"Hugo Engberg","h11":"Wilmer Axelsson","a49":"Max Palmkvist"},"ev":"1,-,S,,0,0,1328;1,a,2,2,0,2,1330;1,a,F,20,0,2,1331;1,h,1,5,1,2,1332;1,h,1,5,2,2,1332;1,a,2,20,2,4,1332;1,h,3,2,5,4,1333;1,a,2,2,5,6,1333;1,a,F,33,5,6,1333;1,h,3,7,8,6,1333;1,a,3,2,8,9,1334;1,h,2,3,10,9,1334;1,a,2,34,10,11,1335;1,a,2,2,10,13,1335;1,h,3,2,13,13,1335;1,a,3,34,13,16,1335;1,h,2,2,15,16,1336;1,a,F,20,15,16,1336;1,h,F,0,15,16,1337;1,h,F,45,15,16,1337;1,h,2,7,17,16,1338;1,h,F,0,17,16,1339;1,a,2,2,17,18,1340;1,h,2,5,19,18,1340;1,h,3,45,22,18,1341;1,h,2,45,24,18,1341;1,a,F,33,24,18,1341;1,a,T,,24,18,1342;1,h,1,45,25,18,1342;1,h,F,24,25,18,1343;1,h,2,9,27,18,1343;1,a,F,11,27,18,1344;1,h,1,9,28,18,1344;1,h,3,45,31,18,1345;1,a,F,11,31,18,1345;1,h,1,45,32,18,1346;1,h,F,45,32,18,1346;1,a,1,7,32,19,1347;1,a,3,2,32,22,1347;1,h,F,9,32,22,1348;1,a,1,2,32,23,1348;1,a,1,2,32,24,1348;1,-,E,,32,24,1348;2,-,S,,32,24,1349;2,a,3,34,32,27,1350;2,a,3,7,32,30,1351;2,a,F,20,32,30,1355;2,h,1,5,33,30,1355;2,h,2,9,35,30,1356;2,a,F,18,35,30,1357;2,h,1,2,36,30,1357;2,h,1,2,37,30,1358;2,h,F,24,37,30,1359;2,h,2,45,39,30,1400;2,h,2,9,41,30,1400;2,h,2,45,43,30,1401;2,a,T,,43,30,1401;2,a,3,2,43,33,1403;2,h,2,5,45,33,1403;2,h,F,7,45,33,1404;2,a,1,33,45,34,1405;2,h,F,7,45,34,1405;2,a,1,2,45,35,1406;2,h,2,21,47,35,1406;2,h,F,5,47,35,1406;2,h,2,7,49,35,1409;2,h,2,7,51,35,1409;2,a,F,2,51,35,1410;2,h,1,2,52,35,1410;2,h,1,2,53,35,1411;2,a,F,33,53,35,1411;2,h,1,2,54,35,1412;2,h,1,2,55,35,1412;2,-,E,,55,35,1412;3,-,S,,55,35,1422;3,a,F,20,55,35,1423;3,a,2,20,55,37,1424;3,a,F,20,55,37,1424;3,a,?Byte,20,55,37,1425;3,h,1,45,56,37,1425;3,h,F,11,56,37,1425;3,a,1,2,56,38,1426;3,h,F,5,56,38,1427;3,h,F,7,56,38,1428;3,h,2,7,58,38,1429;3,a,2,2,58,40,1429;3,h,2,45,60,40,1429;3,h,2,9,62,40,1430;3,h,F,5,62,40,1431;3,a,2,33,62,42,1432;3,a,2,2,62,44,1433;3,h,3,2,65,44,1434;3,a,3,7,65,47,1434;3,a,F,7,65,47,1434;3,h,1,2,66,47,1435;3,a,2,34,66,49,1435;3,a,2,18,66,51,1435;3,a,F,34,66,51,1438;3,h,1,5,67,51,1438;3,-,E,,67,51,1439;4,-,S,,67,51,1441;4,a,3,18,67,54,1442;4,h,3,2,70,54,1443;4,h,2,0,72,54,1443;4,h,F,2,72,54,1443;4,a,2,49,72,56,1444;4,a,F,18,72,56,1444;4,h,1,45,73,56,1444;4,h,1,45,74,56,1444;4,h,3,2,77,56,1445;4,a,F,33,77,56,1445;4,h,F,2,77,56,1446;4,h,F,9,77,56,1446;4,a,1,34,77,57,1447;4,a,1,34,77,58,1447;4,a,2,33,77,60,1448;4,h,T,,77,60,1449;4,h,2,2,79,60,1450;4,a,2,34,79,62,1451;4,h,2,9,81,62,1451;4,a,F,18,81,62,1451;4,h,1,9,82,62,1451;4,h,1,9,83,62,1452;4,a,2,2,83,64,1452;4,h,2,7,85,64,1452;4,a,3,2,85,67,1453;4,a,2,33,85,69,1453;4,h,2,5,87,69,1453;4,a,F,33,87,69,1454;4,a,?Byte,33,87,69,1454;4,h,2,5,89,69,1454;4,a,3,34,89,72,1456;4,h,2,5,91,72,1456;4,h,F,45,91,72,1457;4,h,2,5,93,72,1458;4,a,2,7,93,74,1458;4,a,3,7,93,77,1459;4,h,F,21,93,77,1500;4,-,X,,93,77,1501"},"32726293":{"names":{"a20":"Simon Carlén","h30":"Dante Pawlo","h15":"Love Hemviken","h12":"Erik Hörmark","a34":"Axel Borglund","a9":"Sufyan Mohamed Ali","h99":"Dino Hadziresic","a2":"Vidar Sjösvärd","h11":"Raphaél Fried-Germyn","a33":"Noel Tesfaye","a91":"Hugo Lundberg","h91":"Sebastian Salenstedt","h4":"Vilmer Nyman","a29":"Zaccarias Roman","h8":"Sigge Engler","a23":"Albert Solman","h45":"Noel Aryee","a11":"Keelan Hearne Leander"},"ev":"1,-,S,,0,0,1528;1,a,F,20,0,0,1531;1,h,1,30,1,0,1531;1,h,1,30,2,0,1531;1,h,2,15,4,0,1532;1,a,3,20,4,3,1532;1,h,3,12,7,3,1532;1,a,2,34,7,5,1532;1,h,2,12,9,5,1533;1,h,2,15,11,5,1533;1,a,2,9,11,7,1534;1,a,F,9,11,7,1534;1,h,1,99,12,7,1534;1,h,1,99,13,7,1534;1,a,3,20,13,10,1535;1,h,2,15,15,10,1535;1,h,2,15,17,10,1536;1,a,F,9,17,10,1537;1,a,T,,17,10,1537;1,a,F,2,17,10,1539;1,a,2,20,17,12,1540;1,a,F,2,17,12,1541;1,h,1,99,18,12,1541;1,h,F,30,18,12,1541;1,h,2,11,20,12,1544;1,a,F,34,20,12,1544;1,h,1,11,21,12,1545;1,h,2,11,23,12,1545;1,h,F,99,23,12,1547;1,-,E,,23,12,1548;2,-,S,,23,12,1550;2,h,2,99,25,12,1552;2,a,3,33,25,15,1552;2,a,F,91,25,15,1552;2,h,1,99,26,15,1553;2,h,1,99,27,15,1553;2,h,F,91,27,15,1554;2,a,2,91,27,17,1554;2,h,F,15,27,17,1554;2,h,F,99,27,17,1555;2,h,2,4,29,17,1556;2,a,F,9,29,17,1557;2,h,1,91,30,17,1557;2,h,F,15,30,17,1558;2,a,1,34,30,18,1558;2,a,1,34,30,19,1558;2,h,2,99,32,19,1559;2,h,F,12,32,19,1559;2,a,1,29,32,20,1600;2,h,2,30,34,20,1600;2,h,2,99,36,20,1601;2,h,2,91,38,20,1602;2,a,3,2,38,23,1602;2,a,2,2,38,25,1603;2,h,2,91,40,25,1603;2,a,F,20,40,25,1604;2,a,2,2,40,27,1604;2,a,F,29,40,27,1605;2,h,F,4,40,27,1605;2,a,1,29,40,28,1606;2,a,1,29,40,29,1606;2,h,2,15,42,29,1606;2,a,2,2,42,31,1606;2,h,2,8,44,31,1607;2,-,E,,44,31,1607;3,-,S,,44,31,1614;3,h,2,8,46,31,1616;3,h,2,8,48,31,1616;3,h,2,11,50,31,1617;3,a,2,23,50,33,1617;3,a,F,23,50,33,1618;3,a,3,20,50,36,1619;3,h,2,8,52,36,1619;3,h,2,99,54,36,1620;3,a,3,2,54,39,1620;3,h,2,8,56,39,1620;3,h,F,11,56,39,1621;3,h,2,30,58,39,1622;3,h,2,91,60,39,1622;3,a,T,,60,39,1622;3,h,F,99,60,39,1624;3,h,F,15,60,39,1625;3,h,2,11,62,39,1626;3,a,F,29,62,39,1627;3,h,1,11,63,39,1627;3,h,2,11,65,39,1628;3,a,F,29,65,39,1628;3,h,1,91,66,39,1628;3,h,1,91,67,39,1628;3,a,F,9,67,39,1629;3,a,2,91,67,41,1630;3,h,3,91,70,41,1630;3,h,2,12,72,41,1631;3,h,F,91,72,41,1631;3,a,1,91,72,42,1631;3,a,1,91,72,43,1631;3,h,3,15,75,43,1632;3,h,F,91,75,43,1632;3,a,1,20,75,44,1633;3,h,F,15,75,44,1633;3,a,1,29,75,45,1634;3,a,F,2,75,45,1634;3,h,1,99,76,45,1634;3,-,E,,76,45,1635;4,-,S,,76,45,1637;4,h,F,30,76,45,1638;4,a,1,91,76,46,1638;4,h,2,12,78,46,1638;4,a,3,29,78,49,1640;4,h,2,30,80,49,1640;4,a,2,34,80,51,1642;4,a,2,2,80,53,1642;4,a,F,2,80,53,1643;4,h,1,91,81,53,1643;4,a,2,20,81,55,1644;4,a,3,20,81,58,1644;4,h,F,45,81,58,1645;4,a,3,11,81,61,1646;4,h,2,8,83,61,1646;4,h,2,91,85,61,1647;4,a,T,,85,61,1648;4,h,2,11,87,61,1650;4,h,2,91,89,61,1650;4,-,X,,89,61,1651"}};
+const WD = ["sön","mån","tis","ons","tor","fre","lör"];
+const WDL = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"];
+const MON = ["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
+const MONL = ["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const d8 = iso => { const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d); };
+
+const matches = DATA.matches.concat((DATA.cupGames || []).map(([date,time,home,away,venue,url]) => ({date,time,home,away,venue,url,comp:"Södertälje Open"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
+  const home = m.home === DATA.team;
+  const opp = home ? m.away : m.home;
+  const played = typeof m.hs === "number";
+  const us = played ? (home ? m.hs : m.as) : null;
+  const them = played ? (home ? m.as : m.hs) : null;
+  return { ...m, d: d8(m.date), home, opp, played, us, them, win: played && us > them };
+});
+const played = matches.filter(m => m.played);
+const upcoming = matches.filter(m => !m.played);
+const cups = (DATA.cups || []).map(c => ({ ...c, cup: true, date: c.start, d: d8(c.start), e: d8(c.end) }));
+const upcomingCups = cups.filter(c => c.overview && c.e >= new Date(new Date(DATA.updated).toDateString()));
+const now = new Date(DATA.updated);
+
+const sortKey = x => x.date + (x.cup ? (x.overview ? "23:59" : "00:00") : x.time);
+const dayCell = m => `<div class="day"><span class="wd">${WD[m.d.getDay()]}</span><span class="d">${m.d.getDate()}</span><span class="m">${MON[m.d.getMonth()]}</span></div>`;
+const upRow = m => `<li class="row">${dayCell(m)}
+  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s">${m.comp ? `<span class="compt">${esc(m.comp)}</span> · ` : ""}${esc(m.venue || "Plats meddelas")}</div></div>
+  <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
+const resRow = m => `<li class="row">${dayCell(m)}
+  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks">${m.home ? "Hemma" : "Borta"}${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${DATA.teamUrl}${m.id ? "&expandmatch=" + m.id : ""}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
+  <div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div></li>`;
+
+const us = DATA.table.find(r => r[1] === DATA.team);
+const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
+  <path d="M215 10 V290"/><path d="M215 40 A150 150 0 0 0 215 260"/><rect x="120" y="105" width="95" height="90"/><circle cx="120" cy="150" r="45"/><circle cx="190" cy="150" r="12"/><path d="M205 135 V165"/></svg>`;
+
+const ball = `<svg class="ball" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
+  <circle cx="100" cy="100" r="94" fill="currentColor" fill-opacity=".35"/><path d="M100 6 V194"/><path d="M6 100 H194"/>
+  <path d="M33 34 C70 64 70 136 33 166"/><path d="M167 34 C130 64 130 136 167 166"/></svg>`;
+function daysUntil(d) { const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()); return Math.round((d - a) / 864e5); }
+
+function renderOverview() {
+  const n = upcoming[0];
+  const days = daysUntil(n.d);
+  document.getElementById("oversikt").innerHTML = `
+    <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
+    <div>
+      <p class="eyebrow red" style="margin-bottom:10px">Nästa match · om ${days} dagar</p>
+      <article class="ticket">${ball}
+        <span class="tag">${n.comp ? "Cup · " + esc(n.comp) : "Seriespel · " + (n.home ? "Hemma" : "Borta")}</span>
+        <div class="head"><div class="datetile"><span>${WD[n.d.getDay()]}</span><b>${n.d.getDate()}</b><span>${MON[n.d.getMonth()]}</span></div>
+          <div><p class="vs">Blackeberg Röd ${n.home ? "tar emot" : "möter"}</p><h2>${esc(n.opp)}</h2></div></div>
+        <div class="tiles"><div><div class="k">Start</div><div class="v">${n.time}</div></div>
+          <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div></div>
+          ${n.comp ? `<div><div class="k">Grupp</div><div class="v">A</div></div>` : `<div><div class="k">Tabell</div><div class="v">${us[0]}/${DATA.table.length}</div></div>`}</div>
+        <div class="foot"><span>Samling meddelas av tränaren</span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${DATA.teamUrl}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
+      </article>
+    </div>
+    <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
+    <div><h2 class="h2">Senast spelat</h2><ul class="list">${played.slice().reverse().map(resRow).join("")}</ul></div>`;
+}
+
+const cupRow = c => `<li class="row cup">${dayCell(c)}
+  <div class="mid"><div class="t"><a href="${c.url}" target="_blank" rel="noopener">${esc(c.name)} ↗</a></div><div class="s">${c.start === c.end ? "" : `${c.d.getDate()}${c.d.getMonth() !== c.e.getMonth() ? " " + MON[c.d.getMonth()] : ""}–${c.e.getDate()} ${MON[c.e.getMonth()]} · `}${esc(c.place)}</div>${c.detail ? `<div class="s cupd">${esc(c.detail)}</div>` : ""}</div>
+  <div class="right"><span class="cupbadge">Cup</span></div></li>`;
+function renderCalendar() {
+  const groups = {};
+  matches.concat(cups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
+  document.getElementById("kalender").innerHTML = `
+    ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2>
+      <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m) : upRow(m)).join("")}</ul></div>`).join("")}
+    <p class="example">Kommer i appen: knapp för att lägga in alla matcher i telefonens kalender.</p>`;
+}
+
+function renderTable() {
+  const el = document.getElementById("tabeller");
+  el.innerHTML = `
+    <div>
+      <div class="tbl-head"><h2 class="h2">U16 Nivå 1</h2><span class="place">${us[0]}:e av ${DATA.table.length}</span></div>
+      <div class="tbl-wrap" id="tblwrap"><table>
+        <thead><tr><th class="l">#</th><th class="l">Lag</th><th>M</th><th>V</th><th>F</th><th class="extra">Gjorda</th><th class="extra">Insläppta</th><th>+/-</th></tr></thead>
+        <tbody>${DATA.table.map(r => `<tr class="${r[1] === DATA.team ? "us" : ""}"><td class="pos">${r[0]}</td><td class="l team">${esc(r[1] === DATA.team ? "Blackeberg Röd" : r[1])}</td>
+          <td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="extra">${r[5]}</td><td class="extra">${r[6]}</td>
+          <td class="${r[7] > 0 ? "plus" : r[7] < 0 ? "minus" : ""}">${r[7] > 0 ? "+" : ""}${r[7]}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="toggle" id="morecols" type="button">Visa gjorda/insläppta</button>
+      <a class="src" href="${DATA.tableUrl}" target="_blank" rel="noopener">Hela tabellen hos Profixio ↗</a></div>
+    <p class="note">Lagen har spelat olika många matcher, så placeringen jämnar ut sig under säsongen.</p>`;
+  document.getElementById("morecols").addEventListener("click", e => {
+    const w = document.getElementById("tblwrap").classList.toggle("wide");
+    e.currentTarget.textContent = w ? "Dölj gjorda/insläppta" : "Visa gjorda/insläppta";
+  });
+}
+
+function renderResults() {
+  const gp = played.length, w = played.filter(m => m.win).length;
+  const pf = played.reduce((s, m) => s + m.us, 0), pa = played.reduce((s, m) => s + m.them, 0);
+  document.getElementById("resultat").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="k">Matcher</div><div class="v">${gp}</div></div>
+      <div class="stat"><div class="k">Vinster</div><div class="v">${w}</div></div>
+      <div class="stat"><div class="k">Snitt +</div><div class="v">${(pf / gp).toFixed(1)}</div></div>
+      <div class="stat"><div class="k">Snitt −</div><div class="v">${(pa / gp).toFixed(1)}</div></div>
+    </div>
+    <div><p class="eyebrow" style="margin-bottom:8px">Form</p><div class="form">${played.map(m => `<span class="pill ${m.win ? "w" : "l"}" title="${esc(m.opp)} ${m.us}–${m.them}">${m.win ? "V" : "F"}</span>`).join("")}</div></div>
+    <div><h2 class="h2">Alla matcher</h2><ul class="list">${played.slice().reverse().map(resRow).join("")}</ul></div>
+    <p class="note">Poäng per spelare läggs till om Profixio visar dem i matchprotokollen.</p>`;
+}
+
+
+// Squad from Profixio "Trupp" tab: [number or null, name, birth year]
+const SQUAD = [
+  [23,"Albert Solman",2011],[14,"Alfred Kartano",2011],[null,"Axel Borglund",2012],[7,"Axel Jürss",2011],
+  [null,"Elliot Engvall",2012],[91,"Hugo Lundberg",2011],[11,"Keelan Hearne Leander",2011],[49,"Max Palmkvist",2011],
+  [13,"Neo Negret",2011],[null,"Noel Tesfaye",2012],[20,"Simon Carlén",2011],[9,"Sufyan Mohamed Ali",2011],
+  [24,"Tyler Iguchi",2011],[2,"Vidar Sjösvärd",2011],[29,"Zaccarias Roman",2011]
+];
+// Line-ups from each match protocol: [shirt no, name, captain(1/0), fouls, points]
+const LINEUPS = {"32726246":[["2","Vidar Sjösvärd",0,3,20],["7","Axel Jürss",0,1,8],["9","Sufyan Mohamed Ali",1,4,21],["11","Keelan Hearne Leander",0,0,2],["14","Alfred Kartano",0,3,11],["23","Albert Solman",0,3,6],["24","Tyler Iguchi",0,2,6],["29","Zaccarias Roman",0,1,7],["91","Hugo Lundberg",0,0,0]],"32726271":[["2","Vidar Sjösvärd",0,2,12],["7","Axel Jürss",0,0,2],["9","Sufyan Mohamed Ali",1,4,2],["11","Keelan Hearne Leander",0,1,5],["14","Alfred Kartano",0,1,8],["23","Albert Solman",0,0,2],["24","Tyler Iguchi",0,0,8],["29","Zaccarias Roman",0,2,7],["49","Max Palmkvist",0,0,2],["91","Hugo Lundberg",0,1,6]],"32726284":[["2","Vidar Sjösvärd",1,1,30],["7","Axel Jürss",0,1,12],["11","Keelan Hearne Leander",0,2,0],["18","Elliot Engvall",0,3,5],["20","Simon Carlén",0,5,4],["24","Tyler Iguchi",0,0,0],["33","Noel Tesfaye",0,5,7],["34","Axel Borglund",0,1,17],["49","Max Palmkvist",0,0,2]],"32726293":[["2","Vidar Sjösvärd",1,4,14],["9","Sufyan Mohamed Ali",0,4,2],["11","Keelan Hearne Leander",0,0,3],["20","Simon Carlén",0,2,17],["23","Albert Solman",0,1,2],["29","Zaccarias Roman",0,3,7],["33","Noel Tesfaye",0,0,3],["34","Axel Borglund",0,1,6],["91","Hugo Lundberg",0,1,7]]};
+const STAFF = ["Rasmus Özboga Abrahmsén"];
+
+function renderTeam() {
+  const sorted = SQUAD.slice().sort((a, b) => (a[0] ?? 999) - (b[0] ?? 999) || a[1].localeCompare(b[1], "sv"));
+  const logo = document.querySelector(".brand img").src;
+  document.getElementById("laget").innerHTML = `
+    <div class="team-hero"><img src="${logo}" alt="Blackeberg Basket"><div><h1 class="n">P11 Röd</h1>
+      <div class="s">KFUM Blackebergs IK · ${DATA.league}</div></div></div>
+    <div class="photo-slot">Lagbild kommer här</div>
+    <div><h2 class="h2">Tränare</h2><div class="staff">${STAFF.map(n => `<span><b>Coach</b>${esc(n)}</span>`).join("")}</div></div>
+    <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player">
+      <span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>
+      <span class="pn">${esc(p[1])}</span><span class="py">${p[2]}</span></li>`).join("")}</ul></div>
+    <p class="note">Truppen enligt Profixio. Nummer saknas för spelare som inte har något registrerat.</p>
+    <p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>`;
+}
+
+renderOverview(); renderCalendar(); renderTable(); renderResults(); renderTeam();
+
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function show(id) {
+  if (!document.getElementById(id)) id = "oversikt";
+  tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1; document.getElementById(t.dataset.tab).hidden = !on; });
+  try { localStorage.setItem("tab", id); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+tabs.forEach(t => t.addEventListener("click", () => { backToStats = false; document.getElementById("match").hidden = true; show(t.dataset.tab); }));
+
+function parseEvents(id) {
+  return PBP[id].ev.split(";").map(s => { const [p, side, code, num, h, a, t] = s.split(","); return { p: +p, side, code, num, h: +h, a: +a, t }; });
+}
+function localClock(m, t) {
+  if (!t) return "";
+  const d = new Date(`${m.date}T${t.slice(0, 2)}:${t.slice(2)}:00Z`);
+  try { return d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Stockholm" }); } catch (e) { return t.slice(0, 2) + ":" + t.slice(2); }
+}
+let matchFilter = "alla";
+let backToStats = false;
+let lastTab = "oversikt";
+
+function openMatch(id) {
+  backToStats = false;
+  const m = matches.find(x => x.id === id); if (!m || !PBP[id]) return;
+  const P = PBP[id], ev = parseEvents(id);
+  const usSide = m.home ? "h" : "a";
+  const name = (side, num) => P.names[side + num] || "";
+  const usName = "Blackeberg Röd", themName = m.opp;
+  const ourScore = e => usSide === "h" ? e.h : e.a, theirScore = e => usSide === "h" ? e.a : e.h;
+  const isPts = e => /^[123]$/.test(e.code);
+
+  // Points per period
+  const per = {}; let last = { h: 0, a: 0 };
+  ev.forEach(e => { if (e.code === "E" || e.code === "X") { per[e.p] = { h: e.h - last.h, a: e.a - last.a }; last = { h: e.h, a: e.a }; } });
+  const periods = [1, 2, 3, 4].map(p => per[p] || { h: 0, a: 0 });
+  const usP = periods.map(x => usSide === "h" ? x.h : x.a), thP = periods.map(x => usSide === "h" ? x.a : x.h);
+
+  // Lead over the game, one step per basket
+  const scoring = ev.filter(isPts);
+  const pts = [{ i: 0, d: 0, p: 1 }].concat(scoring.map((e, i) => ({ i: i + 1, d: ourScore(e) - theirScore(e), p: e.p })));
+  const maxAbs = Math.max(10, ...pts.map(x => Math.abs(x.d)));
+  const step = maxAbs > 40 ? 20 : 10, lim = Math.ceil(maxAbs / step) * step;
+  const W = 600, H = 180, padL = 38, padR = 10, padT = 10, padB = 24;
+  const X = i => padL + (W - padL - padR) * i / (pts.length - 1);
+  const Y = d => padT + (H - padT - padB) * (1 - (d + lim) / (2 * lim));
+  const line = pts.map((q, k) => `${k ? "L" : "M"}${X(q.i).toFixed(1)} ${Y(q.d).toFixed(1)}`).join(" ");
+  const area = `${line} L${X(pts.length - 1).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`;
+  const ticks = []; for (let v = -lim; v <= lim; v += step) ticks.push(v);
+  const qLines = [2, 3, 4].map(p => { const k = pts.findIndex(q => q.p === p); return k > 0 ? `<line x1="${X(k - .5)}" x2="${X(k - .5)}" y1="${padT}" y2="${H - padB}" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="3 4"/><text x="${X(k - .5) + 4}" y="${H - 7}" font-size="12" fill="var(--muted)">P${p}</text>` : ""; }).join("");
+  const best = Math.max(...pts.map(q => q.d)), worst = Math.min(...pts.map(q => q.d));
+  const chart = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Blackebergs ledning eller underläge under matchen">
+    <defs><clipPath id="above"><rect x="0" y="0" width="${W}" height="${Y(0)}"/></clipPath><clipPath id="below"><rect x="0" y="${Y(0)}" width="${W}" height="${H}"/></clipPath></defs>
+    ${ticks.map(v => `<line x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="${v === 0 ? 2 : 1}"/><text x="${padL - 6}" y="${Y(v) + 4}" font-size="12" text-anchor="end" fill="var(--muted)">${v > 0 ? "+" + v : v}</text>`).join("")}
+    <text x="${padL - 6 + 4}" y="${H - 7}" font-size="12" fill="var(--muted)">P1</text>${qLines}
+    <path d="${area}" fill="var(--accent)" fill-opacity=".22" clip-path="url(#above)"/>
+    <path d="${area}" fill="#5d6070" fill-opacity=".2" clip-path="url(#below)"/>
+    <path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${X(pts.length - 1)}" cy="${Y(pts[pts.length - 1].d)}" r="4.5" fill="var(--accent)"/></svg>`;
+
+  // Blackeberg scorers
+  const sc = {};
+  ev.filter(e => e.side === usSide && isPts(e)).forEach(e => { const k = e.num; sc[k] = sc[k] || { num: k, pts: 0, three: 0, ft: 0 }; sc[k].pts += +e.code; if (e.code === "3") sc[k].three++; if (e.code === "1") sc[k].ft++; });
+  const scorers = Object.values(sc).sort((a, b) => b.pts - a.pts || (+a.num - +b.num));
+  const top = scorers.length ? scorers[0].pts : 1;
+  const extra = s => [s.three ? `${s.three} trepoängare` : "", s.ft ? `${s.ft} straff` : ""].filter(Boolean).join(" · ");
+
+  const evHtml = () => ev.filter(e => {
+    if (e.side === "-") return true;
+    if (matchFilter === "us") return e.side === usSide;
+    if (matchFilter === "them") return e.side !== usSide;
+    return true;
+  }).map(e => {
+    const sh = `${ourScore(e)}–${theirScore(e)}`;
+    if (e.code === "S") return `<li class="mark"><span>${e.p === 1 ? "Matchstart" : "Start period " + e.p}</span></li>`;
+    if (e.code === "E") return `<li class="mark"><span>${e.p === 2 ? "Halvtid" : "Slut period " + e.p}<b>${sh}</b></span></li>`;
+    if (e.code === "X") return `<li class="mark"><span>Matchen är slut<b>${sh}</b></span></li>`;
+    const mine = e.side === usSide;
+    const teamLabel = mine ? usName : esc(themName);
+    const who = e.num !== "" && name(e.side, e.num) ? `#${esc(e.num)} ${esc(name(e.side, e.num))}` : teamLabel;
+    let cls = "f", what;
+    if (isPts(e)) { cls = "p" + (e.code === "3" ? " three" : ""); what = e.code === "1" ? "Straff · 1 poäng" : e.code + " poäng"; }
+    else if (e.code === "F") what = "Personlig foul";
+    else if (e.code === "T") { cls = "t"; what = "Timeout"; }
+    else what = e.code.slice(1).replace(/_/g, " ").replace("Coachteknisk", "Teknisk foul, coach");
+    const chip = isPts(e) ? `<span class="sc"><b>${ourScore(e)}</b>–${theirScore(e)}</span>` : "";
+    return `<li class="ev ${mine ? "us" : "them"}"><div class="card ${cls}"><div class="what">${what}</div><div class="who">${e.code === "T" ? teamLabel : who}</div><div class="tm">${localClock(m, e.t)}</div></div>${chip}</li>`;
+  }).join("");
+
+  const el = document.getElementById("match");
+  el.innerHTML = `
+    <button class="back" type="button" id="backbtn">← Tillbaka</button>
+    <div class="board">
+      <div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · U16 Nivå 1</div>
+      <div class="vsrow"><div class="tm us">${usName}</div><div class="big">${m.us}–${m.them}</div><div class="tm r">${esc(themName)}</div></div>
+      <div class="qs"><span></span>${[1, 2, 3, 4].map(p => `<span class="hd">P${p}</span>`).join("")}
+        <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
+        <span class="nm">Motståndare</span>${thP.map(v => `<span class="c">${v}</span>`).join("")}</div>
+    </div>
+    <div><h2 class="h2">Matchens förlopp</h2>
+      <div class="flow">${chart}<div class="cap"><span>Över linjen: Blackeberg leder</span><span>Störst ledning ${best > 0 ? "+" + best : "–"} · störst underläge ${worst < 0 ? worst : "–"}</span></div></div></div>
+    <div><h2 class="h2">Poäng Blackeberg</h2><div class="scorers">${scorers.map(s => `<div class="scorer"><span class="jersey">${esc(s.num)}</span><span class="pn">${esc(name(usSide, s.num))}${extra(s) ? ` <span class="py">· ${extra(s)}</span>` : ""}</span><span class="pts">${s.pts}</span><span class="bar"><i style="width:${(s.pts / top * 100).toFixed(0)}%"></i></span></div>`).join("") || '<p class="note">Inga poäng registrerade.</p>'}</div></div>
+    <div><h2 class="h2">Matchspel</h2>
+      <div class="seg" role="group" aria-label="Visa händelser">
+        <button type="button" data-f="us">Blackeberg</button><button type="button" data-f="alla">Alla</button><button type="button" data-f="them">Motståndare</button></div>
+      <div class="legend" style="margin:12px 0 6px"><span><i style="background:var(--accent)"></i>Blackeberg</span><span><i style="background:#5d6070"></i>${esc(themName)}</span><span><i style="background:var(--chip)"></i>Foul</span></div>
+      <ul class="tl" id="tl"></ul></div>
+    <p class="note">Från Profixios matchlogg. Klockslagen visar när händelsen registrerades. <a href="${DATA.teamUrl}&expandmatch=${id}" target="_blank" rel="noopener">Öppna matchen hos Profixio ↗</a></p>`;
+  const segBtns = [...el.querySelectorAll(".seg button")];
+  const setF = f => { matchFilter = f; segBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.f === f)); document.getElementById("tl").innerHTML = evHtml(); };
+  segBtns.forEach(b => b.addEventListener("click", () => setF(b.dataset.f)));
+  setF(matchFilter);
+  document.getElementById("backbtn").addEventListener("click", closeMatch);
+  const cur = tabs.find(t => t.getAttribute("aria-selected") === "true");
+  lastTab = cur ? cur.dataset.tab : "oversikt";
+  document.querySelectorAll('section[role="tabpanel"]').forEach(s => s.hidden = true);
+  el.hidden = false; window.scrollTo(0, 0);
+}
+function closeMatch() {
+  if (backToStats) { openSeason(); return; }
+  document.getElementById("match").hidden = true;
+  show(lastTab);
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-match]"); if (b) openMatch(b.dataset.match); });
+
+// Season player stats, built from the match logs (PBP) and the line-ups (who was on the score sheet).
+function buildStats() {
+  const P = {};
+  const get = (name, num) => (P[name] = P[name] || { name, nums: new Set(), gp: 0, cap: 0, pts: 0, fg2: 0, fg3: 0, ft: 0, pf: 0, fouledOut: 0, high: 0, per: [0, 0, 0, 0], q4: 0, firstBasket: 0, games: [] });
+  let teamPts = 0;
+  played.forEach(m => {
+    if (!m.id || !PBP[m.id] || !LINEUPS[m.id]) return;
+    const side = m.home ? "h" : "a";
+    const ev = parseEvents(m.id).filter(e => e.side === side);
+    const byNum = {};
+    LINEUPS[m.id].forEach(([num, name, cap]) => {
+      const p = get(name, num); p.nums.add(num); p.gp++; if (cap) p.cap++;
+      byNum[num] = { p, g: { id: m.id, date: m.date, opp: m.opp, home: m.home, us: m.us, them: m.them, win: m.win, pts: 0, fg2: 0, fg3: 0, ft: 0, pf: 0, cap: !!cap } };
+    });
+    let first = true;
+    ev.forEach(e => {
+      const r = byNum[e.num]; if (!r) return;
+      if (/^[123]$/.test(e.code)) {
+        const v = +e.code; r.g.pts += v; r.p.per[Math.min(e.p, 4) - 1] += v; teamPts += v;
+        if (v === 1) r.g.ft++; else if (v === 2) r.g.fg2++; else r.g.fg3++;
+        if (first && v > 1) { r.p.firstBasket++; first = false; }
+      } else if (e.code === "F") r.g.pf++;
+    });
+    Object.values(byNum).forEach(({ p, g }) => {
+      p.pts += g.pts; p.fg2 += g.fg2; p.fg3 += g.fg3; p.ft += g.ft; p.pf += g.pf;
+      if (g.pf >= 5) p.fouledOut++;
+      p.high = Math.max(p.high, g.pts); p.games.push(g);
+    });
+  });
+  // Squad members without a game yet
+  SQUAD.forEach(([num, name]) => { if (!P[name]) { const p = get(name, num); if (num != null) p.nums.add(String(num)); } });
+  const list = Object.values(P).map(p => ({ ...p, num: [...p.nums][0] || "", ppg: p.gp ? p.pts / p.gp : 0, pfpg: p.gp ? p.pf / p.gp : 0, share: teamPts ? p.pts / teamPts : 0, q4: p.per[3] }));
+  return { list, teamPts };
+}
+
+let statSort = { key: "pts", dir: -1 };
+let statWide = false;
+const STAT_COLS = [
+  { k: "gp", h: "M", t: "Matcher" },
+  { k: "pts", h: "P", t: "Poäng" },
+  { k: "ppg", h: "P/M", t: "Poäng per match", f: v => v.toFixed(1) },
+  { k: "high", h: "Bäst", t: "Flest poäng i en match", wide: 1 },
+  { k: "fg2", h: "2P", t: "Tvåpoängare" },
+  { k: "fg3", h: "3P", t: "Trepoängare" },
+  { k: "ft", h: "Str", t: "Straffar (1 poäng)" },
+  { k: "share", h: "% lag", t: "Andel av lagets poäng", f: v => Math.round(v * 100) + "%", wide: 1 },
+  { k: "q4", h: "P4", t: "Poäng i fjärde perioden", wide: 1 },
+  { k: "pf", h: "F", t: "Personliga fouls" },
+  { k: "pfpg", h: "F/M", t: "Fouls per match", f: v => v.toFixed(1), wide: 1 }
+];
+
+function statsTable() {
+  const { list, teamPts } = buildStats();
+  const rows = list.slice().sort((a, b) => {
+    if (statSort.key === "name") return a.name.localeCompare(b.name, "sv") * (statSort.dir < 0 ? 1 : -1);
+    if ((a.gp > 0) !== (b.gp > 0)) return a.gp > 0 ? -1 : 1;
+    return (a[statSort.key] - b[statSort.key]) * statSort.dir || b.pts - a.pts || a.name.localeCompare(b.name, "sv");
+  });
+  const cols = STAT_COLS.filter(c => statWide || !c.wide);
+  const games = played.filter(m => LINEUPS[m.id]).length;
+  const tot = k => list.reduce((s, p) => s + (p[k] || 0), 0);
+  const arrow = k => statSort.key === k ? (statSort.dir < 0 ? " ↓" : " ↑") : "";
+  return `
+    <div class="tbl-wrap pstats ${statWide ? "wide" : ""}"><table>
+      <thead><tr><th class="l">#</th><th class="l"><button type="button" class="sorth" data-sort="name">Spelare${arrow("name")}</button></th>
+        ${cols.map(c => `<th title="${c.t}"><button type="button" class="sorth" data-sort="${c.k}">${c.h}${arrow(c.k)}</button></th>`).join("")}</tr></thead>
+      <tbody>${rows.map(p => `<tr class="prow ${p.gp ? "" : "dnp"}" data-player="${esc(p.name)}" tabindex="0">
+        <td class="pos">${esc(p.num)}</td><td class="l team">${esc(p.name)}${p.cap ? ' <span class="capt" title="Kapten">K</span>' : ""}</td>
+        ${cols.map(c => `<td>${p.gp ? (c.f ? c.f(p[c.k]) : p[c.k]) : "–"}</td>`).join("")}</tr>`).join("")}</tbody>
+      <tfoot><tr><td></td><td class="l">Laget (${games} matcher)</td>
+        ${cols.map(c => `<td>${c.k === "pts" ? teamPts : c.k === "ppg" ? (teamPts / games).toFixed(1) : ["fg2", "fg3", "ft", "pf"].includes(c.k) ? tot(c.k) : c.k === "pfpg" ? (tot("pf") / games).toFixed(1) : c.k === "q4" ? tot("q4") : ""}</td>`).join("")}</tr></tfoot>
+    </table></div>`;
+}
+
+function renderStats() {
+  const el = document.getElementById("statsbox"); if (!el) return;
+  const { list } = buildStats();
+  const scorers = list.filter(p => p.gp);
+  const lead = (k, f) => { const p = scorers.slice().sort((a, b) => b[k] - a[k])[0]; return p ? { p, v: f ? f(p[k]) : p[k] } : null; };
+  const cards = [
+    ["Flest poäng", lead("pts")], ["Poäng per match", lead("ppg", v => v.toFixed(1))],
+    ["Flest trepoängare", lead("fg3")], ["Bästa match", lead("high")]
+  ].filter(x => x[1]);
+  el.innerHTML = `
+    <div class="leaders">${cards.map(([k, x]) => `<button type="button" class="leader" data-player="${esc(x.p.name)}"><span class="k">${k}</span><span class="v">${x.v}</span><span class="who">#${esc(x.p.num)} ${esc(x.p.name)}</span></button>`).join("")}</div>
+    ${statsTable()}
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="toggle" id="statwide" type="button">${statWide ? "Färre kolumner" : "Fler kolumner"}</button>
+      <span class="note">Tryck på en rubrik för att sortera, eller på en spelare för matchvis statistik.</span></div>
+    <p class="note">Räknat från Profixios matchlogg och matchprotokoll. Där registreras gjorda poäng, fouls och vilka som var med, men inte returer, assist, missade skott eller speltid. Därför finns ingen skottprocent.</p>`;
+  el.querySelectorAll(".sorth").forEach(b => b.addEventListener("click", () => { const k = b.dataset.sort; statSort = { key: k, dir: statSort.key === k ? -statSort.dir : -1 }; renderStats(); }));
+  document.getElementById("statwide").addEventListener("click", () => { statWide = !statWide; renderStats(); });
+}
+
+function openSeason() {
+  backToStats = false;
+  const el = document.getElementById("match");
+  if (el.hidden) { const cur = tabs.find(t => t.getAttribute("aria-selected") === "true"); lastTab = cur ? cur.dataset.tab : "laget"; }
+  el.innerHTML = `<button class="back" type="button" id="backbtn">← Tillbaka</button>
+    <div><h1 class="page-title">Säsongsstatistik</h1><p class="lede">P11 Röd · ${DATA.league} · 2026/27</p></div>
+    <div id="statsbox" style="display:grid;gap:14px"></div>`;
+  document.getElementById("backbtn").addEventListener("click", closeMatch);
+  document.querySelectorAll('section[role="tabpanel"]').forEach(s => s.hidden = true);
+  el.hidden = false; window.scrollTo(0, 0);
+  renderStats();
+}
+function openPlayer(name) {
+  const fromStats = !!document.getElementById("statsbox") && !document.getElementById("match").hidden;
+  const { list } = buildStats(); const p = list.find(x => x.name === name); if (!p) return;
+  const maxPer = Math.max(1, ...p.per);
+  const el = document.getElementById("match");
+  el.innerHTML = `
+    <button class="back" type="button" id="backbtn">← Tillbaka</button>
+    <div class="board">
+      <div class="meta">Spelare · P11 Röd${p.cap ? ` · kapten ${p.cap} ${p.cap === 1 ? "match" : "matcher"}` : ""}</div>
+      <div class="phead"><span class="jersey big-j">${esc(p.num || "–")}</span><div><h2 class="pname">${esc(p.name)}</h2><div class="py">${p.gp} ${p.gp === 1 ? "match" : "matcher"} · ${Math.round(p.share * 100)}% av lagets poäng</div></div></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Poäng</div><div class="v">${p.pts}</div></div>
+        <div class="stat"><div class="k">Per match</div><div class="v">${p.ppg.toFixed(1)}</div></div>
+        <div class="stat"><div class="k">Bästa</div><div class="v">${p.high}</div></div>
+        <div class="stat"><div class="k">Fouls</div><div class="v">${p.pf}</div></div>
+      </div>
+    </div>
+    ${p.gp ? `
+    <div><h2 class="h2">Så kommer poängen</h2>
+      <div class="mix">${[["2P", p.fg2, 2], ["3P", p.fg3, 3], ["Straff", p.ft, 1]].map(([k, n, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${n}</div><div class="py">${n * v} poäng</div></div>`).join("")}</div></div>
+    <div><h2 class="h2">Poäng per period</h2>
+      <div class="perbars">${p.per.map((v, i) => `<div class="pb"><span class="pv">${v}</span><span class="pbar"><i style="height:${(v / maxPer * 100).toFixed(0)}%"></i></span><span class="pk">P${i + 1}</span></div>`).join("")}</div></div>
+    <div><h2 class="h2">Match för match</h2>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">Match</th><th>P</th><th>2P</th><th>3P</th><th>Str</th><th>F</th></tr></thead>
+      <tbody>${p.games.slice().reverse().map(g => { const d = d8(g.date); return `<tr><td class="l"><button type="button" class="glink" data-match="${g.id}">${d.getDate()} ${MON[d.getMonth()]} · ${esc(g.opp)}</button><div class="py">${g.home ? "Hemma" : "Borta"} · <span class="${g.win ? "plus" : "minus"}">${g.win ? "V" : "F"} ${g.us}–${g.them}</span>${g.cap ? " · kapten" : ""}</div></td><td><b>${g.pts}</b></td><td>${g.fg2}</td><td>${g.fg3}</td><td>${g.ft}</td><td class="${g.pf >= 5 ? "minus" : ""}">${g.pf}</td></tr>`; }).join("")}</tbody></table></div></div>
+    ${p.fouledOut ? `<p class="note">Utvisad på fem fouls i ${p.fouledOut} ${p.fouledOut === 1 ? "match" : "matcher"}.</p>` : ""}` : `<p class="note">Inte med i någon match ännu den här säsongen.</p>`}`;
+  backToStats = fromStats;
+  document.getElementById("backbtn").addEventListener("click", closeMatch);
+  const cur = tabs.find(t => t.getAttribute("aria-selected") === "true");
+  if (document.getElementById("match").hidden) lastTab = cur ? cur.dataset.tab : "laget";
+  document.querySelectorAll('section[role="tabpanel"]').forEach(s => s.hidden = true);
+  el.hidden = false; window.scrollTo(0, 0);
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
+document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player]"); if (b) openPlayer(b.dataset.player); } });
+document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
+
+
+let start = (location.hash || "").slice(1);
+if (!start) { try { start = localStorage.getItem("tab") || ""; } catch (e) {} }
+show(start || "oversikt");
+</script>
+
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
+</script>
+</body>
+</html>
