@@ -315,27 +315,27 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .tops .tp b { font-family: var(--display); font-size: 1.3rem; color: var(--accent); margin-right: 2px; }
 .ticket .foot .mlinks { display: flex; gap: 12px; align-items: center; }
 .form3 { display: grid; gap: 14px; border-top: 3px solid var(--accent); padding-top: 14px; }
-.f3sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.f3sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .f3sum > div { background: var(--card-soft); border-radius: 14px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
 .f3sum .k { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .f3sum .v { font-family: var(--display); font-size: 2rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
 .f3sum .v small { font-size: 1.1rem; color: var(--muted); }
 .f3sum .who { font-size: .78rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
-@media (max-width: 420px) { .f3sum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.f3bars { display: grid; gap: 12px; background: var(--row-grey); border-radius: 14px; padding: 14px 12px 10px; }
-.f3row { display: grid; gap: 6px; }
+.f3bars { display: grid; gap: 21px; background: var(--row-grey); border-radius: 14px; padding: 14px 14px 10px; }
+.f3row { display: grid; gap: 4px; position: relative; }
+.f3row + .f3row::before { content: ""; position: absolute; top: -11px; left: 10%; right: 10%; height: 1px; background: var(--line); }
 .f3lbl { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
 .f3lbl .pill { width: 26px; height: 26px; font-size: 1rem; }
 .f3lbl .o { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .f3lbl .o small { display: block; font-weight: 400; color: var(--muted); font-size: .78rem; }
 .f3lbl .sc { font-family: var(--display); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
-.f3track { position: relative; height: 18px; }
-.f3track .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); opacity: .35; }
-.f3track i { position: absolute; top: 3px; height: 12px; border-radius: 6px; }
+.f3track { position: relative; height: 14px; width: min(200px, 60%); margin: 0 auto; }
+.f3track .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink); opacity: .35; }
+.f3track i { position: absolute; top: 4px; height: 6px; border-radius: 3px; }
 .f3track i.pos { background: var(--win); } .f3track i.neg { background: var(--loss); }
-.f3track b { position: absolute; top: 0; font-size: .78rem; line-height: 18px; font-variant-numeric: tabular-nums; }
+.f3track b { position: absolute; top: 0; font-size: .72rem; line-height: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .f3track b.pos { color: var(--win); } .f3track b.neg { color: var(--loss); }
-.f3axis { display: flex; justify-content: space-between; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.f3axis { display: flex; justify-content: space-between; width: min(200px, 60%); margin: 0 auto; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -497,8 +497,6 @@ function renderOverview() {
   const maxDiff = Math.max(10, ...last3.map(m => Math.abs(m.us - m.them)));
   const w3 = last3.filter(m => m.win).length;
   const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
-  const tot = {}; last3.forEach(m => gameScorers(m).forEach(p => { tot[p.name] = tot[p.name] || { ...p, pts: 0 }; tot[p.name].pts += p.pts; }));
-  const top3 = Object.values(tot).sort((a, b) => b.pts - a.pts)[0];
   document.getElementById("oversikt").innerHTML = `
     <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
     ${L ? `<div>
@@ -529,7 +527,6 @@ function renderOverview() {
           <div><span class="k">Vinster</span><span class="v">${w3}<small>/${last3.length}</small></span></div>
           <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
           <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
-          ${top3 ? `<div><span class="k">Flest poäng</span><span class="v">${top3.pts}</span><span class="who">#${esc(top3.num)} ${esc(top3.name)}</span></div>` : ""}
         </div>
         <div class="f3bars">${last3.map(m => { const d = m.us - m.them, pct = Math.abs(d) / maxDiff * 50; return `<div class="f3row">
           <div class="f3lbl"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="o">${esc(m.opp)}<small>${m.d.getDate()} ${MON[m.d.getMonth()]} · ${esc(compLabel(m))}</small></span><span class="sc">${m.us}–${m.them}</span></div>
