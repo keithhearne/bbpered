@@ -784,8 +784,7 @@ function renderCalendar() {
   matches.concat(cups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
   document.getElementById("kalender").innerHTML = `
     ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2>
-      <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}
-    <p class="example">Kommer i appen: knapp för att lägga in alla matcher i telefonens kalender.</p>`;
+      <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}`;
 }
 
 function renderTable() {
