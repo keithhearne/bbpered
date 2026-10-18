@@ -725,7 +725,7 @@ function renderResults() {
       <div class="stat"><div class="k">Snitt</div><div class="v">${gp ? (pf / gp).toFixed(1) : "–"}</div></div>
     </div>
     <div><p class="eyebrow" style="margin-bottom:8px">Form</p><div class="form">${list.map(m => `<span class="pill ${m.win ? "w" : "l"}" title="${esc(m.opp)} ${m.us}–${m.them}">${m.win ? "V" : "F"}</span>`).join("")}</div></div>
-    <div><h2 class="h2">Alla matcher</h2><div class="sbx-list">${list.slice().reverse().map(sbxRow).join("")}</div></div>`;
+    <div><h2 class="h2">Alla matcher</h2><ul class="list">${list.slice().reverse().map(m => resRow(m, true)).join("")}</ul></div>`;
   document.querySelectorAll("#resseg button").forEach(b => b.addEventListener("click", () => { resFilter = b.dataset.f; renderResults(); }));
 }
 
