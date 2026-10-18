@@ -399,6 +399,9 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore > span { display: grid; place-content: center; justify-items: center; gap: 2px; padding-block: 5px; padding: 0 12px; background: var(--accent); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); color: #fff; font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sbscore small { font-family: var(--body); font-size: .6rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; line-height: 1; }
 .sbscore small.w { color: var(--win); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
+.sbscore.rowsb { align-self: stretch; margin: -9px -12px -9px 0; gap: 3px; }
+.sbscore.rowsb .chev { width: 10px; }
+.sbscore.rowsb > span { min-width: 104px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
 .sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
 </style>
@@ -540,9 +543,9 @@ const dayCell = m => `<div class="day"><span class="wd">${WD[m.d.getDay()]}</spa
 const upRow = m => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s"><span class="compt">${esc(compLabel(m))}</span> · ${esc(m.venue || "Plats meddelas")}</div></div>
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
-const resRow = m => `<li class="row">${dayCell(m)}
+const resRow = (m, sb) => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span><span class="compt">${esc(compLabel(m))}</span> · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
-  <div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div></li>`;
+  ${sb ? `<div class="sbscore rowsb"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
 const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
@@ -617,7 +620,7 @@ function renderOverview() {
         </div>
       </div></div>` : ""}
     <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
-    <div><h2 class="h2">Senast spelat</h2><ul class="list">${played.slice(-5).reverse().map(resRow).join("")}</ul></div>`;
+    <div><h2 class="h2">Senast spelat</h2><ul class="list">${played.slice(-5).reverse().map(m => resRow(m, true)).join("")}</ul></div>`;
 }
 
 const cupRow = c => `<li class="row cup">${dayCell(c)}
