@@ -288,15 +288,16 @@ def discover(prev):
         with sync_playwright() as p:
             b = p.chromium.launch()
             pg = b.new_page(locale="sv-SE", user_agent=UA)
-            for n in range(1, 20):
-                pg.goto(f"{REG_URL}&page={n}", wait_until="networkidle", timeout=90000)
-                pg.wait_for_timeout(1500)
+            pg.goto(REG_URL, wait_until="networkidle", timeout=90000)
+            pg.wait_for_timeout(2000)
+            for n in range(1, 30):
                 items = pg.eval_on_selector_all('a[href*="/teams/"]', "els => els.map(a => [a.href, a.innerText])")
-                fresh = [i for i in items if i[0] not in seen]
-                if not fresh:
+                seen.update(dict(items))
+                nxt = pg.locator(f"button:text-is('{n + 1}'), a:text-is('{n + 1}')").first
+                if not nxt.count() or not nxt.is_visible():
                     break
-                seen.update(dict(fresh))
-                time.sleep(1.5)
+                nxt.click()
+                pg.wait_for_timeout(2500)
             b.close()
     except Exception as e:  # noqa: BLE001
         log("discovery failed:", e)
