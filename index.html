@@ -388,6 +388,11 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
 /* last-3 scoreboard strips */
 .sb3 { display: grid; gap: 8px; }
+.sbg.link { cursor: pointer; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+.sbg.link .sbbar { transition: box-shadow .15s, transform .15s; }
+.sbg.link:hover .sbbar, .sbg.link:focus-visible .sbbar { box-shadow: 0 4px 12px rgba(20,24,39,.16); }
+.sbg.link:active .sbbar { transform: scale(.985); }
+.sbg.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .sbmeta { margin: 0 0 4px; text-align: center; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .sbbar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; background: var(--surface, #fff); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 6px; box-shadow: 0 2px 6px rgba(20,24,39,.08); min-height: 54px; }
 .sbt { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 6px 5px; font-family: var(--display); font-weight: 800; font-size: clamp(.92rem, 4.2vw, 1.1rem); line-height: 1; text-transform: uppercase; letter-spacing: 0; color: var(--ink); }
@@ -611,7 +616,7 @@ function renderOverview() {
           <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
           <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
         </div>
-        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; return `<div class="sbg">
+        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
           <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
           <div class="sbbar">
             <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
@@ -978,7 +983,7 @@ function openPlayer(name, rerender) {
   el.hidden = false; window.scrollTo(0, 0);
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
-document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); } });
+document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match]"); if (mm) openMatch(mm.dataset.match); } });
 document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
 
 
