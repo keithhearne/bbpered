@@ -958,7 +958,7 @@ function openPlayer(name, rerender) {
     </div>
     ${p.gp ? `
     <div><h2 class="h2">Poäng uppdelning</h2>
-      <div class="mix">${[["2P", p.fg2, 2], ["3P", p.fg3, 3], ["Straff", p.ft, 1]].map(([k, n, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${n}</div><div class="py">${n * v} poäng</div></div>`).join("")}</div></div>
+      <div class="mix">${[["2P", p.fg2, 2], ["3P", p.fg3, 3], ["Straffkast", p.ft, 1]].map(([k, n, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${n}</div><div class="py">${n * v} poäng</div></div>`).join("")}</div></div>
     <div><h2 class="h2">Poäng per period</h2>
       <div class="perbars">${p.per.map((v, i) => `<div class="pb"><span class="pv">${v}</span><span class="pbar"><i style="height:${(v / maxPer * 100).toFixed(0)}%"></i></span><span class="pk">P${i + 1}</span></div>`).join("")}</div></div>
     <div><h2 class="h2">Match för match</h2>
