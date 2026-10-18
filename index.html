@@ -189,8 +189,8 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .datetile b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.9rem; margin: 2px 0; }
 .ticket .vs { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .ticket h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9.5vw, 3rem); line-height: .95; color: var(--accent); text-wrap: balance; }
-.tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, .8fr); gap: 8px; }
-.tiles div { background: var(--surface); border-radius: 10px; padding: 10px 12px; min-width: 0; box-shadow: 0 1px 0 var(--line); }
+.tiles { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) minmax(0, .8fr); gap: 8px; }
+.tiles > div { background: var(--surface); border-radius: 10px; padding: 10px 12px; min-width: 0; box-shadow: 0 1px 0 var(--line); }
 .tiles .k { font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .tiles .v { font-family: var(--display); font-size: 1.9rem; line-height: 1; color: var(--ink); }
 .tiles .v.sm { font-family: var(--body); font-size: .85rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: break-word; }
@@ -294,7 +294,14 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .mid .s.cupd { white-space: normal; font-size: .82rem; margin-top: 2px; }
 
 /* Översikt: next match outline, last match card, last-3 summary */
-.ticket.next-up { border: 3px solid var(--accent); }
+.ticket.next-up { border: 3px solid var(--accent); padding: 18px 16px 14px; gap: 14px; }
+.ticket.next-up .datetile { width: 68px; padding: 7px 0 5px; }
+.ticket.next-up .datetile b { font-size: 2.5rem; }
+.ticket.next-up h2 { font-size: clamp(1.9rem, 8.2vw, 2.6rem); }
+.ticket.next-up .head { gap: 14px; }
+.ticket.next-up .tiles > div { padding: 8px 10px; }
+.ticket.next-up .tiles .v:not(.sm) { font-size: 1.65rem; }
+.ticket.next-up svg.ball { width: 250px; height: 250px; right: -60px; top: -45px; }
 .ticket.last { background: #f8dde1; border: 3px solid var(--accent); padding: 14px 16px 12px; gap: 10px; }
 .ticket.last .tag { background: var(--accent); color: #fff; }
 .head3 { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
@@ -355,7 +362,7 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .lm-meta { font-size: .88rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
 .lm-meta .mplay { padding: 3px 10px; font-size: .82rem; }
 .lm-mid { display: grid; gap: 4px; }
-.samling { font-size: .78rem; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.samling { display: block; font-family: var(--body); font-size: .85rem; font-weight: 700; line-height: 1.25; color: var(--ink); margin-top: 6px; }
 .lm-score { display: flex; align-items: center; gap: 8px; }
 .lm-score .pill { width: 30px; height: 30px; font-size: 1.2rem; }
 .lm-score .n { font-family: var(--display); font-size: 2.6rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -539,8 +546,8 @@ function renderOverview() {
         <span class="tag">${n.comp ? "Cup · " + esc(n.comp) : esc(compLabel(n)) + " · " + (n.home ? "Hemma" : "Borta")}</span>
         <div class="head"><div class="datetile"><span>${WD[n.d.getDay()]}</span><b>${n.d.getDate()}</b><span>${MON[n.d.getMonth()]}</span></div>
           <div><p class="vs">Blackeberg Röd ${n.home ? "tar emot" : "möter"}</p><h2>${esc(n.opp)}</h2></div></div>
-        <div class="tiles"><div><div class="k">Start</div><div class="v">${n.time}</div></div>
-          <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div><div class="samling">Samling ${samling(n.time)}</div></div>
+        <div class="tiles"><div><div class="k">Start</div><div class="v">${n.time}</div><span class="samling">Samling ${samling(n.time)}</span></div>
+          <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div></div>
           ${tableTile(n)}</div>
         <div class="foot"><span></span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
