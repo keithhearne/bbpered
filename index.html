@@ -410,8 +410,8 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore.rowsb { align-self: stretch; margin: -14px -12px -14px 0; gap: 3px; }
 #oversikt .sbscore.rowsb { margin: -9px -12px -9px 0; }
 .stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.sbscore.rowsb .chev { width: 10px; }
-.sbscore.rowsb > span { min-width: 96px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
+.sbscore.rowsb .chev { width: 8px; }
+.sbscore.rowsb > span { width: 100px; min-width: 0; font-size: 1.35rem; padding: 0 8px 0 16px; letter-spacing: -.01em; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
 .sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
 .pboard .stats .stat { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
@@ -448,13 +448,15 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .compt.tlink:active { transform: scale(.95); }
 .tblsec { scroll-margin-top: 130px; }
 .sbscore.win > span, .sbscore.win .chev { background: var(--win); }
-.sbscore.rowsb .rpill { width: 24px; height: 24px; font-size: .95rem; font-weight: 400; box-shadow: 0 0 0 2px #fff; margin-top: 3px; }
-.sbscore.rowsb .rpill.w { background: #12452c; } .sbscore.rowsb .rpill.l { background: #7a0f20; }
+.sbscore.rowsb .rpill { align-self: center; width: 26px; height: 26px; font-size: 1rem; font-weight: 400; margin-right: 5px; }
+.sbscore.rowsb .rpill.w { background: var(--win); } .sbscore.rowsb .rpill.l { background: var(--loss); }
 .list .mlinks .mplay { white-space: nowrap; }
 .board .big { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .board .big.w { color: var(--win); } .board .big.l { color: var(--loss); }
 .board .big .pill { width: 28px; height: 28px; font-size: 1.05rem; }
 .pill.mini { width: 18px; height: 18px; font-size: .75rem; vertical-align: -3px; }
+#kalender .list .row, #resultat .list .row { padding-top: 10px; padding-bottom: 10px; gap: 10px; grid-template-columns: 42px minmax(0, 1fr) auto; }
+#kalender .sbscore.rowsb, #resultat .sbscore.rowsb { margin: -10px -12px -10px 0; }
 </style>
 </head>
 <body>
@@ -596,7 +598,7 @@ const upRow = m => `<li class="row">${dayCell(m)}
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
 const resRow = (m, sb) => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
-  ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
+  ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}</span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
 const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
