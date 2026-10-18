@@ -488,6 +488,14 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .cc b.soon { font-size: 1.55rem; line-height: 1.2; color: #4f3280; }
 .cc small { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .cc-name { font-size: .74rem; font-weight: 600; line-height: 1.2; color: var(--ink); margin-top: 2px; }
+
+/* live games */
+.livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; animation: livepulse 1.4s ease-in-out infinite; }
+@keyframes livepulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .livedot { animation: none; } }
+.sbscore small.lv { color: var(--accent); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
+.livepill { display: inline-block; font: 800 .7rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--accent); border-radius: 999px; padding: 4px 8px 3px; }
+.board .big.lv { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -601,20 +609,40 @@ const logo = (name, size = 28, cls = "") => { const id = LOGOS[name]; const ini 
 const d8 = iso => { const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d); };
 
 const USM = {"matches":[["2026-10-09","18:00","KFUM Blackebergs IK","Bollstanäs SK","Vinstahallen CC",79,68,"32787402"],["2026-10-10","09:30","Sunderby SK","KFUM Blackebergs IK","Vinstahallen CC",68,97,"32787404"],["2026-10-10","18:30","KFUM Blackebergs IK","Täby Basket","Vinstahallen CC",90,57,"32787407"],["2026-10-11","14:00","Viby Basket","KFUM Blackebergs IK","Vinstahallen CC",85,67,"32787410"]],"table":[[1,"Viby Basket",4,4,0,434,223,211,"VVVV"],[2,"KFUM Blackebergs IK",4,3,1,333,278,55,"VVVF"],[3,"Sunderby SK",4,2,2,286,361,-75,"FFVV"],[4,"Bollstanäs SK",4,1,3,307,377,-70,"FVFF"],[5,"Täby Basket",4,0,4,276,397,-121,"FFFF"]]};
+/* Fresh data saved from data.json (written every few hours by the GitHub Action). The data embedded above is the fallback. */
+const EMBED_UPDATED = DATA.updated;
+let FRESH = null;
+try { FRESH = JSON.parse(localStorage.getItem("p11-data") || "null"); } catch (e) {}
+if (FRESH && !(FRESH.updated > EMBED_UPDATED && FRESH.series)) FRESH = null;
+const LIVE_SCORES = (FRESH && FRESH.live) || {};
+if (FRESH) {
+  const sr = FRESH.series || {};
+  if (sr.serie && sr.serie.matches && sr.serie.matches.length) {
+    DATA.matches = sr.serie.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id}));
+    if (sr.serie.table && sr.serie.table.length) DATA.table = sr.serie.table;
+  }
+  if (sr.usm && sr.usm.matches && sr.usm.matches.length) { USM.matches = sr.usm.matches; if (sr.usm.table && sr.usm.table.length) USM.table = sr.usm.table; }
+  if (FRESH.cupGames && FRESH.cupGames.length) DATA.cupGames = FRESH.cupGames;
+  Object.assign(PBP, FRESH.pbp || {});
+  for (const [n, id] of Object.entries(FRESH.logos || {})) if (!LOGOS[n]) LOGOS[n] = id;
+  DATA.updated = FRESH.updated;
+}
 const SERIES = {
   serie: { short: "Serie", name: "Stockholms BDF · Pojkar U16 Nivå 1", head: "Stockholm Serie U16 Nivå 1", team: "KFUM Blackebergs IK Röd", table: DATA.table, teamUrl: DATA.teamUrl, tableUrl: DATA.tableUrl },
   usm: { short: "USM", name: "Ungdoms-SM · Pojkar U16, omgång 1 grupp 2", head: "USM U16 · Grupp 2", team: "KFUM Blackebergs IK", table: USM.table, teamUrl: "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504", tableUrl: "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504&tab=table" }
 };
 const OUR_NAMES = [SERIES.serie.team, SERIES.usm.team];
 const compLabel = m => m.comp || (SERIES[m.series] || SERIES.serie).short;
-const matchUrl = m => (SERIES[m.series] || SERIES.serie).teamUrl + (m.id ? "&expandmatch=" + m.id : "");
-const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url]) => ({date,time,home,away,venue,url,comp:"Södertälje Open",series:"cup"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
+const matchUrl = m => m.url || (SERIES[m.series] || SERIES.serie).teamUrl + (m.id ? "&expandmatch=" + m.id : "");
+const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url,comp,hs,as,id]) => ({date,time,home,away,venue,url,comp:comp || "Södertälje Open",hs,as,id,series:"cup"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
   const home = OUR_NAMES.includes(m.home);
   const opp = home ? m.away : m.home;
   const played = typeof m.hs === "number";
   const us = played ? (home ? m.hs : m.as) : null;
   const them = played ? (home ? m.as : m.hs) : null;
-  return { ...m, d: d8(m.date), home, opp, played, us, them, win: played && us > them };
+  const lv = m.id && !played ? LIVE_SCORES[m.id] : null;
+  return { ...m, d: d8(m.date), home, opp, played, us, them, win: played && us > them,
+    live: !!lv, liveUs: lv ? (home ? lv[0] : lv[1]) : null, liveThem: lv ? (home ? lv[1] : lv[0]) : null };
 });
 const played = matches.filter(m => m.played);
 const upcoming = matches.filter(m => !m.played);
@@ -656,6 +684,15 @@ function tableTile(m) {
 }
 const samling = hm => { const [h, m] = hm.split(":").map(Number); const x = h * 60 + m - 45; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
 const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n % 100 !== 12 ? ":a" : ":e");
+function liveCard() {
+  const lv = matches.filter(m => m.live);
+  if (!lv.length) return "";
+  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu</p><div class="sb3">${lv.map(m => { const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; const has = m.id && PBP[m.id]; return `<div class="sbg${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+    <p class="sbmeta">${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
+    <div class="sbbar"><div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
+      <div class="sbscore live"><i class="chev l"></i><span>${m.liveUs} – ${m.liveThem}<small class="lv">Live</small></span><i class="chev r"></i></div>
+      <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div></div></div>`; }).join("")}</div></div>`;
+}
 function compsCard() {
   const cols = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
     return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${k}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
@@ -672,6 +709,7 @@ function renderOverview() {
   const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
     <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
+    ${liveCard()}
     ${compsCard()}
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
@@ -789,6 +827,7 @@ const SQUAD = [
 // Line-ups from each match protocol: [shirt no, name, captain(1/0), fouls, points]
 const LINEUPS = {"32726246":[["2","Vidar Sjösvärd",0,3,20],["7","Axel Jürss",0,1,8],["9","Sufyan Mohamed Ali",1,4,21],["11","Keelan Hearne Leander",0,0,2],["14","Alfred Kartano",0,3,11],["23","Albert Solman",0,3,6],["24","Tyler Iguchi",0,2,6],["29","Zaccarias Roman",0,1,7],["91","Hugo Lundberg",0,0,0]],"32726271":[["2","Vidar Sjösvärd",0,2,12],["7","Axel Jürss",0,0,2],["9","Sufyan Mohamed Ali",1,4,2],["11","Keelan Hearne Leander",0,1,5],["14","Alfred Kartano",0,1,8],["23","Albert Solman",0,0,2],["24","Tyler Iguchi",0,0,8],["29","Zaccarias Roman",0,2,7],["49","Max Palmkvist",0,0,2],["91","Hugo Lundberg",0,1,6]],"32726284":[["2","Vidar Sjösvärd",1,1,30],["7","Axel Jürss",0,1,12],["11","Keelan Hearne Leander",0,2,0],["18","Elliot Engvall",0,3,5],["20","Simon Carlén",0,5,4],["24","Tyler Iguchi",0,0,0],["33","Noel Tesfaye",0,5,7],["34","Axel Borglund",0,1,17],["49","Max Palmkvist",0,0,2]],"32726293":[["2","Vidar Sjösvärd",1,4,14],["9","Sufyan Mohamed Ali",0,4,2],["11","Keelan Hearne Leander",0,0,3],["20","Simon Carlén",0,2,17],["23","Albert Solman",0,1,2],["29","Zaccarias Roman",0,3,7],["33","Noel Tesfaye",0,0,3],["34","Axel Borglund",0,1,6],["91","Hugo Lundberg",0,1,7]]};
 Object.assign(LINEUPS, {"32787402":[["2","Vidar Sjösvärd",1,2,20],["7","Axel Jürss",0,1,1],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,1,3],["13","Neo Negret",0,4,14],["20","Simon Carlén",0,3,10],["24","Tyler Iguchi",0,0,3],["29","Zaccarias Roman",0,2,3],["49","Max Palmkvist",0,2,2],["91","Hugo Lundberg",0,1,12]],"32787404":[["2","Vidar Sjösvärd",1,2,26],["7","Axel Jürss",0,0,0],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,2,2],["13","Neo Negret",0,4,22],["20","Simon Carlén",0,5,10],["23","Albert Solman",0,1,1],["24","Tyler Iguchi",0,0,13],["29","Zaccarias Roman",0,1,2],["49","Max Palmkvist",0,1,2],["91","Hugo Lundberg",0,2,8]],"32787407":[["2","Vidar Sjösvärd",1,0,16],["9","Sufyan Mohamed Ali",0,3,20],["11","Keelan Hearne Leander",0,0,10],["13","Neo Negret",0,1,13],["20","Simon Carlén",0,1,9],["23","Albert Solman",0,3,2],["24","Tyler Iguchi",0,3,9],["49","Max Palmkvist",0,0,4],["91","Hugo Lundberg",0,3,7]],"32787410":[["2","Vidar Sjösvärd",1,4,10],["9","Sufyan Mohamed Ali",0,3,7],["11","Keelan Hearne Leander",0,0,3],["13","Neo Negret",0,3,17],["20","Simon Carlén",0,2,8],["23","Albert Solman",0,4,3],["24","Tyler Iguchi",0,0,11],["29","Zaccarias Roman",0,4,6],["49","Max Palmkvist",0,2,0],["91","Hugo Lundberg",0,0,2]]});
+if (FRESH) Object.assign(LINEUPS, FRESH.lineups || {});
 const STAFF = ["Rasmus Özboga Abrahmsén"];
 // Player photos from the team's laget.se page. PRIVATE VERSION ONLY: build_site.py empties this for the public site.
 const PHOTOS = {};
@@ -835,6 +874,7 @@ let lastTab = "oversikt";
 function openMatch(id) {
   backToStats = false;
   const m = matches.find(x => x.id === id); if (!m || !PBP[id]) return;
+  window.__openMatch = id;
   const P = PBP[id], ev = parseEvents(id);
   const usSide = m.home ? "h" : "a";
   const name = (side, num) => P.names[side + num] || "";
@@ -904,7 +944,7 @@ function openMatch(id) {
     <button class="back" type="button" id="backbtn">← Tillbaka</button>
     <div class="board">
       <div class="btop"><div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · ${(SERIES[m.series] || SERIES.serie).head}</div><a class="plink" href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></div>
-      <div class="vsrow"><div class="tm us">${usName}</div><div class="big ${m.win ? "w" : "l"}">${m.us}–${m.them}<span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span></div><div class="tm r">${esc(themName)}</div></div>
+      <div class="vsrow"><div class="tm us">${usName}</div><div class="big ${m.live ? "lv" : m.win ? "w" : "l"}">${m.played ? m.us : m.liveUs}–${m.played ? m.them : m.liveThem}${m.live ? `<span class="livepill">Live</span>` : `<span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span>`}</div><div class="tm r">${esc(themName)}</div></div>
       <div class="qs"><span></span>${[1, 2, 3, 4].map(p => `<span class="hd">P${p}</span>`).join("")}
         <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
         <span class="nm">Motståndare</span>${thP.map(v => `<span class="c">${v}</span>`).join("")}</div>
@@ -1086,6 +1126,33 @@ document.addEventListener("click", e => { if (e.target.closest("#openstats")) op
 let start = (location.hash || "").slice(1);
 if (!start) { try { start = localStorage.getItem("tab") || ""; } catch (e) {} }
 show(start || "oversikt");
+
+/* Restore the view after an automatic refresh. */
+try {
+  const v = JSON.parse(sessionStorage.getItem("p11-view") || "null");
+  sessionStorage.removeItem("p11-view");
+  if (v) { if (v.match) openMatch(v.match); window.scrollTo(0, v.y || 0); }
+} catch (e) {}
+
+/* Keep the data fresh: fetch data.json (written by the GitHub Action) and refresh the page when it has changed.
+   Checks on open, every 15 minutes, and every minute around game time. Silently does nothing where data.json isn't available. */
+(function keepFresh() {
+  if (!/^https?:$/.test(location.protocol)) return;
+  const sig = d => JSON.stringify(Object.assign({}, d, { updated: 0 }));
+  const curSig = FRESH ? sig(FRESH) : "";
+  const gameTime = () => { const t = Date.now(); return matches.some(m => !m.played && m.time && Math.abs(t - new Date(`${m.date}T${m.time}`).getTime() - 45 * 60000) < 90 * 60000); };
+  const check = () => fetch("data.json?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || !d.updated || !(d.updated > EMBED_UPDATED) || !d.series) return;
+    try { localStorage.setItem("p11-data", JSON.stringify(d)); } catch (e) { return; }
+    if (sig(d) === curSig) { const b = document.querySelector("#oversikt .eyebrow b"); if (b) { const u = new Date(d.updated); b.textContent = `${u.getDate()} ${MON[u.getMonth()]} ${d.updated.slice(11)}`; } return; }
+    try { sessionStorage.setItem("p11-view", JSON.stringify({ match: !document.getElementById("match").hidden ? window.__openMatch : null, y: window.scrollY })); } catch (e) {}
+    location.reload();
+  }).catch(() => {});
+  check();
+  let n = 0;
+  setInterval(() => { n++; if (matches.some(m => m.live) || gameTime() || n % 15 === 0) check(); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
+})();
 </script>
 
 <script>

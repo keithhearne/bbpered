@@ -1,0 +1,42 @@
+# Keeps data.json up to date from Profixio and Cup Manager.
+# Wakes every hour; scraper/scrape.py decides whether there is anything to do:
+#  - nightly full check at 03:00 (Swedish time) for new fixtures and changes
+#  - a light check at 09:00 and 14:00 on Fridays–Sundays
+#  - on game days: live updates every 10 minutes from tip-off for about 1.5 hours, then hourly catch-up
+# Free on a public repository. Run it by hand from the Actions tab ("Run workflow").
+name: Update data
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Do a full update now"
+        type: boolean
+        default: true
+  push:
+    branches: [main]
+    paths: ["scraper/**", ".github/workflows/update.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3
+      - name: Fetch data
+        env:
+          FORCE: ${{ (github.event_name == 'push' || inputs.force) && '1' || '0' }}
+        run: python scraper/scrape.py
