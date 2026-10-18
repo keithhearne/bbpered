@@ -411,7 +411,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 #oversikt .sbscore.rowsb { margin: -9px -12px -9px 0; }
 .stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sbscore.rowsb .chev { width: 10px; }
-.sbscore.rowsb > span { min-width: 104px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
+.sbscore.rowsb > span { min-width: 96px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
 .sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
 .pboard .stats .stat { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
@@ -448,6 +448,13 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .compt.tlink:active { transform: scale(.95); }
 .tblsec { scroll-margin-top: 130px; }
 .sbscore.win > span, .sbscore.win .chev { background: var(--win); }
+.sbscore.rowsb .rpill { width: 24px; height: 24px; font-size: .95rem; font-weight: 400; box-shadow: 0 0 0 2px #fff; margin-top: 3px; }
+.sbscore.rowsb .rpill.w { background: #12452c; } .sbscore.rowsb .rpill.l { background: #7a0f20; }
+.list .mlinks .mplay { white-space: nowrap; }
+.board .big { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.board .big.w { color: var(--win); } .board .big.l { color: var(--loss); }
+.board .big .pill { width: 28px; height: 28px; font-size: 1.05rem; }
+.pill.mini { width: 18px; height: 18px; font-size: .75rem; vertical-align: -3px; }
 </style>
 </head>
 <body>
@@ -589,7 +596,7 @@ const upRow = m => `<li class="row">${dayCell(m)}
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
 const resRow = (m, sb) => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
-  ${sb ? `<div class="sbscore rowsb"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
+  ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
 const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
@@ -856,7 +863,7 @@ function openMatch(id) {
     <button class="back" type="button" id="backbtn">← Tillbaka</button>
     <div class="board">
       <div class="btop"><div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · ${(SERIES[m.series] || SERIES.serie).head}</div><a class="plink" href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></div>
-      <div class="vsrow"><div class="tm us">${usName}</div><div class="big">${m.us}–${m.them}</div><div class="tm r">${esc(themName)}</div></div>
+      <div class="vsrow"><div class="tm us">${usName}</div><div class="big ${m.win ? "w" : "l"}">${m.us}–${m.them}<span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span></div><div class="tm r">${esc(themName)}</div></div>
       <div class="qs"><span></span>${[1, 2, 3, 4].map(p => `<span class="hd">P${p}</span>`).join("")}
         <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
         <span class="nm">Motståndare</span>${thP.map(v => `<span class="c">${v}</span>`).join("")}</div>
@@ -1020,7 +1027,7 @@ function openPlayer(name, rerender) {
       <div class="perbars">${p.per.map((v, i) => `<div class="pb"><span class="pv">${v}</span><span class="pbar"><i style="height:${(v / maxPer * 100).toFixed(0)}%"></i></span><span class="pk">P${i + 1}</span></div>`).join("")}</div></div>
     <div><h2 class="h2">Match för match</h2>
       <div class="tbl-wrap"><table><thead><tr><th class="l">Match</th><th>P</th><th>2P</th><th>3P</th><th>Str</th><th>F</th></tr></thead>
-      <tbody>${p.games.slice().reverse().map(g => { const d = d8(g.date); return `<tr><td class="l"><button type="button" class="glink" data-match="${g.id}">${d.getDate()} ${MON[d.getMonth()]} · ${esc(g.opp)}</button><div class="py">${g.home ? "Hemma" : "Borta"} · <span class="${g.win ? "plus" : "minus"}">${g.win ? "V" : "F"} ${g.us}–${g.them}</span>${g.cap ? " · kapten" : ""}</div></td><td><b>${g.pts}</b></td><td>${g.fg2}</td><td>${g.fg3}</td><td>${g.ft}</td><td class="${g.pf >= 5 ? "minus" : ""}">${g.pf}</td></tr>`; }).join("")}</tbody></table></div></div>
+      <tbody>${p.games.slice().reverse().map(g => { const d = d8(g.date); return `<tr><td class="l"><button type="button" class="glink" data-match="${g.id}">${d.getDate()} ${MON[d.getMonth()]} · ${esc(g.opp)}</button><div class="py">${g.home ? "Hemma" : "Borta"} · <span class="pill mini ${g.win ? "w" : "l"}">${g.win ? "V" : "F"}</span> <span class="${g.win ? "plus" : "minus"}">${g.us}–${g.them}</span>${g.cap ? " · kapten" : ""}</div></td><td><b>${g.pts}</b></td><td>${g.fg2}</td><td>${g.fg3}</td><td>${g.ft}</td><td class="${g.pf >= 5 ? "minus" : ""}">${g.pf}</td></tr>`; }).join("")}</tbody></table></div></div>
     ${p.fouledOut ? `<p class="note">Utvisad på fem fouls i ${p.fouledOut} ${p.fouledOut === 1 ? "match" : "matcher"}.</p>` : ""}` : `<p class="note">Inte med i någon match ${statComp === "alla" ? "ännu den här säsongen" : "i " + FILTER_LABELS[statComp] + " ännu"}.</p>`}`;
   backToStats = fromStats;
   el.querySelectorAll("#pseg button").forEach(b => b.addEventListener("click", () => { statComp = b.dataset.f; openPlayer(name, true); }));
