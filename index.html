@@ -145,6 +145,15 @@ tr.us td { background: var(--hi) !important; font-weight: 800; }
 #kalender .list .row, #oversikt .list .row, #resultat .list .row { padding-left: 10px; padding-right: 12px; background: var(--row-grey); border-bottom: 2px solid var(--bg); }
 #kalender .list .row:last-child, #oversikt .list .row:last-child, #resultat .list .row:last-child { border-bottom: 0; }
 #oversikt .list, #resultat .list { border-radius: 14px; overflow: hidden; }
+#oversikt .list .row { padding-top: 9px; padding-bottom: 9px; gap: 12px; grid-template-columns: 42px minmax(0, 1fr) auto; }
+#oversikt .list .day .d { font-size: 1.75rem; margin: 1px 0; }
+#oversikt .list .day .wd, #oversikt .list .day .m { font-size: .66rem; }
+#oversikt .list .mid .t { font-size: 1rem; }
+#oversikt .list .mid .s { font-size: .85rem; }
+#oversikt .list .right .clock, #oversikt .list .score .n { font-size: 1.75rem; }
+#oversikt .list .mlinks { gap: 4px 10px; margin-top: 2px; }
+#oversikt .list .mplay { padding: 2px 9px; font-size: .78rem; }
+#oversikt .list .pill { width: 26px; height: 26px; font-size: 1.05rem; }
 .stat { background: var(--card-soft); border: 0; border-radius: 14px; padding: 12px 14px; }
 .stat .v { color: var(--accent); }
 .board .stat { background: var(--surface); }
