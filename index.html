@@ -597,7 +597,7 @@ const upRow = m => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s">${compChip(m)} · ${esc(m.venue || "Plats meddelas")}</div></div>
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
 const resRow = (m, sb) => `<li class="row">${dayCell(m)}
-  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
+  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div></div>
   ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}</span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
