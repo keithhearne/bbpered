@@ -189,11 +189,11 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .datetile b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.9rem; margin: 2px 0; }
 .ticket .vs { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .ticket h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9.5vw, 3rem); line-height: .95; color: var(--accent); text-wrap: balance; }
-.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, .8fr); gap: 8px; }
 .tiles div { background: var(--surface); border-radius: 10px; padding: 10px 12px; min-width: 0; box-shadow: 0 1px 0 var(--line); }
 .tiles .k { font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .tiles .v { font-family: var(--display); font-size: 1.9rem; line-height: 1; color: var(--ink); }
-.tiles .v.sm { font-family: var(--body); font-size: .92rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: break-word; }
+.tiles .v.sm { font-family: var(--body); font-size: .85rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: break-word; }
 .ticket .foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .88rem; color: var(--muted); }
 .ticket .foot a { color: var(--accent); font-weight: 700; }
 
@@ -346,17 +346,19 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
-.lastmini { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 14px; padding: 8px 12px; }
-.lm-date { text-align: center; line-height: 1; }
-.lm-date b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--accent); }
-.lm-date span { font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lastmini { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 16px; padding: 16px 16px; }
+.lm-date { text-align: center; line-height: 1; background: var(--accent); color: #fff; border-radius: 4px 4px 18px 4px; width: 62px; padding: 7px 0 6px; }
+.lm-date b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.3rem; margin: 2px 0; }
+.lm-date span { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .lm-mid { min-width: 0; }
-.lm-opp { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lm-meta { font-size: .82rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
-.lm-meta .mplay { padding: 2px 9px; font-size: .78rem; }
-.lm-score { display: flex; align-items: center; gap: 6px; }
-.lm-score .pill { width: 24px; height: 24px; font-size: 1rem; }
-.lm-score .n { font-family: var(--display); font-size: 1.8rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lm-opp { font-family: var(--display); font-size: 1.55rem; line-height: 1.05; color: var(--ink); overflow-wrap: anywhere; }
+.lm-meta { font-size: .88rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.lm-meta .mplay { padding: 3px 10px; font-size: .82rem; }
+.lm-mid { display: grid; gap: 4px; }
+.samling { font-size: .78rem; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.lm-score { display: flex; align-items: center; gap: 8px; }
+.lm-score .pill { width: 30px; height: 30px; font-size: 1.2rem; }
+.lm-score .n { font-family: var(--display); font-size: 2.6rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lm-score.w .n { color: var(--win); } .lm-score.l .n { color: var(--loss); }
 </style>
 </head>
@@ -525,7 +527,7 @@ function renderOverview() {
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
       <article class="lastmini">
-        <div class="lm-date"><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
+        <div class="lm-date"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
         <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
           <div class="lm-meta"><span class="compt">${esc(compLabel(L))}</span> · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
         <div class="lm-score ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div>
@@ -537,11 +539,10 @@ function renderOverview() {
         <span class="tag">${n.comp ? "Cup · " + esc(n.comp) : esc(compLabel(n)) + " · " + (n.home ? "Hemma" : "Borta")}</span>
         <div class="head"><div class="datetile"><span>${WD[n.d.getDay()]}</span><b>${n.d.getDate()}</b><span>${MON[n.d.getMonth()]}</span></div>
           <div><p class="vs">Blackeberg Röd ${n.home ? "tar emot" : "möter"}</p><h2>${esc(n.opp)}</h2></div></div>
-        <div class="tiles"><div><div class="k">Samling</div><div class="v">${samling(n.time)}</div></div>
-          <div><div class="k">Start</div><div class="v">${n.time}</div></div>
-          <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div></div>
+        <div class="tiles"><div><div class="k">Start</div><div class="v">${n.time}</div></div>
+          <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div><div class="samling">Samling ${samling(n.time)}</div></div>
           ${tableTile(n)}</div>
-        <div class="foot"><span>Samling 45 min före start</span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
+        <div class="foot"><span></span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
     </div>
     ${last3.length ? `<div><h2 class="h2">Senaste ${last3.length} matcherna</h2>
