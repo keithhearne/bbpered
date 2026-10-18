@@ -376,6 +376,27 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .lm-score .pill { width: 30px; height: 30px; font-size: 1.2rem; }
 .lm-score .n { font-family: var(--display); font-size: 2.6rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lm-score.w .n { color: var(--win); } .lm-score.l .n { color: var(--loss); }
+
+/* club logos */
+.logo { position: relative; display: inline-grid; place-items: center; width: var(--s); height: var(--s); flex: none; border-radius: 50%; }
+.logo img { width: 100%; height: 100%; object-fit: contain; }
+.logo i { display: none; font-style: normal; font: 800 calc(var(--s) * .38)/1 var(--body); color: var(--muted); }
+.logo.noimg { background: var(--chip, #e9e9ee); }
+.logo.noimg i { display: block; }
+td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+/* last-3 scoreboard strips */
+.sb3 { display: grid; gap: 14px; }
+.sbmeta { margin: 0 0 5px; text-align: center; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sbbar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; background: var(--surface, #fff); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 6px; box-shadow: 0 2px 6px rgba(20,24,39,.08); min-height: 54px; }
+.sbt { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px 6px; font-family: var(--display); font-weight: 800; font-size: 1.1rem; line-height: 1; text-transform: uppercase; letter-spacing: .01em; color: var(--ink); }
+.sbt span { min-width: 0; overflow-wrap: normal; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sbt.them { justify-content: flex-end; text-align: right; }
+.sbscore { display: flex; align-items: stretch; align-self: stretch; gap: 3px; margin: -1px 0; }
+.sbscore .chev { width: 9px; background: var(--accent); opacity: .5; clip-path: polygon(100% 0, 55% 0, 0 50%, 55% 100%, 100% 100%, 45% 50%); }
+.sbscore .chev.r { transform: scaleX(-1); }
+.sbscore span { display: grid; place-items: center; padding: 0 14px; background: var(--accent); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); color: #fff; font-family: var(--display); font-weight: 800; font-size: 1.55rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
+.sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
 </style>
 </head>
 <body>
@@ -478,6 +499,13 @@ const WDL = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"]
 const MON = ["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
 const MONL = ["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* Club logos from Profixio (Cloudinary). Cup-only teams map to their club where known. */
+const LOGOS = {"KFUM Blackebergs IK Röd":"25232","KFUM Blackebergs IK":"25232","Uppsala Basket Snakes":"25265","Västerås Basket P11":"25392_1792155764","KFUM Örebro Basket":"25272","KFUM Central Basket Vinröd":"25236_1756467202","Lidingö Basket":"25253","Alvik Grön":"25413_1695817611","SBBK P11 EF":"25359","Skuru Basket U16 Grön":"25346_1727960766","Fryshuset Svart":"25166_1729082840","Tyresö Basket":"25262","Norrköping Dolphins DIU":"25319","Duvbo Svart (P12)":"25155","AIK":"25099_1726634248","KFUM Huddinge Basketklubb VIt N1":"25244_1694950307","Stockholm Nordväst Vit":"25248_1722482439","Basketklubben Gladan":"25123","Hammarby Grön":"25185","Viby Röd":"25384_1719529114","Bollstanäs SK":"25135","Sunderby SK":"25355","Täby Basket":"25371_1726486988","Viby Basket":"25384_1719529114","Viby Basket 2":"25384_1719529114","Södertälje BBK EF":"25359"};
+const shortName = n => n.replace(/^KFUM\s+/, "").replace(/\s+Basket(?=\s|$)/, "").replace(/\s+(SK|IK)$/, "").trim();
+const initials = n => n.replace(/\b(KFUM|IK|SK|BK|Basket|Basketklubb|Basketklubben)\b/g, "").trim().split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase() || n[0];
+const logo = (name, size = 28, cls = "") => { const id = LOGOS[name]; const ini = esc(initials(name)); return id
+  ? `<span class="logo ${cls}" style="--s:${size}px"><img src="https://res.cloudinary.com/profixio/image/upload/c_pad,f_auto,h_${size * 2},q_auto,w_${size * 2}/v1/logos/gklubb/${id}" alt="" loading="lazy" onerror="this.parentNode.classList.add('noimg');this.remove()"><i>${ini}</i></span>`
+  : `<span class="logo noimg ${cls}" style="--s:${size}px"><i>${ini}</i></span>`; };
 const d8 = iso => { const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d); };
 
 const USM = {"matches":[["2026-10-09","18:00","KFUM Blackebergs IK","Bollstanäs SK","Vinstahallen CC",79,68,"32787402"],["2026-10-10","09:30","Sunderby SK","KFUM Blackebergs IK","Vinstahallen CC",68,97,"32787404"],["2026-10-10","18:30","KFUM Blackebergs IK","Täby Basket","Vinstahallen CC",90,57,"32787407"],["2026-10-11","14:00","Viby Basket","KFUM Blackebergs IK","Vinstahallen CC",85,67,"32787410"]],"table":[[1,"Viby Basket",4,4,0,434,223,211,"VVVV"],[2,"KFUM Blackebergs IK",4,3,1,333,278,55,"VVVF"],[3,"Sunderby SK",4,2,2,286,361,-75,"FFVV"],[4,"Bollstanäs SK",4,1,3,307,377,-70,"FVFF"],[5,"Täby Basket",4,0,4,276,397,-121,"FFFF"]]};
@@ -568,11 +596,15 @@ function renderOverview() {
           <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
           <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
         </div>
-        <div class="f3bars">${last3.map(m => { const d = m.us - m.them, pct = Math.abs(d) / maxDiff * 50; return `<div class="f3row">
-          <div class="f3lbl"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="o">${esc(m.opp)}<small>${m.d.getDate()} ${MON[m.d.getMonth()]} · ${esc(compLabel(m))}</small></span><span class="sc">${m.us}–${m.them}</span></div>
-          <div class="f3track"><span class="mid"></span><i class="${d >= 0 ? "pos" : "neg"}" style="${d >= 0 ? "left:50%" : `right:50%`};width:${pct.toFixed(1)}%"></i><b class="${d >= 0 ? "pos" : "neg"}" style="${d >= 0 ? `left:calc(50% + ${pct.toFixed(1)}% + 6px)` : `right:calc(50% + ${pct.toFixed(1)}% + 6px)`}">${d > 0 ? "+" : ""}${d}</b></div>
+        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; return `<div class="sbg">
+          <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(m.venue || compLabel(m))}</p>
+          <div class="sbbar">
+            <div class="sbt us">${logo(ourName, 30)}<span>Blackeberg</span></div>
+            <div class="sbscore"><i class="chev l"></i><span>${m.us} – ${m.them}</span><i class="chev r"></i></div>
+            <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 30)}</div>
+          </div>
+          <p class="sbres"><b class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"} ${d > 0 ? "+" : "−"}${Math.abs(d)}</b> · ${esc(compLabel(m))} · ${m.home ? "Hemma" : "Borta"}</p>
         </div>`; }).join("")}
-          <div class="f3axis"><span>Förlust</span><span>Vinst</span></div>
         </div>
       </div></div>` : ""}
     <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
@@ -598,7 +630,7 @@ function renderTable() {
       <div class="tbl-head"><h2 class="h2">${S.head}</h2><span class="place">${me ? me[0] + ":e av " + S.table.length : ""}</span></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th class="l">#</th><th class="l">Lag</th><th>M</th><th>V</th><th>F</th><th class="extra">Gjorda</th><th class="extra">Insläppta</th><th>+/-</th></tr></thead>
-        <tbody>${S.table.map(r => `<tr class="${r[1] === S.team ? "us" : ""}"><td class="pos">${r[0]}</td><td class="l team">${esc(r[1] === S.team ? "Blackeberg Röd" : r[1])}</td>
+        <tbody>${S.table.map(r => `<tr class="${r[1] === S.team ? "us" : ""}"><td class="pos">${r[0]}</td><td class="l team"><span class="tm">${logo(r[1], 22)}<span>${esc(r[1] === S.team ? "Blackeberg Röd" : r[1])}</span></span></td>
           <td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="extra">${r[5]}</td><td class="extra">${r[6]}</td>
           <td class="${r[7] > 0 ? "plus" : r[7] < 0 ? "minus" : ""}">${r[7] > 0 ? "+" : ""}${r[7]}</td></tr>`).join("")}</tbody></table></div>
       <p class="note" style="margin:8px 0 0">${S.name} · <a class="src" href="${S.tableUrl}" target="_blank" rel="noopener">Profixio ↗</a></p>
