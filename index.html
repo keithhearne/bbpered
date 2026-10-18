@@ -336,6 +336,16 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .f3track b { position: absolute; top: 0; font-size: .72rem; line-height: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .f3track b.pos { color: var(--win); } .f3track b.neg { color: var(--loss); }
 .f3axis { display: flex; justify-content: space-between; width: min(200px, 60%); margin: 0 auto; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.avatar { position: relative; width: 46px; height: 46px; flex: none; }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; box-shadow: 0 0 0 2px var(--accent); }
+.avatar b { position: absolute; right: -6px; bottom: -4px; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 11px; background: var(--accent); color: #fff; font-family: var(--display); font-weight: 400; font-size: .95rem; line-height: 22px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+.avatar.big { width: 72px; height: 72px; }
+.avatar.big b { min-width: 28px; height: 28px; line-height: 28px; border-radius: 14px; font-size: 1.2rem; }
+.roster .player { cursor: pointer; }
+.roster .player:hover, .roster .player:focus-visible { background: var(--hi); }
+.pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
+.pboard > *:not(svg) { position: relative; }
+.pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
 </style>
 </head>
 <body>
@@ -448,7 +458,7 @@ const SERIES = {
 const OUR_NAMES = [SERIES.serie.team, SERIES.usm.team];
 const compLabel = m => m.comp || (SERIES[m.series] || SERIES.serie).short;
 const matchUrl = m => (SERIES[m.series] || SERIES.serie).teamUrl + (m.id ? "&expandmatch=" + m.id : "");
-const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url]) => ({date,time,home,away,venue,url,comp:"Södertälje Open"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
+const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url]) => ({date,time,home,away,venue,url,comp:"Södertälje Open",series:"cup"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
   const home = OUR_NAMES.includes(m.home);
   const opp = home ? m.away : m.home;
   const played = typeof m.hs === "number";
@@ -573,7 +583,8 @@ function renderTable() {
 
 let resFilter = "alla";
 const seriesFilter = (list, f) => f === "alla" ? list : list.filter(m => m.series === f);
-const filterSeg = (id, cur) => `<div class="seg" role="group" id="${id}">${[["alla", "Alla"], ["serie", "Serie"], ["usm", "USM"]].map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === cur}">${l}</button>`).join("")}</div>`;
+const FILTER_LABELS = { serie: "Serie", usm: "USM", cup: "Cup" };
+const filterSeg = (id, cur) => { const keys = ["serie", "usm", "cup"].filter(k => played.some(m => m.series === k)); return `<div class="seg" role="group" id="${id}">${[["alla", "Alla"]].concat(keys.map(k => [k, FILTER_LABELS[k]])).map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === cur}">${l}</button>`).join("")}</div>`; };
 function renderResults() {
   const list = seriesFilter(played, resFilter);
   const gp = list.length, w = list.filter(m => m.win).length;
@@ -603,6 +614,9 @@ const SQUAD = [
 const LINEUPS = {"32726246":[["2","Vidar Sjösvärd",0,3,20],["7","Axel Jürss",0,1,8],["9","Sufyan Mohamed Ali",1,4,21],["11","Keelan Hearne Leander",0,0,2],["14","Alfred Kartano",0,3,11],["23","Albert Solman",0,3,6],["24","Tyler Iguchi",0,2,6],["29","Zaccarias Roman",0,1,7],["91","Hugo Lundberg",0,0,0]],"32726271":[["2","Vidar Sjösvärd",0,2,12],["7","Axel Jürss",0,0,2],["9","Sufyan Mohamed Ali",1,4,2],["11","Keelan Hearne Leander",0,1,5],["14","Alfred Kartano",0,1,8],["23","Albert Solman",0,0,2],["24","Tyler Iguchi",0,0,8],["29","Zaccarias Roman",0,2,7],["49","Max Palmkvist",0,0,2],["91","Hugo Lundberg",0,1,6]],"32726284":[["2","Vidar Sjösvärd",1,1,30],["7","Axel Jürss",0,1,12],["11","Keelan Hearne Leander",0,2,0],["18","Elliot Engvall",0,3,5],["20","Simon Carlén",0,5,4],["24","Tyler Iguchi",0,0,0],["33","Noel Tesfaye",0,5,7],["34","Axel Borglund",0,1,17],["49","Max Palmkvist",0,0,2]],"32726293":[["2","Vidar Sjösvärd",1,4,14],["9","Sufyan Mohamed Ali",0,4,2],["11","Keelan Hearne Leander",0,0,3],["20","Simon Carlén",0,2,17],["23","Albert Solman",0,1,2],["29","Zaccarias Roman",0,3,7],["33","Noel Tesfaye",0,0,3],["34","Axel Borglund",0,1,6],["91","Hugo Lundberg",0,1,7]]};
 Object.assign(LINEUPS, {"32787402":[["2","Vidar Sjösvärd",1,2,20],["7","Axel Jürss",0,1,1],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,1,3],["13","Neo Negret",0,4,14],["20","Simon Carlén",0,3,10],["24","Tyler Iguchi",0,0,3],["29","Zaccarias Roman",0,2,3],["49","Max Palmkvist",0,2,2],["91","Hugo Lundberg",0,1,12]],"32787404":[["2","Vidar Sjösvärd",1,2,26],["7","Axel Jürss",0,0,0],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,2,2],["13","Neo Negret",0,4,22],["20","Simon Carlén",0,5,10],["23","Albert Solman",0,1,1],["24","Tyler Iguchi",0,0,13],["29","Zaccarias Roman",0,1,2],["49","Max Palmkvist",0,1,2],["91","Hugo Lundberg",0,2,8]],"32787407":[["2","Vidar Sjösvärd",1,0,16],["9","Sufyan Mohamed Ali",0,3,20],["11","Keelan Hearne Leander",0,0,10],["13","Neo Negret",0,1,13],["20","Simon Carlén",0,1,9],["23","Albert Solman",0,3,2],["24","Tyler Iguchi",0,3,9],["49","Max Palmkvist",0,0,4],["91","Hugo Lundberg",0,3,7]],"32787410":[["2","Vidar Sjösvärd",1,4,10],["9","Sufyan Mohamed Ali",0,3,7],["11","Keelan Hearne Leander",0,0,3],["13","Neo Negret",0,3,17],["20","Simon Carlén",0,2,8],["23","Albert Solman",0,4,3],["24","Tyler Iguchi",0,0,11],["29","Zaccarias Roman",0,4,6],["49","Max Palmkvist",0,2,0],["91","Hugo Lundberg",0,0,2]]});
 const STAFF = ["Rasmus Özboga Abrahmsén"];
+// Player photos from the team's laget.se page. PRIVATE VERSION ONLY: build_site.py empties this for the public site.
+const PHOTOS = {};
+const photoOf = name => PHOTOS[name] ? "data:image/jpeg;base64," + PHOTOS[name] : "";
 
 function renderTeam() {
   const sorted = SQUAD.slice().sort((a, b) => (a[0] ?? 999) - (b[0] ?? 999) || a[1].localeCompare(b[1], "sv"));
@@ -612,8 +626,8 @@ function renderTeam() {
       <div class="s">KFUM Blackebergs IK · ${DATA.league} · USM</div></div></div>
     <div class="photo-slot">Lagbild kommer här</div>
     <div><h2 class="h2">Tränare</h2><div class="staff">${STAFF.map(n => `<span><b>Coach</b>${esc(n)}</span>`).join("")}</div></div>
-    <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player">
-      <span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>
+    <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player" data-player="${esc(p[1])}" tabindex="0" role="button">
+      ${photoOf(p[1]) ? `<span class="avatar"><img src="${photoOf(p[1])}" alt=""><b>${p[0] == null ? "–" : p[0]}</b></span>` : `<span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>`}
       <span class="pn">${esc(p[1])}</span><span class="py">${p[2]}</span></li>`).join("")}</ul></div>
     <p class="note">Truppen enligt Profixio. Nummer saknas för spelare som inte har något registrerat.</p>
     <p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>`;
@@ -853,16 +867,17 @@ function openSeason() {
   el.hidden = false; window.scrollTo(0, 0);
   renderStats();
 }
-function openPlayer(name) {
-  const fromStats = !!document.getElementById("statsbox") && !document.getElementById("match").hidden;
+function openPlayer(name, rerender) {
+  const fromStats = rerender ? backToStats : !!document.getElementById("statsbox") && !document.getElementById("match").hidden;
   const { list } = buildStats(); const p = list.find(x => x.name === name); if (!p) return;
   const maxPer = Math.max(1, ...p.per);
   const el = document.getElementById("match");
   el.innerHTML = `
     <button class="back" type="button" id="backbtn">← Tillbaka</button>
-    <div class="board">
-      <div class="meta">Spelare · P11 Röd${p.cap ? ` · kapten ${p.cap} ${p.cap === 1 ? "match" : "matcher"}` : ""}</div>
-      <div class="phead"><span class="jersey big-j">${esc(p.num || "–")}</span><div><h2 class="pname">${esc(p.name)}</h2><div class="py">${p.gp} ${p.gp === 1 ? "match" : "matcher"} · ${Math.round(p.share * 100)}% av lagets poäng</div></div></div>
+    ${filterSeg("pseg", statComp)}
+    <div class="board pboard">${ball}
+      <div class="meta">Spelare · P11 Röd${statComp !== "alla" ? " · " + FILTER_LABELS[statComp] : ""}${p.cap ? ` · kapten ${p.cap} ${p.cap === 1 ? "match" : "matcher"}` : ""}</div>
+      <div class="phead">${photoOf(p.name) ? `<span class="avatar big"><img src="${photoOf(p.name)}" alt=""><b>${esc(p.num || "–")}</b></span>` : `<span class="jersey big-j">${esc(p.num || "–")}</span>`}<div><h2 class="pname">${esc(p.name)}</h2><div class="py">${p.gp} ${p.gp === 1 ? "match" : "matcher"} · ${Math.round(p.share * 100)}% av lagets poäng</div></div></div>
       <div class="stats">
         <div class="stat"><div class="k">Poäng</div><div class="v">${p.pts}</div></div>
         <div class="stat"><div class="k">Per match</div><div class="v">${p.ppg.toFixed(1)}</div></div>
@@ -871,15 +886,16 @@ function openPlayer(name) {
       </div>
     </div>
     ${p.gp ? `
-    <div><h2 class="h2">Så kommer poängen</h2>
+    <div><h2 class="h2">Poäng uppdelning</h2>
       <div class="mix">${[["2P", p.fg2, 2], ["3P", p.fg3, 3], ["Straff", p.ft, 1]].map(([k, n, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${n}</div><div class="py">${n * v} poäng</div></div>`).join("")}</div></div>
     <div><h2 class="h2">Poäng per period</h2>
       <div class="perbars">${p.per.map((v, i) => `<div class="pb"><span class="pv">${v}</span><span class="pbar"><i style="height:${(v / maxPer * 100).toFixed(0)}%"></i></span><span class="pk">P${i + 1}</span></div>`).join("")}</div></div>
     <div><h2 class="h2">Match för match</h2>
       <div class="tbl-wrap"><table><thead><tr><th class="l">Match</th><th>P</th><th>2P</th><th>3P</th><th>Str</th><th>F</th></tr></thead>
       <tbody>${p.games.slice().reverse().map(g => { const d = d8(g.date); return `<tr><td class="l"><button type="button" class="glink" data-match="${g.id}">${d.getDate()} ${MON[d.getMonth()]} · ${esc(g.opp)}</button><div class="py">${g.home ? "Hemma" : "Borta"} · <span class="${g.win ? "plus" : "minus"}">${g.win ? "V" : "F"} ${g.us}–${g.them}</span>${g.cap ? " · kapten" : ""}</div></td><td><b>${g.pts}</b></td><td>${g.fg2}</td><td>${g.fg3}</td><td>${g.ft}</td><td class="${g.pf >= 5 ? "minus" : ""}">${g.pf}</td></tr>`; }).join("")}</tbody></table></div></div>
-    ${p.fouledOut ? `<p class="note">Utvisad på fem fouls i ${p.fouledOut} ${p.fouledOut === 1 ? "match" : "matcher"}.</p>` : ""}` : `<p class="note">Inte med i någon match ännu den här säsongen.</p>`}`;
+    ${p.fouledOut ? `<p class="note">Utvisad på fem fouls i ${p.fouledOut} ${p.fouledOut === 1 ? "match" : "matcher"}.</p>` : ""}` : `<p class="note">Inte med i någon match ${statComp === "alla" ? "ännu den här säsongen" : "i " + FILTER_LABELS[statComp] + " ännu"}.</p>`}`;
   backToStats = fromStats;
+  el.querySelectorAll("#pseg button").forEach(b => b.addEventListener("click", () => { statComp = b.dataset.f; openPlayer(name, true); }));
   document.getElementById("backbtn").addEventListener("click", closeMatch);
   const cur = tabs.find(t => t.getAttribute("aria-selected") === "true");
   if (document.getElementById("match").hidden) lastTab = cur ? cur.dataset.tab : "laget";
@@ -887,7 +903,7 @@ function openPlayer(name) {
   el.hidden = false; window.scrollTo(0, 0);
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
-document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player]"); if (b) openPlayer(b.dataset.player); } });
+document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); } });
 document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
 
 
