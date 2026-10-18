@@ -952,7 +952,7 @@ function openPlayer(name, rerender) {
     ${filterSeg("pseg", statComp)}
     <div class="board pboard">${ball}
       <div class="meta">Spelare · P11 Röd${statComp !== "alla" ? " · " + FILTER_LABELS[statComp] : ""}${p.cap ? ` · kapten ${p.cap} ${p.cap === 1 ? "match" : "matcher"}` : ""}</div>
-      <div class="phead">${photoOf(p.name) ? `<span class="avatar big"><img src="${photoOf(p.name)}" alt=""><b>${esc(p.num || "–")}</b></span>` : `<span class="jersey big-j">${esc(p.num || "–")}</span>`}<div><h2 class="pname">${esc(p.name)}</h2><div class="py">${p.gp} ${p.gp === 1 ? "match" : "matcher"} · ${Math.round(p.share * 100)}% av lagets poäng</div></div></div>
+      <div class="phead">${photoOf(p.name) ? `<span class="avatar big"><img src="${photoOf(p.name)}" alt=""><b>${esc(p.num || "–")}</b></span>` : `<span class="jersey big-j">${esc(p.num || "–")}</span>`}<div><h2 class="pname">${esc(p.name)}</h2><div class="py">${p.gp} ${p.gp === 1 ? "match" : "matcher"}</div></div></div>
       <div class="stats">
         <div class="stat"><div class="k">Poäng</div><div class="v">${p.pts}</div></div>
         <div class="stat"><div class="k">Per match</div><div class="v">${p.ppg.toFixed(1)}</div></div>
