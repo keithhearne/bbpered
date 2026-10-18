@@ -399,7 +399,9 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore > span { display: grid; place-content: center; justify-items: center; gap: 2px; padding-block: 5px; padding: 0 12px; background: var(--accent); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); color: #fff; font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sbscore small { font-family: var(--body); font-size: .6rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; line-height: 1; }
 .sbscore small.w { color: var(--win); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
-.sbscore.rowsb { align-self: stretch; margin: -9px -12px -9px 0; gap: 3px; }
+.sbscore.rowsb { align-self: stretch; margin: -14px -12px -14px 0; gap: 3px; }
+#oversikt .sbscore.rowsb { margin: -9px -12px -9px 0; }
+.stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sbscore.rowsb .chev { width: 10px; }
 .sbscore.rowsb > span { min-width: 104px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
@@ -631,7 +633,7 @@ function renderCalendar() {
   matches.concat(cups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
   document.getElementById("kalender").innerHTML = `
     ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2>
-      <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m) : upRow(m)).join("")}</ul></div>`).join("")}
+      <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}
     <p class="example">Kommer i appen: knapp för att lägga in alla matcher i telefonens kalender.</p>`;
 }
 
@@ -665,11 +667,10 @@ function renderResults() {
   const pf = list.reduce((s, m) => s + m.us, 0), pa = list.reduce((s, m) => s + m.them, 0);
   document.getElementById("resultat").innerHTML = `
     ${filterSeg("resseg", resFilter)}
-    <div class="stats">
+    <div class="stats three">
       <div class="stat"><div class="k">Matcher</div><div class="v">${gp}</div></div>
       <div class="stat"><div class="k">Vinster</div><div class="v">${w}</div></div>
-      <div class="stat"><div class="k">Snitt +</div><div class="v">${gp ? (pf / gp).toFixed(1) : "–"}</div></div>
-      <div class="stat"><div class="k">Snitt −</div><div class="v">${gp ? (pa / gp).toFixed(1) : "–"}</div></div>
+      <div class="stat"><div class="k">Snitt</div><div class="v">${gp ? (pf / gp).toFixed(1) : "–"}</div></div>
     </div>
     <div><p class="eyebrow" style="margin-bottom:8px">Form</p><div class="form">${list.map(m => `<span class="pill ${m.win ? "w" : "l"}" title="${esc(m.opp)} ${m.us}–${m.them}">${m.win ? "V" : "F"}</span>`).join("")}</div></div>
     <div><h2 class="h2">Alla matcher</h2><ul class="list">${list.slice().reverse().map(resRow).join("")}</ul></div>`;
