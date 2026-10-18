@@ -44,6 +44,7 @@ WEEKEND_CHECK_HOURS = (9, 14)           # extra light check on Fri–Sun
 
 S = requests.Session()
 S.headers["User-Agent"] = UA
+S.headers["Accept-Language"] = "sv-SE,sv;q=0.9"
 
 
 def get(url, **kw):
@@ -138,7 +139,7 @@ def parse_table(page):
         num = lambda x: int(re.sub(r"[^\d-]", "", x) or 0)  # noqa: E731
         # pos, team, GP, W, L, (Vinst%), FOR, AGST, +/-, L5
         rows.append([num(cells[0]), name, num(cells[2]), num(cells[3]), num(cells[4]),
-                     num(cells[6]), num(cells[7]), num(cells[8]), cells[9].replace(" ", "")])
+                     num(cells[6]), num(cells[7]), num(cells[8]), cells[9].replace(" ", "").replace("W", "V").replace("L", "F")])
     return rows, logos
 
 
@@ -221,7 +222,10 @@ def scrape_profixio(prev, live_only=False):
             except Exception as e:  # noqa: BLE001
                 log("  table failed:", e)
         rows = []
+        old_venue = {r[7]: r[4] for r in prev_series.get(key, {}).get("matches", []) if len(r) > 7 and r[4]}
         for m in matches:
+            if not m["venue"]:
+                m["venue"] = old_venue.get(m["id"], "")
             row = [m["date"], m["time"], m["home"], m["away"], m["venue"]]
             if m["result"] and m["hs"] is not None and not m["live"]:
                 row += [m["hs"], m["as"], m["id"]]

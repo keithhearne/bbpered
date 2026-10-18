@@ -616,10 +616,13 @@ try { FRESH = JSON.parse(localStorage.getItem("p11-data") || "null"); } catch (e
 if (FRESH && !(FRESH.updated > EMBED_UPDATED && FRESH.series)) FRESH = null;
 const LIVE_SCORES = (FRESH && FRESH.live) || {};
 if (FRESH) {
-  const sr = FRESH.series || {};
+  const sr = JSON.parse(JSON.stringify(FRESH.series || {}));
   if (sr.serie && sr.serie.matches && sr.serie.matches.length) {
+    const oldVenue = {}; DATA.matches.forEach(m => { if (m.id && m.venue) oldVenue[m.id] = m.venue; }); USM.matches.forEach(r => { if (r[7] && r[4]) oldVenue[r[7]] = r[4]; });
+    const fillVenue = r => (r[4] || !oldVenue[r[7]]) ? r : r.slice(0, 4).concat([oldVenue[r[7]]], r.slice(5));
+    sr.serie.matches = sr.serie.matches.map(fillVenue); if (sr.usm && sr.usm.matches) sr.usm.matches = sr.usm.matches.map(fillVenue);
     DATA.matches = sr.serie.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id}));
-    if (sr.serie.table && sr.serie.table.length) DATA.table = sr.serie.table;
+    if (sr.serie.table && sr.serie.table.length) DATA.table = sr.serie.table.map(r => r.slice(0, 8).concat([String(r[8] || "").replace(/W/g, "V").replace(/L/g, "F")]));
   }
   if (sr.usm && sr.usm.matches && sr.usm.matches.length) { USM.matches = sr.usm.matches; if (sr.usm.table && sr.usm.table.length) USM.table = sr.usm.table; }
   if (FRESH.cupGames && FRESH.cupGames.length) DATA.cupGames = FRESH.cupGames;
@@ -924,6 +927,7 @@ function openMatch(id) {
     return true;
   }).map(e => {
     const sh = `${ourScore(e)}–${theirScore(e)}`;
+    if (/^\?Byte/.test(e.code)) return ""; // substitutions: not shown
     if (e.code === "S") return `<li class="mark"><span>${e.p === 1 ? "Matchstart" : "Start period " + e.p}</span></li>`;
     if (e.code === "E") return `<li class="mark"><span>${e.p === 2 ? "Halvtid" : "Slut period " + e.p}<b>${sh}</b></span></li>`;
     if (e.code === "X") return `<li class="mark"><span>Matchen är slut<b>${sh}</b></span></li>`;
