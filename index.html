@@ -447,6 +447,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .compt.tlink:hover, .compt.tlink:focus-visible { text-decoration: underline; outline: none; }
 .compt.tlink:active { transform: scale(.95); }
 .tblsec { scroll-margin-top: 130px; }
+.sbscore.win > span, .sbscore.win .chev { background: var(--win); }
 </style>
 </head>
 <body>
@@ -656,7 +657,7 @@ function renderOverview() {
           <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
           <div class="sbbar">
             <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
-            <div class="sbscore"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
+            <div class="sbscore${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
             <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div>
           </div>
         </div>`; }).join("")}
@@ -672,7 +673,7 @@ const sbxRow = m => { const ourName = m.series === "usm" ? SERIES.usm.team : SER
   <p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p>
   <div class="sbbar">
     <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
-    <div class="sbscore"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
+    <div class="sbscore${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
     <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div>
   </div>
   <div class="sbfoot"><span class="sbcomp">${compChip(m)} <span>${m.home ? "Hemma" : "Borta"}</span></span><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="sblinks">${has ? `<span class="mplay">Matchspel ▸</span>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div>
