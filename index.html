@@ -362,7 +362,9 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
-.lastmini { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 16px; padding: 16px 16px; }
+.lastmini svg.hoop { position: absolute; right: -28px; top: -22px; width: 170px; height: 170px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(10deg); }
+.lastmini > :not(svg) { position: relative; }
+.lastmini { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 16px; padding: 16px 16px; }
 .lm-date { text-align: center; line-height: 1; background: var(--accent); color: #fff; border-radius: 4px 4px 18px 4px; width: 62px; padding: 7px 0 6px; }
 .lm-date b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.3rem; margin: 2px 0; }
 .lm-date span { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
@@ -546,6 +548,11 @@ const us = DATA.table.find(r => r[1] === DATA.team);
 const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
   <path d="M215 10 V290"/><path d="M215 40 A150 150 0 0 0 215 260"/><rect x="120" y="105" width="95" height="90"/><circle cx="120" cy="150" r="45"/><circle cx="190" cy="150" r="12"/><path d="M205 135 V165"/></svg>`;
 
+const hoop = `<svg class="hoop" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="30" y="14" width="140" height="92" rx="6"/><rect x="72" y="46" width="56" height="42" rx="3"/>
+  <path d="M100 106 v8"/><ellipse cx="100" cy="122" rx="44" ry="9"/>
+  <path d="M58 124 L70 186 M75 130 L82 188 M92 131 L95 190 M108 131 L105 190 M125 130 L118 188 M142 124 L130 186"/>
+  <path d="M62 146 Q100 158 138 146 M67 168 Q100 178 133 168"/></svg>`;
 const ball = `<svg class="ball" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">
   <circle cx="100" cy="100" r="94" fill="currentColor" fill-opacity=".35"/><path d="M100 6 V194"/><path d="M6 100 H194"/>
   <path d="M33 34 C70 64 70 136 33 166"/><path d="M167 34 C130 64 130 136 167 166"/></svg>`;
@@ -573,7 +580,7 @@ function renderOverview() {
     <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
-      <article class="lastmini">
+      <article class="lastmini">${hoop}
         <div class="lm-date"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
         <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
           <div class="lm-meta"><span class="compt">${esc(compLabel(L))}</span> · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
