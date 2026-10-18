@@ -298,7 +298,10 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .cupbadge { display: inline-block; background: var(--accent); color: #fff; font-family: var(--display); font-size: 1.15rem; letter-spacing: .04em; line-height: 1; padding: 6px 10px 5px; border-radius: 8px; }
 .row.cup .t a { text-decoration: none; }
 .row.cup .t a:hover { color: var(--accent); }
-.compt { color: var(--accent); font-weight: 700; }
+.compt { display: inline-block; font-weight: 700; font-size: .78em; line-height: 1.25; padding: 1px 7px; border-radius: 6px; color: var(--accent); background: var(--card-soft); vertical-align: 1px; }
+.compt.c-serie { color: #1f4f8f; background: #e2ebf7; }
+.compt.c-usm { color: #8a5300; background: #fbecd2; }
+.compt.c-cup { color: #5a3b8f; background: #ece5f8; }
 .ha.cupha { color: var(--accent); }
 .mid .s.cupd { white-space: normal; font-size: .82rem; margin-top: 2px; }
 
@@ -362,7 +365,7 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
-.lastmini svg.hoop { position: absolute; right: -28px; top: -22px; width: 170px; height: 170px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(10deg); }
+.lastmini svg.hoop { position: absolute; right: 22%; top: -14px; width: 170px; height: 170px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(10deg); }
 .lastmini > :not(svg) { position: relative; }
 .lastmini { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 16px; padding: 16px 16px; }
 .lm-date { text-align: center; line-height: 1; background: var(--accent); color: #fff; border-radius: 4px 4px 18px 4px; width: 62px; padding: 7px 0 6px; }
@@ -412,6 +415,34 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
 .sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
 .pboard .stats .stat { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
+
+/* v2: Senast spelat as extended scoreboard cards */
+#oversikt h2.h2 + ul.list:empty { display: none; }
+.sbx-list { display: grid; gap: 10px; }
+.sbx { background: var(--surface, #fff); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 6px; box-shadow: 0 2px 6px rgba(20,24,39,.08); overflow: hidden; }
+.sbx .sbmeta { margin: 0; padding: 7px 10px 5px; }
+.sbx .sbbar { border: 0; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; background: transparent; min-height: 50px; }
+.sbx .sbscore { margin: 0; }
+.sbfoot { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px 10px 9px; font-size: .82rem; color: var(--muted); }
+.sbfoot::before { content: ""; position: absolute; top: 0; left: 12.5%; right: 12.5%; height: 2px; background: var(--accent); border-radius: 1px; }
+.sbfoot .sbcomp { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+.sbfoot .pill { width: 26px; height: 26px; font-size: 1rem; }
+.sbfoot .sblinks { justify-content: flex-end; }
+.sbx.link { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: box-shadow .15s, transform .15s; }
+.sbx.link:hover { box-shadow: 0 4px 12px rgba(20,24,39,.16); }
+.sbx.link:active { transform: scale(.985); }
+.sbx.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.sbfoot .sblinks { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.sbfoot .arr { font-style: normal; }
+.sbfoot .sblinks .mplay { white-space: nowrap; padding: 2px 8px; font-size: .74rem; }
+.sbfoot .sblinks a { font-size: .78rem; }
+.sbfoot .sblinks a { color: var(--muted); font-size: .85rem; }
+.sbfoot .mplay { padding: 3px 10px; font-size: .78rem; }
+@media (max-width: 390px) { .sbfoot { padding-inline: 8px; gap: 6px; } .sbfoot .sblinks { gap: 7px; } .sbfoot .sblinks .mplay { padding: 2px 6px; } .sbfoot .sblinks a { font-size: .74rem; } }
+.board .btop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.board .btop .meta { min-width: 0; }
+.board .plink { flex: none; font-size: .8rem; font-weight: 700; color: var(--accent); background: #fff; border-radius: 999px; padding: 3px 10px; text-decoration: none; }
+.board .plink:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -549,10 +580,10 @@ const now = new Date(DATA.updated);
 const sortKey = x => x.date + (x.cup ? (x.overview ? "23:59" : "00:00") : x.time);
 const dayCell = m => `<div class="day"><span class="wd">${WD[m.d.getDay()]}</span><span class="d">${m.d.getDate()}</span><span class="m">${MON[m.d.getMonth()]}</span></div>`;
 const upRow = m => `<li class="row">${dayCell(m)}
-  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s"><span class="compt">${esc(compLabel(m))}</span> · ${esc(m.venue || "Plats meddelas")}</div></div>
+  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s">${compChip(m)} · ${esc(m.venue || "Plats meddelas")}</div></div>
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
 const resRow = (m, sb) => `<li class="row">${dayCell(m)}
-  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span><span class="compt">${esc(compLabel(m))}</span> · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
+  <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></span></div></div>
   ${sb ? `<div class="sbscore rowsb"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
@@ -594,7 +625,7 @@ function renderOverview() {
       <article class="lastmini">${hoop}
         <div class="lm-date"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
         <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
-          <div class="lm-meta"><span class="compt">${esc(compLabel(L))}</span> · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
+          <div class="lm-meta">${compChip(L)} · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
         <div class="lm-score ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div>
       </article>
     </div>` : ""}
@@ -628,9 +659,19 @@ function renderOverview() {
         </div>
       </div></div>` : ""}
     <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
-    <div><h2 class="h2">Senast spelat</h2><ul class="list">${played.slice(-5).reverse().map(m => resRow(m, true)).join("")}</ul></div>`;
+    <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>`;
 }
 
+const compChip = m => `<span class="compt c-${m.series || (m.comp ? "cup" : "serie")}">${esc(compLabel(m))}</span>`;
+const sbxRow = m => { const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; const has = m.id && PBP[m.id]; return `<article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+  <p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p>
+  <div class="sbbar">
+    <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
+    <div class="sbscore"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
+    <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div>
+  </div>
+  <div class="sbfoot"><span class="sbcomp">${compChip(m)} <span>${m.home ? "Hemma" : "Borta"}</span></span><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="sblinks">${has ? `<span class="mplay">Matchspel ▸</span>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div>
+</article>`; };
 const cupRow = c => `<li class="row cup">${dayCell(c)}
   <div class="mid"><div class="t"><a href="${c.url}" target="_blank" rel="noopener">${esc(c.name)} ↗</a></div><div class="s">${c.start === c.end ? "" : `${c.d.getDate()}${c.d.getMonth() !== c.e.getMonth() ? " " + MON[c.d.getMonth()] : ""}–${c.e.getDate()} ${MON[c.e.getMonth()]} · `}${esc(c.place)}</div>${c.detail ? `<div class="s cupd">${esc(c.detail)}</div>` : ""}</div>
   <div class="right"><span class="cupbadge">Cup</span></div></li>`;
@@ -808,7 +849,7 @@ function openMatch(id) {
   el.innerHTML = `
     <button class="back" type="button" id="backbtn">← Tillbaka</button>
     <div class="board">
-      <div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · ${(SERIES[m.series] || SERIES.serie).head}</div>
+      <div class="btop"><div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · ${(SERIES[m.series] || SERIES.serie).head}</div><a class="plink" href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></div>
       <div class="vsrow"><div class="tm us">${usName}</div><div class="big">${m.us}–${m.them}</div><div class="tm r">${esc(themName)}</div></div>
       <div class="qs"><span></span>${[1, 2, 3, 4].map(p => `<span class="hd">P${p}</span>`).join("")}
         <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
@@ -838,7 +879,7 @@ function closeMatch() {
   document.getElementById("match").hidden = true;
   show(lastTab);
 }
-document.addEventListener("click", e => { const b = e.target.closest("[data-match]"); if (b) openMatch(b.dataset.match); });
+document.addEventListener("click", e => { if (e.target.closest("a[href]")) return; const b = e.target.closest("[data-match]"); if (b) openMatch(b.dataset.match); });
 
 // Season player stats, built from the match logs (PBP) and the line-ups (who was on the score sheet).
 function buildStats() {
@@ -984,7 +1025,7 @@ function openPlayer(name, rerender) {
   el.hidden = false; window.scrollTo(0, 0);
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
-document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match]"); if (mm) openMatch(mm.dataset.match); } });
+document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match], .sbx[data-match]"); if (mm) openMatch(mm.dataset.match); } });
 document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
 
 
