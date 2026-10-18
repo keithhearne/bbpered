@@ -751,7 +751,7 @@ function renderOverview() {
           <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
           <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
         </div>
-        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = (SERIES[m.series] || SERIES.serie).team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+        <div class="sb3">${last3.slice().reverse().map(m => { const d = m.us - m.them; const ourName = (SERIES[m.series] || SERIES.serie).team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
           <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
           <div class="sbbar">
             <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
