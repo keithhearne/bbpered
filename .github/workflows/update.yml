@@ -1,6 +1,7 @@
 # Keeps data.json up to date from Profixio and Cup Manager.
 # Wakes every hour; scraper/scrape.py decides whether there is anything to do:
-#  - nightly full check at 03:00 (Swedish time) for new fixtures and changes
+#  - nightly full check at 03:00 (Swedish time) for new fixtures and changes, and for new
+#    competitions P11 Röd has been entered into on Profixio (e.g. a new USM round)
 #  - a light check at 09:00 and 14:00 on Fridays–Sundays
 #  - on game days: live updates every 10 minutes from tip-off for about 1.5 hours, then hourly catch-up
 # Free on a public repository. Run it by hand from the Actions tab ("Run workflow").
@@ -36,6 +37,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests==2.32.3
+      # A browser is only needed for the nightly check for new competitions (and manual runs).
+      - name: Install browser for the nightly competition check
+        if: ${{ github.event_name != 'schedule' || inputs.force }}
+        run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Install browser (nightly)
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          if [ "$(TZ=Europe/Stockholm date +%H)" = "03" ]; then pip install playwright==1.48.0 && python -m playwright install --with-deps chromium; fi
       - name: Fetch data
         env:
           FORCE: ${{ (github.event_name == 'push' || inputs.force) && '1' || '0' }}

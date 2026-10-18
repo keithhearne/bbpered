@@ -29,6 +29,13 @@ SERIES = {
     "usm": {"url": "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504", "teamWebId": 1625380},
 }
 OUR = "KFUM Blackebergs IK Röd"
+# The club's list of teams in every competition this season. Checked nightly for new competitions
+# (e.g. a new Ungdoms-SM round or a play-off series) that P11 Röd has been entered into.
+REG_URL = "https://www.profixio.com/app/league/registrations/25232?sn=776"
+
+
+def addq(url, param):
+    return url + ("&" if "?" in url else "?") + param
 # Cups on Cup Manager (add new cups here when they are announced).
 CUPS = [
     {"name": "Södertälje Open", "host": "https://sodertaljeopen.cupmanager.net", "edition": "2026,sv",
@@ -201,7 +208,7 @@ def parse_match_log(page, team_web_id):
 def scrape_profixio(prev, live_only=False):
     out = {"series": {}, "pbp": {}, "lineups": {}, "logos": {}, "live": {}}
     prev_series = prev.get("series", {})
-    for key, cfg in SERIES.items():
+    for key, cfg in all_series(prev).items():
         log("Profixio", key)
         try:
             page = get(cfg["url"])
@@ -217,7 +224,7 @@ def scrape_profixio(prev, live_only=False):
         table = prev_series.get(key, {}).get("table", [])
         if not live_only:
             try:
-                table, logos = parse_table(get(cfg["url"] + "&tab=table"))
+                table, logos = parse_table(get(addq(cfg["url"], "tab=table")))
                 out["logos"].update(logos)
             except Exception as e:  # noqa: BLE001
                 log("  table failed:", e)
@@ -243,7 +250,7 @@ def scrape_profixio(prev, live_only=False):
             if want:
                 try:
                     log("  match log", m["id"])
-                    pbp, lu = parse_match_log(get(cfg["url"] + "&expandmatch=" + m["id"]), cfg["teamWebId"])
+                    pbp, lu = parse_match_log(get(addq(cfg["url"], "expandmatch=" + m["id"])), cfg["teamWebId"])
                     if pbp and pbp["ev"]:
                         out["pbp"][m["id"]] = pbp
                     if lu:
@@ -251,7 +258,64 @@ def scrape_profixio(prev, live_only=False):
                 except Exception as e:  # noqa: BLE001
                     log("  match log failed:", e)
         out["series"][key] = {"matches": rows, "table": table}
+        if key in prev.get("comps", {}):
+            out["series"][key].update({k: v for k, v in prev["comps"][key].items() if k in ("short", "head", "name", "team", "url")})
     return out
+
+
+def all_series(prev):
+    out = dict(SERIES)
+    for k, c in (prev.get("comps") or {}).items():
+        if k not in out:
+            out[k] = {"url": c["url"], "teamWebId": c["teamWebId"]}
+    return out
+
+
+def discover(prev):
+    """Look through the club's registrations for competitions P11 Röd has been entered into that we don't follow yet."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        log("discovery skipped (no browser installed)")
+        return prev.get("comps", {})
+    comps = dict(prev.get("comps", {}))
+    known = {c["teamWebId"] for c in SERIES.values()} | {c["teamWebId"] for c in comps.values()}
+    seen = {}
+    try:
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            pg = b.new_page(locale="sv-SE", user_agent=UA)
+            for n in range(1, 20):
+                pg.goto(f"{REG_URL}&page={n}", wait_until="networkidle", timeout=90000)
+                pg.wait_for_timeout(1500)
+                items = pg.eval_on_selector_all('a[href*="/teams/"]', "els => els.map(a => [a.href, a.innerText])")
+                fresh = [i for i in items if i[0] not in seen]
+                if not fresh:
+                    break
+                seen.update(dict(fresh))
+                time.sleep(1.5)
+            b.close()
+    except Exception as e:  # noqa: BLE001
+        log("discovery failed:", e)
+        return comps
+    log(f"discovery: {len(seen)} club teams listed")
+    for href, text in seen.items():
+        lines = [x.strip() for x in text.split("\n") if x.strip()]
+        if not lines:
+            continue
+        name, meta = lines[0], " | ".join(lines[1:])
+        ours = "Pojkar U16" in meta and (name == OUR or (name == "KFUM Blackebergs IK" and ("Ungdoms-SM" in meta or "Riksmästerskap" in meta)))
+        m = re.search(r"/app/(leagueid\d+)/teams/(\d+)", href)
+        if not ours or not m or int(m.group(2)) in known:
+            continue
+        key = "l" + m.group(2)
+        last = lines[-1].split(" - ")[-1]
+        short = "USM" if "Ungdoms-SM" in meta else "RM" if "Riksmästerskap" in meta else "Serie"
+        comps[key] = {"url": f"https://www.profixio.com/app/{m.group(1)}/teams/{m.group(2)}", "teamWebId": int(m.group(2)),
+                      "team": name, "short": short, "head": last, "name": meta.split(" | ")[-2] if " | " in meta else meta,
+                      "found": now().strftime("%Y-%m-%d")}
+        log("  new competition:", short, last, href)
+    return comps
 
 
 # ---------- Cup Manager ----------
@@ -330,7 +394,9 @@ def decide(prev, t):
     return "skip", "nothing scheduled"
 
 
-def build(prev, live_only=False):
+def build(prev, live_only=False, discover_new=False):
+    if discover_new:
+        prev = dict(prev, comps=discover(prev))
     p = scrape_profixio(prev, live_only)
     cups, cup_live = scrape_cups(prev)
     data = {
@@ -341,6 +407,7 @@ def build(prev, live_only=False):
         "lineups": {**prev.get("lineups", {}), **p["lineups"]},
         "logos": {**prev.get("logos", {}), **p["logos"]},
         "live": {**p["live"], **cup_live},
+        "comps": prev.get("comps", {}),
     }
     data["final"] = sorted({r[7] for s in data["series"].values() for r in s.get("matches", []) if len(r) > 7 and r[5] is not None and r[7]})
     return data
@@ -374,7 +441,7 @@ def main():
     if mode == "skip":
         return
     if mode == "full":
-        save(build(prev))
+        save(build(prev, discover_new=force or info == "nightly check" or "comps" not in prev))
         commit("Update data")
         return
     # Live mode: wait for tip-off, then update every 10 minutes until the game window closes.
