@@ -399,7 +399,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore > span { display: grid; place-content: center; justify-items: center; gap: 2px; padding-block: 5px; padding: 0 12px; background: var(--accent); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); color: #fff; font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sbscore small { font-family: var(--body); font-size: .6rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; line-height: 1; }
 .sbscore small.w { color: var(--win); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
-.sbscore.rowsb { align-self: stretch; margin: -14px -12px -14px 0; gap: 3px; }
+.sbscore.rowsb { align-self: stretch; margin: -14px -12px -14px 0; gap: 3px; } .sbscore.rowsb.x {}
 #oversikt .sbscore.rowsb { margin: -9px -12px -9px 0; }
 .stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sbscore.rowsb .chev { width: 10px; }
@@ -673,7 +673,7 @@ function renderResults() {
       <div class="stat"><div class="k">Snitt</div><div class="v">${gp ? (pf / gp).toFixed(1) : "–"}</div></div>
     </div>
     <div><p class="eyebrow" style="margin-bottom:8px">Form</p><div class="form">${list.map(m => `<span class="pill ${m.win ? "w" : "l"}" title="${esc(m.opp)} ${m.us}–${m.them}">${m.win ? "V" : "F"}</span>`).join("")}</div></div>
-    <div><h2 class="h2">Alla matcher</h2><ul class="list">${list.slice().reverse().map(resRow).join("")}</ul></div>`;
+    <div><h2 class="h2">Alla matcher</h2><ul class="list">${list.slice().reverse().map(m => resRow(m, true)).join("")}</ul></div>`;
   document.querySelectorAll("#resseg button").forEach(b => b.addEventListener("click", () => { resFilter = b.dataset.f; renderResults(); }));
 }
 
