@@ -457,6 +457,25 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .pill.mini { width: 18px; height: 18px; font-size: .75rem; vertical-align: -3px; }
 #kalender .list .row, #resultat .list .row { padding-top: 10px; padding-bottom: 10px; gap: 10px; grid-template-columns: 42px minmax(0, 1fr) auto; }
 #kalender .sbscore.rowsb, #resultat .sbscore.rowsb { margin: -10px -12px -10px 0; }
+
+/* competitions overview */
+.cmp-list { display: grid; gap: 8px; }
+.cmp { display: grid; gap: 8px; padding: 11px 12px 10px; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 4px rgba(20,24,39,.06); color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: box-shadow .15s, transform .15s; }
+.cmp:hover { box-shadow: 0 4px 12px rgba(20,24,39,.14); }
+.cmp:active { transform: scale(.985); }
+.cmp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cmp-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.cmp-name { font-weight: 700; font-size: .9rem; line-height: 1.2; min-width: 0; }
+.cmp-pos { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.cmp-pos b { font-family: var(--display); font-weight: 800; font-size: 2rem; line-height: .9; color: var(--accent); }
+.cmp-pos b.soon { font-size: 1.5rem; color: #4f3280; }
+.cmp-pos small { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.cmp-track { display: flex; gap: 2px; height: 10px; align-items: center; }
+.cmp-track i { flex: 1; height: 6px; border-radius: 2px; background: var(--row-grey); }
+.cmp-track i.me { height: 10px; background: var(--accent); border-radius: 3px; }
+.cmp-foot { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; color: var(--muted); }
+.cmp-foot b.v { color: var(--win); } .cmp-foot b.f { color: var(--loss); }
+.cmp.cup { border-style: dashed; }
 </style>
 </head>
 <body>
@@ -624,6 +643,20 @@ function tableTile(m) {
   return `<div><div class="k">Tabell</div><div class="v">${me ? me[0] + "/" + S.table.length : "–"}</div></div>`;
 }
 const samling = hm => { const [h, m] = hm.split(":").map(Number); const x = h * 60 + m - 45; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
+const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n % 100 !== 12 ? ":a" : ":e");
+function compsCard() {
+  const rows = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return ""; const n = S.table.length, pos = +me[0];
+    return `<div class="cmp" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${pos} av ${n}">
+      <div class="cmp-top"><span class="compt c-${k}">${S.short}</span><span class="cmp-name">${esc(S.head)}</span><span class="cmp-pos"><b>${ORD(pos)}</b><small>av ${n}</small></span></div>
+      <div class="cmp-track" aria-hidden="true">${S.table.map(r => `<i class="${+r[0] === pos ? "me" : ""}"></i>`).join("")}</div>
+      <div class="cmp-foot"><span>${me[2]} matcher · <b class="v">${me[3]} V</b> · <b class="f">${me[4]} F</b></span><span>${me[7] > 0 ? "+" : ""}${me[7]}</span></div>
+    </div>`; });
+  const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cmp cup" href="${c.url}" target="_blank" rel="noopener">
+      <div class="cmp-top"><span class="compt c-cup">Cup</span><span class="cmp-name">${esc(c.name)}</span><span class="cmp-pos"><b class="soon">${daysUntil(c.d)}</b><small>dagar kvar</small></span></div>
+      <div class="cmp-foot"><span>${c.d.getDate()} ${MON[c.d.getMonth()]}–${c.e.getDate()} ${MON[c.e.getMonth()]} · ${esc(c.place.replace("Boys U16 Competition · ", ""))}</span><span>Cup Manager ↗</span></div>
+    </a>`);
+  return `<section class="cmps" aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="cmp-list">${rows.join("")}${cup.join("")}</div></section>`;
+}
 function renderOverview() {
   const n = upcoming[0];
   const days = daysUntil(n.d);
@@ -634,6 +667,7 @@ function renderOverview() {
   const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
     <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
+    ${compsCard()}
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
       <article class="lastmini">${hoop}
