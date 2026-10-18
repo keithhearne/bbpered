@@ -443,6 +443,10 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .board .btop .meta { min-width: 0; }
 .board .plink { flex: none; font-size: .8rem; font-weight: 700; color: var(--accent); background: #fff; border-radius: 999px; padding: 3px 10px; text-decoration: none; }
 .board .plink:hover { text-decoration: underline; }
+.compt.tlink { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.compt.tlink:hover, .compt.tlink:focus-visible { text-decoration: underline; outline: none; }
+.compt.tlink:active { transform: scale(.95); }
+.tblsec { scroll-margin-top: 130px; }
 </style>
 </head>
 <body>
@@ -662,7 +666,8 @@ function renderOverview() {
     <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>`;
 }
 
-const compChip = m => `<span class="compt c-${m.series || (m.comp ? "cup" : "serie")}">${esc(compLabel(m))}</span>`;
+const compChip = m => { const k = m.series || (m.comp ? "cup" : "serie"); const t = SERIES[k] ? ` data-table="${k}" role="link" tabindex="0" title="Visa tabellen"` : ""; return `<span class="compt c-${k}${t ? " tlink" : ""}"${t}>${esc(compLabel(m))}</span>`; };
+function goTable(k) { backToStats = false; document.getElementById("match").hidden = true; show("tabeller"); const el = document.getElementById("tbl-" + k); if (el) el.scrollIntoView({ block: "start" }); }
 const sbxRow = m => { const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; const has = m.id && PBP[m.id]; return `<article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
   <p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p>
   <div class="sbbar">
@@ -687,7 +692,7 @@ function renderCalendar() {
 function renderTable() {
   const el = document.getElementById("tabeller");
   el.innerHTML = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); return `
-    <div>
+    <div id="tbl-${k}" class="tblsec">
       <div class="tbl-head"><h2 class="h2">${S.head}</h2><span class="place">${me ? me[0] + ":e av " + S.table.length : ""}</span></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th class="l">#</th><th class="l">Lag</th><th>M</th><th>V</th><th>F</th><th class="extra">Gjorda</th><th class="extra">Insläppta</th><th>+/-</th></tr></thead>
@@ -879,7 +884,7 @@ function closeMatch() {
   document.getElementById("match").hidden = true;
   show(lastTab);
 }
-document.addEventListener("click", e => { if (e.target.closest("a[href]")) return; const b = e.target.closest("[data-match]"); if (b) openMatch(b.dataset.match); });
+document.addEventListener("click", e => { if (e.target.closest("a[href]")) return; const tl = e.target.closest("[data-table]"); if (tl) { e.stopPropagation(); goTable(tl.dataset.table); return; } const b = e.target.closest("[data-match]"); if (b) openMatch(b.dataset.match); });
 
 // Season player stats, built from the match logs (PBP) and the line-ups (who was on the score sheet).
 function buildStats() {
@@ -1025,7 +1030,7 @@ function openPlayer(name, rerender) {
   el.hidden = false; window.scrollTo(0, 0);
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
-document.addEventListener("keydown", e => { if (e.key === "Enter") { const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match], .sbx[data-match]"); if (mm) openMatch(mm.dataset.match); } });
+document.addEventListener("keydown", e => { if (e.key === "Enter") { const tl = e.target.closest && e.target.closest("[data-table]"); if (tl) { goTable(tl.dataset.table); return; } const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match], .sbx[data-match]"); if (mm) openMatch(mm.dataset.match); } });
 document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
 
 
