@@ -365,7 +365,7 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
-.lastmini svg.hoop { position: absolute; right: 22%; top: -14px; width: 170px; height: 170px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(10deg); }
+.lastmini svg.hoop { position: absolute; right: -28px; top: -22px; width: 170px; height: 170px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(10deg); }
 .lastmini > :not(svg) { position: relative; }
 .lastmini { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 16px; padding: 16px 16px; }
 .lm-date { text-align: center; line-height: 1; background: var(--accent); color: #fff; border-radius: 4px 4px 18px 4px; width: 62px; padding: 7px 0 6px; }
@@ -476,6 +476,17 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .cmp-foot { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; color: var(--muted); }
 .cmp-foot b.v { color: var(--win); } .cmp-foot b.f { color: var(--loss); }
 .cmp.cup { border-style: dashed; }
+
+/* condensed competitions card (v2 test) */
+.ccard { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 4px rgba(20,24,39,.06); overflow: hidden; }
+.cc { display: grid; justify-items: center; align-content: start; gap: 3px; padding: 12px 6px 11px; text-align: center; color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; }
+.cc + .cc::before { content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 1px; background: var(--line); }
+.cc:active { background: var(--row-grey); }
+.cc:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cc b { font-family: var(--display); font-weight: 800; font-size: 2.3rem; line-height: .95; color: var(--accent); margin-top: 4px; }
+.cc b.soon { font-size: 1.55rem; line-height: 1.2; color: #4f3280; }
+.cc small { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.cc-name { font-size: .74rem; font-weight: 600; line-height: 1.2; color: var(--ink); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -645,17 +656,10 @@ function tableTile(m) {
 const samling = hm => { const [h, m] = hm.split(":").map(Number); const x = h * 60 + m - 45; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
 const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n % 100 !== 12 ? ":a" : ":e");
 function compsCard() {
-  const rows = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return ""; const n = S.table.length, pos = +me[0];
-    return `<div class="cmp" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${pos} av ${n}">
-      <div class="cmp-top"><span class="compt c-${k}">${S.short}</span><span class="cmp-name">${esc(S.head)}</span><span class="cmp-pos"><b>${ORD(pos)}</b><small>av ${n}</small></span></div>
-      <div class="cmp-track" aria-hidden="true">${S.table.map(r => `<i class="${+r[0] === pos ? "me" : ""}"></i>`).join("")}</div>
-      <div class="cmp-foot"><span>${me[2]} matcher · <b class="v">${me[3]} V</b> · <b class="f">${me[4]} F</b></span><span>${me[7] > 0 ? "+" : ""}${me[7]}</span></div>
-    </div>`; });
-  const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cmp cup" href="${c.url}" target="_blank" rel="noopener">
-      <div class="cmp-top"><span class="compt c-cup">Cup</span><span class="cmp-name">${esc(c.name)}</span><span class="cmp-pos"><b class="soon">${daysUntil(c.d)}</b><small>dagar kvar</small></span></div>
-      <div class="cmp-foot"><span>${c.d.getDate()} ${MON[c.d.getMonth()]}–${c.e.getDate()} ${MON[c.e.getMonth()]} · ${esc(c.place.replace("Boys U16 Competition · ", ""))}</span><span>Cup Manager ↗</span></div>
-    </a>`);
-  return `<section class="cmps" aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="cmp-list">${rows.join("")}${cup.join("")}</div></section>`;
+  const cols = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
+    return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${k}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
+  const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()} ${MON[c.d.getMonth()]}</b><small>startar</small><span class="cc-name">${esc(c.name)}</span></a>`);
+  return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
 function renderOverview() {
   const n = upcoming[0];
