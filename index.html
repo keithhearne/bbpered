@@ -411,6 +411,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore.rowsb > span { min-width: 104px; font-size: 1.45rem; padding: 0 12px 0 20px; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .sbres { margin: 5px 0 0; text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); }
 .sbres b { font-weight: 800; } .sbres b.w { color: var(--win); } .sbres b.l { color: var(--loss); }
+.pboard .stats .stat { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; }
 </style>
 </head>
 <body>
@@ -962,7 +963,7 @@ function openPlayer(name, rerender) {
         <div class="stat"><div class="k">Poäng</div><div class="v">${p.pts}</div></div>
         <div class="stat"><div class="k">Per match</div><div class="v">${p.ppg.toFixed(1)}</div></div>
         <div class="stat"><div class="k">Bästa</div><div class="v">${p.high}</div></div>
-        <div class="stat"><div class="k">Fouls</div><div class="v">${p.pf}</div></div>
+        <div class="stat"><div class="k">Fouls per match</div><div class="v">${p.gp ? (p.pf / p.gp).toFixed(1) : "–"}</div></div>
       </div>
     </div>
     ${p.gp ? `
