@@ -36,7 +36,7 @@ Most hours it stops after a few seconds, which keeps the load on Profixio light.
 
 | When | What happens |
 |---|---|
-| **Every night at 03:00** (Swedish time) | Full check: new or changed fixtures, results, tables. |
+| **Every night at 03:00** (Swedish time) | Full check: new or changed fixtures, results, tables — and a check of the club's team list on Profixio for **new competitions** P11 Röd has been entered into (see below). |
 | **Fridays–Sundays at 09:00 and 14:00** | Extra check for late changes before a game weekend. |
 | **Game day: ~1 hour before tip-off** | The job starts and waits for the game. |
 | **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** score and Matchspel are updated **every 10 minutes**. |
@@ -69,6 +69,23 @@ You can also open `data.json` and look at `"updated"` near the top.
 
 ### If the hourly schedule ever stops
 GitHub pauses scheduled jobs in a public repository after **60 days without any activity**. The nightly data commits should count as activity, so this shouldn't happen. If it ever does, GitHub shows a banner on the **Actions** tab, with a button to turn the workflow back on.
+
+### New competitions are picked up automatically
+Every night the job looks through Blackeberg's list of teams on Profixio (the club's "registrations" page), going through all of its pages.
+It looks for Pojkar U16 entries that belong to P11 Röd: **"KFUM Blackebergs IK Röd"** in a Stockholm series, or **"KFUM Blackebergs IK"** in Ungdoms-SM or Riksmästerskap.
+
+When it finds one that isn't followed yet, it starts following it straight away. A new USM round, for example, then shows up in the app the next morning:
+- its games appear in **Kalender**, **Översikt** and **Resultat**
+- its table appears in **Tabeller** and **Våra turneringar**
+- its label is in teal (for example "USM 2"), and it gets its own filter button
+
+New games, times and results *inside* competitions we already follow (league, USM, and the cup's knock-out games on Cup Manager) were already picked up every night.
+
+You can see when the check last ran, and how many club teams it looked through, under `"discovery"` in `data.json`.
+
+Two limits:
+- **New season:** the club list is per season. When the 27/28 season starts, the address in `REG_URL` (in `scraper/scrape.py`) needs updating once.
+- **Cup Manager cups:** cups run on Cup Manager are not listed on Profixio, so each new one is still added by hand (below). Their knock-out games do appear automatically once the groups are finished.
 
 ### Add a new cup
 Cups are not on Profixio, so each new cup is added by hand in `scraper/scrape.py` under `CUPS`. That needs the cup's Cup Manager address, plus its `tournamentId` and `categoryId`. The easiest way is to ask Claude to add it, giving the cup's link.

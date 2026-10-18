@@ -302,6 +302,7 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .compt.c-serie { color: #1a447d; background: #dde8f7; border-color: #1a447d; }
 .compt.c-usm { color: #7a4900; background: #fbe8c8; border-color: #9a5d00; }
 .compt.c-cup { color: #4f3280; background: #e9e0f8; border-color: #4f3280; }
+.compt.c-x { color: #0d5c63; background: #d8f0f1; border-color: #0d5c63; }
 .ha.cupha { color: var(--accent); }
 .mid .s.cupd { white-space: normal; font-size: .82rem; margin-top: 2px; }
 
@@ -634,10 +635,18 @@ const SERIES = {
   serie: { short: "Serie", name: "Stockholms BDF · Pojkar U16 Nivå 1", head: "Stockholm Serie U16 Nivå 1", team: "KFUM Blackebergs IK Röd", table: DATA.table, teamUrl: DATA.teamUrl, tableUrl: DATA.tableUrl },
   usm: { short: "USM", name: "Ungdoms-SM · Pojkar U16, omgång 1 grupp 2", head: "USM U16 · Grupp 2", team: "KFUM Blackebergs IK", table: USM.table, teamUrl: "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504", tableUrl: "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504&tab=table" }
 };
-const OUR_NAMES = [SERIES.serie.team, SERIES.usm.team];
+/* Competitions found later by the nightly check (e.g. a new USM round) arrive in data.json with their own details. */
+if (FRESH) for (const [k, x] of Object.entries(FRESH.series || {})) {
+  if (SERIES[k] || !x.team || !x.url || !x.matches) continue;
+  let short = x.short || "Serie"; const same = Object.values(SERIES).filter(v => v.short === short || v.short.startsWith(short + " ")).length; if (same) short += " " + (same + 1);
+  SERIES[k] = { short, name: x.name || x.head || "", head: x.head || x.short || k, team: x.team, table: x.table || [], teamUrl: x.url, tableUrl: x.url + (x.url.includes("?") ? "&" : "?") + "tab=table", extra: x.matches };
+}
+const COMP_KEYS = Object.keys(SERIES);
+const chipKey = k => ["serie", "usm", "cup"].includes(k) ? k : "x";
+const OUR_NAMES = [...new Set(COMP_KEYS.map(k => SERIES[k].team))];
 const compLabel = m => m.comp || (SERIES[m.series] || SERIES.serie).short;
-const matchUrl = m => m.url || (SERIES[m.series] || SERIES.serie).teamUrl + (m.id ? "&expandmatch=" + m.id : "");
-const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url,comp,hs,as,id]) => ({date,time,home,away,venue,url,comp:comp || "Södertälje Open",hs,as,id,series:"cup"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
+const matchUrl = m => { if (m.url) return m.url; const u = (SERIES[m.series] || SERIES.serie).teamUrl; return m.id ? u + (u.includes("?") ? "&" : "?") + "expandmatch=" + m.id : u; };
+const matches = DATA.matches.map(m => ({ ...m, series: "serie" })).concat(USM.matches.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:"usm"}))).concat(COMP_KEYS.filter(k => SERIES[k].extra).flatMap(k => SERIES[k].extra.map(([date,time,home,away,venue,hs,as,id]) => ({date,time,home,away,venue,hs,as,id,series:k})))).concat((DATA.cupGames || []).map(([date,time,home,away,venue,url,comp,hs,as,id]) => ({date,time,home,away,venue,url,comp:comp || "Södertälje Open",hs,as,id,series:"cup"}))).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(m => {
   const home = OUR_NAMES.includes(m.home);
   const opp = home ? m.away : m.home;
   const played = typeof m.hs === "number";
@@ -690,15 +699,15 @@ const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n 
 function liveCard() {
   const lv = matches.filter(m => m.live);
   if (!lv.length) return "";
-  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu</p><div class="sb3">${lv.map(m => { const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; const has = m.id && PBP[m.id]; return `<div class="sbg${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu</p><div class="sb3">${lv.map(m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; return `<div class="sbg${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
     <p class="sbmeta">${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
     <div class="sbbar"><div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
       <div class="sbscore live"><i class="chev l"></i><span>${m.liveUs} – ${m.liveThem}<small class="lv">Live</small></span><i class="chev r"></i></div>
       <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div></div></div>`; }).join("")}</div></div>`;
 }
 function compsCard() {
-  const cols = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
-    return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${k}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
+  const cols = COMP_KEYS.filter(k => SERIES[k].table && SERIES[k].table.length).map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
+    return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${chipKey(k)}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
   const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()} ${MON[c.d.getMonth()]}</b><small>startar</small><span class="cc-name">${esc(c.name)}</span></a>`);
   return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
@@ -742,7 +751,7 @@ function renderOverview() {
           <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
           <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
         </div>
-        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+        <div class="sb3">${last3.map(m => { const d = m.us - m.them; const ourName = (SERIES[m.series] || SERIES.serie).team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
           <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
           <div class="sbbar">
             <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
@@ -756,9 +765,9 @@ function renderOverview() {
     <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>`;
 }
 
-const compChip = m => { const k = m.series || (m.comp ? "cup" : "serie"); const t = SERIES[k] ? ` data-table="${k}" role="link" tabindex="0" title="Visa tabellen"` : ""; return `<span class="compt c-${k}${t ? " tlink" : ""}"${t}>${esc(compLabel(m))}</span>`; };
+const compChip = m => { const k = m.series || (m.comp ? "cup" : "serie"); const t = SERIES[k] ? ` data-table="${k}" role="link" tabindex="0" title="Visa tabellen"` : ""; return `<span class="compt c-${chipKey(k)}${t ? " tlink" : ""}"${t}>${esc(compLabel(m))}</span>`; };
 function goTable(k) { backToStats = false; document.getElementById("match").hidden = true; show("tabeller"); const el = document.getElementById("tbl-" + k); if (el) el.scrollIntoView({ block: "start" }); }
-const sbxRow = m => { const ourName = m.series === "usm" ? SERIES.usm.team : SERIES.serie.team; const has = m.id && PBP[m.id]; return `<article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
+const sbxRow = m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; return `<article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
   <p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p>
   <div class="sbbar">
     <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
@@ -781,7 +790,7 @@ function renderCalendar() {
 
 function renderTable() {
   const el = document.getElementById("tabeller");
-  el.innerHTML = ["serie", "usm"].map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); return `
+  el.innerHTML = COMP_KEYS.filter(k => SERIES[k].table && SERIES[k].table.length).map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); return `
     <div id="tbl-${k}" class="tblsec">
       <div class="tbl-head"><h2 class="h2">${S.head}</h2><span class="place">${me ? me[0] + ":e av " + S.table.length : ""}</span></div>
       <div class="tbl-wrap"><table>
@@ -801,8 +810,8 @@ function renderTable() {
 
 let resFilter = "alla";
 const seriesFilter = (list, f) => f === "alla" ? list : list.filter(m => m.series === f);
-const FILTER_LABELS = { serie: "Serie", usm: "USM", cup: "Cup" };
-const filterSeg = (id, cur) => { const keys = ["serie", "usm", "cup"].filter(k => played.some(m => m.series === k)); return `<div class="seg" role="group" id="${id}">${[["alla", "Alla"]].concat(keys.map(k => [k, FILTER_LABELS[k]])).map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === cur}">${l}</button>`).join("")}</div>`; };
+const FILTER_LABELS = Object.assign(Object.fromEntries(COMP_KEYS.map(k => [k, SERIES[k].short])), { cup: "Cup" });
+const filterSeg = (id, cur) => { const keys = COMP_KEYS.concat("cup").filter(k => played.some(m => m.series === k)); return `<div class="seg" role="group" id="${id}">${[["alla", "Alla"]].concat(keys.map(k => [k, FILTER_LABELS[k]])).map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === cur}">${l}</button>`).join("")}</div>`; };
 function renderResults() {
   const list = seriesFilter(played, resFilter);
   const gp = list.length, w = list.filter(m => m.win).length;
