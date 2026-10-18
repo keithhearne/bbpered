@@ -189,11 +189,11 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .datetile b { display: block; font-family: var(--display); font-weight: 400; font-size: 2.9rem; margin: 2px 0; }
 .ticket .vs { margin: 0; font-size: .8rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .ticket h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9.5vw, 3rem); line-height: .95; color: var(--accent); text-wrap: balance; }
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .tiles div { background: var(--surface); border-radius: 10px; padding: 10px 12px; min-width: 0; box-shadow: 0 1px 0 var(--line); }
 .tiles .k { font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .tiles .v { font-family: var(--display); font-size: 1.9rem; line-height: 1; color: var(--ink); }
-.tiles .v.sm { font-family: var(--body); font-size: .92rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: anywhere; }
+.tiles .v.sm { font-family: var(--body); font-size: .92rem; font-weight: 700; line-height: 1.25; padding-top: 4px; overflow-wrap: break-word; }
 .ticket .foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .88rem; color: var(--muted); }
 .ticket .foot a { color: var(--accent); font-weight: 700; }
 
@@ -346,6 +346,18 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
+.lastmini { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--row-grey); border: 3px solid var(--accent); border-radius: 14px; padding: 8px 12px; }
+.lm-date { text-align: center; line-height: 1; }
+.lm-date b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--accent); }
+.lm-date span { font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lm-mid { min-width: 0; }
+.lm-opp { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lm-meta { font-size: .82rem; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.lm-meta .mplay { padding: 2px 9px; font-size: .78rem; }
+.lm-score { display: flex; align-items: center; gap: 6px; }
+.lm-score .pill { width: 24px; height: 24px; font-size: 1rem; }
+.lm-score .n { font-family: var(--display); font-size: 1.8rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lm-score.w .n { color: var(--win); } .lm-score.l .n { color: var(--loss); }
 </style>
 </head>
 <body>
@@ -499,6 +511,7 @@ function tableTile(m) {
   const S = SERIES[m.series] || SERIES.serie; const me = S.table.find(r => r[1] === S.team);
   return `<div><div class="k">Tabell</div><div class="v">${me ? me[0] + "/" + S.table.length : "–"}</div></div>`;
 }
+const samling = hm => { const [h, m] = hm.split(":").map(Number); const x = h * 60 + m - 45; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
 function renderOverview() {
   const n = upcoming[0];
   const days = daysUntil(n.d);
@@ -510,13 +523,12 @@ function renderOverview() {
   document.getElementById("oversikt").innerHTML = `
     <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
     ${L ? `<div>
-      <p class="eyebrow" style="margin-bottom:10px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
-      <article class="ticket last">
-        <span class="tag">${esc(compLabel(L))} · ${L.home ? "Hemma" : "Borta"}</span>
-        <div class="head3"><div class="datetile"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
-          <div class="min0"><p class="vs">${L.win ? "Vinst mot" : "Förlust mot"}</p><h2>${esc(L.opp)}</h2></div>
-          <div class="bigscore ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div></div>
-        <div class="foot"><span>${esc(L.venue || "")}</span><span class="mlinks">${L.id && PBP[L.id] ? `<button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}<a href="${matchUrl(L)}" target="_blank" rel="noopener">Profixio ↗</a></span></div>
+      <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
+      <article class="lastmini">
+        <div class="lm-date"><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
+        <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
+          <div class="lm-meta"><span class="compt">${esc(compLabel(L))}</span> · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
+        <div class="lm-score ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div>
       </article>
     </div>` : ""}
     <div>
@@ -525,10 +537,11 @@ function renderOverview() {
         <span class="tag">${n.comp ? "Cup · " + esc(n.comp) : esc(compLabel(n)) + " · " + (n.home ? "Hemma" : "Borta")}</span>
         <div class="head"><div class="datetile"><span>${WD[n.d.getDay()]}</span><b>${n.d.getDate()}</b><span>${MON[n.d.getMonth()]}</span></div>
           <div><p class="vs">Blackeberg Röd ${n.home ? "tar emot" : "möter"}</p><h2>${esc(n.opp)}</h2></div></div>
-        <div class="tiles"><div><div class="k">Start</div><div class="v">${n.time}</div></div>
+        <div class="tiles"><div><div class="k">Samling</div><div class="v">${samling(n.time)}</div></div>
+          <div><div class="k">Start</div><div class="v">${n.time}</div></div>
           <div><div class="k">Hall</div><div class="v sm">${esc(n.venue)}</div></div>
           ${tableTile(n)}</div>
-        <div class="foot"><span>Samling meddelas av tränaren</span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
+        <div class="foot"><span>Samling 45 min före start</span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
     </div>
     ${last3.length ? `<div><h2 class="h2">Senaste ${last3.length} matcherna</h2>
