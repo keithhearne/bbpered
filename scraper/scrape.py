@@ -271,6 +271,9 @@ def all_series(prev):
     return out
 
 
+LAST_DISCOVERY = {}
+
+
 def discover(prev):
     """Look through the club's registrations for competitions P11 Röd has been entered into that we don't follow yet."""
     try:
@@ -299,6 +302,7 @@ def discover(prev):
         log("discovery failed:", e)
         return comps
     log(f"discovery: {len(seen)} club teams listed")
+    LAST_DISCOVERY.update({"at": now().strftime("%Y-%m-%dT%H:%M"), "teamsListed": len(seen)})
     for href, text in seen.items():
         lines = [x.strip() for x in text.split("\n") if x.strip()]
         if not lines:
@@ -408,6 +412,7 @@ def build(prev, live_only=False, discover_new=False):
         "logos": {**prev.get("logos", {}), **p["logos"]},
         "live": {**p["live"], **cup_live},
         "comps": prev.get("comps", {}),
+        "discovery": LAST_DISCOVERY or prev.get("discovery", {}),
     }
     data["final"] = sorted({r[7] for s in data["series"].values() for r in s.get("matches", []) if len(r) > 7 and r[5] is not None and r[7]})
     return data
