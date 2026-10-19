@@ -362,7 +362,8 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .avatar.big { width: 72px; height: 72px; }
 .avatar.big b { min-width: 28px; height: 28px; line-height: 28px; border-radius: 14px; font-size: 1.2rem; }
 .roster .player { cursor: pointer; }
-.roster .player:hover, .roster .player:focus-visible { background: var(--hi); }
+.roster .player.static { cursor: default; }
+.roster .player:not(.static):hover, .roster .player:not(.static):focus-visible { background: var(--hi); }
 .pboard { border: 3px solid var(--accent); position: relative; overflow: hidden; }
 .pboard > *:not(svg) { position: relative; }
 .pboard svg.ball { position: absolute; right: -70px; top: -50px; width: 290px; height: 290px; color: var(--court); opacity: .13; pointer-events: none; transform: rotate(-18deg); }
@@ -840,7 +841,9 @@ const LINEUPS = {"32726246":[["2","Vidar Sjösvärd",0,3,20],["7","Axel Jürss",
 Object.assign(LINEUPS, {"32787402":[["2","Vidar Sjösvärd",1,2,20],["7","Axel Jürss",0,1,1],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,1,3],["13","Neo Negret",0,4,14],["20","Simon Carlén",0,3,10],["24","Tyler Iguchi",0,0,3],["29","Zaccarias Roman",0,2,3],["49","Max Palmkvist",0,2,2],["91","Hugo Lundberg",0,1,12]],"32787404":[["2","Vidar Sjösvärd",1,2,26],["7","Axel Jürss",0,0,0],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,2,2],["13","Neo Negret",0,4,22],["20","Simon Carlén",0,5,10],["23","Albert Solman",0,1,1],["24","Tyler Iguchi",0,0,13],["29","Zaccarias Roman",0,1,2],["49","Max Palmkvist",0,1,2],["91","Hugo Lundberg",0,2,8]],"32787407":[["2","Vidar Sjösvärd",1,0,16],["9","Sufyan Mohamed Ali",0,3,20],["11","Keelan Hearne Leander",0,0,10],["13","Neo Negret",0,1,13],["20","Simon Carlén",0,1,9],["23","Albert Solman",0,3,2],["24","Tyler Iguchi",0,3,9],["49","Max Palmkvist",0,0,4],["91","Hugo Lundberg",0,3,7]],"32787410":[["2","Vidar Sjösvärd",1,4,10],["9","Sufyan Mohamed Ali",0,3,7],["11","Keelan Hearne Leander",0,0,3],["13","Neo Negret",0,3,17],["20","Simon Carlén",0,2,8],["23","Albert Solman",0,4,3],["24","Tyler Iguchi",0,0,11],["29","Zaccarias Roman",0,4,6],["49","Max Palmkvist",0,2,0],["91","Hugo Lundberg",0,0,2]]});
 if (FRESH) Object.assign(LINEUPS, FRESH.lineups || {});
 /* Laget tab (squad, player pages, season stats). build_site.py sets this to false for the public site while it is switched off there. */
-const SHOW_LAGET = false;
+const SHOW_LAGET = true;
+/* Player pages and season stats. build_site.py sets this to false for the public site (squad list only, names not clickable). */
+const PLAYER_STATS = false;
 const STAFF = ["Rasmus Özboga Abrahmsén"];
 // Player photos from the team's laget.se page. PRIVATE VERSION ONLY: build_site.py empties this for the public site.
 const PHOTOS = {};
@@ -854,11 +857,11 @@ function renderTeam() {
       <div class="s">KFUM Blackebergs IK · ${DATA.league} · USM</div></div></div>
     <div class="photo-slot">Lagbild kommer här</div>
     <div><h2 class="h2">Tränare</h2><div class="staff">${STAFF.map(n => `<span><b>Coach</b>${esc(n)}</span>`).join("")}</div></div>
-    <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player" data-player="${esc(p[1])}" tabindex="0" role="button">
+    <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player${PLAYER_STATS ? "" : " static"}"${PLAYER_STATS ? ` data-player="${esc(p[1])}" tabindex="0" role="button"` : ""}>
       ${photoOf(p[1]) ? `<span class="avatar"><img src="${photoOf(p[1])}" alt=""><b>${p[0] == null ? "–" : p[0]}</b></span>` : `<span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>`}
       <span class="pn">${esc(p[1])}</span><span class="py">${p[2]}</span></li>`).join("")}</ul></div>
     <p class="note">Truppen enligt Profixio. Nummer saknas för spelare som inte har något registrerat.</p>
-    <p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>`;
+    ${PLAYER_STATS ? `<p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>` : ""}`;
 }
 
 if (!SHOW_LAGET) { document.getElementById("t-laget")?.remove(); document.getElementById("laget")?.remove(); }
@@ -1087,7 +1090,7 @@ function renderStats() {
 }
 
 function openSeason() {
-  if (!SHOW_LAGET) return;
+  if (!SHOW_LAGET || !PLAYER_STATS) return;
   backToStats = false;
   const el = document.getElementById("match");
   if (el.hidden) { const cur = tabs.find(t => t.getAttribute("aria-selected") === "true"); lastTab = cur ? cur.dataset.tab : "laget"; }
@@ -1100,7 +1103,7 @@ function openSeason() {
   renderStats();
 }
 function openPlayer(name, rerender) {
-  if (!SHOW_LAGET) return;
+  if (!SHOW_LAGET || !PLAYER_STATS) return;
   const fromStats = rerender ? backToStats : !!document.getElementById("statsbox") && !document.getElementById("match").hidden;
   const { list } = buildStats(); const p = list.find(x => x.name === name); if (!p) return;
   const maxPer = Math.max(1, ...p.per);
