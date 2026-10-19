@@ -219,7 +219,7 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .back:hover, .back:focus-visible, .back:active { color: var(--accent); }
 #match { display: grid; gap: 26px; }
 #match[hidden] { display: none; }
-.board { background: var(--card-soft); border-radius: 18px; padding: 18px 18px 16px; display: grid; gap: 14px; }
+.board { background: var(--card-soft); border: 3px solid var(--accent); border-radius: 18px; padding: 18px 18px 16px; display: grid; gap: 14px; }
 .board .meta { font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .vsrow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 12px; align-items: center; }
 .vsrow .tm { font-weight: 800; font-size: 1rem; line-height: 1.2; overflow-wrap: anywhere; }
@@ -445,7 +445,9 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 #oversikt h2.h2 + ul.list:empty { display: none; }
 .sbx-list { display: grid; gap: 10px; }
 .sbx { background: var(--surface, #fff); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 6px; box-shadow: 0 2px 6px rgba(20,24,39,.08); overflow: hidden; }
-.sbx .sbmeta { margin: 0; padding: 7px 10px 5px; }
+.last5 { display: grid; gap: 16px; }
+.sbxw { display: grid; }
+.sbx .sbbar { padding-top: 4px; }
 .sbx .sbbar { border: 0; border-radius: 0; box-shadow: none; border-left: 0; border-right: 0; background: transparent; min-height: 50px; }
 .sbx .sbscore { margin: 0; }
 .sbfoot { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px 10px 9px; font-size: .82rem; color: var(--muted); }
@@ -748,7 +750,7 @@ function compsCard() {
   return `<section aria-label="Våra turneringar"><h2 class="h2 under">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
 // Outline basketball with a number inside (Senaste 3 matcherna, Resultat). Design B, chosen 19 Oct 2026.
-const BALL_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--card-soft)" stroke="var(--accent)" stroke-width="4"/><path d="M26 12Q8 50 26 88M74 12Q92 50 74 88M4 50H96M50 4V96" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/></svg>`;
+const BALL_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--card-soft)"/><path d="M5 42Q50 64 95 44M47 4Q34 50 57 95M20 16Q40 48 16 80M78 14Q60 46 86 74" fill="none" stroke="var(--accent)" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="50" r="46" fill="none" stroke="var(--accent)" stroke-width="4"/></svg>`;
 const ballStat = (k, v) => `<div class="bstat"><div class="ball">${BALL_SVG}<span class="num">${v}</span></div><span class="k">${k}</span></div>`;
 const instaSection = () => INSTA.length ? `<div><h2 class="h2 under">@Instagram</h2>
       <div class="insta">${INSTA.map(([id, date, text, img]) => { const d = date ? d8(date) : null; return `<a class="ig" href="https://www.instagram.com/${INSTA_USER}/reel/${id}/" target="_blank" rel="noopener">
@@ -762,10 +764,9 @@ function renderOverview() {
   const n = upcoming[0];
   const days = daysUntil(n.d);
   const L = played[played.length - 1];
-  const last3 = played.slice(-3);
-  const maxDiff = Math.max(10, ...last3.map(m => Math.abs(m.us - m.them)));
-  const w3 = last3.filter(m => m.win).length;
-  const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
+  const last5 = played.slice(-5);
+  const w5 = last5.filter(m => m.win).length;
+  const pf5 = last5.reduce((s, m) => s + m.us, 0), pa5 = last5.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
     ${liveCard()}
     ${instaSection()}
@@ -791,35 +792,23 @@ function renderOverview() {
         <div class="foot"><span></span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
     </div>
-    ${last3.length ? `<div><h2 class="h2">Senaste ${last3.length} matcherna</h2>
-      <div class="form3">
-        <div class="balls3">${ballStat("Vinster", `${w3}<small>/${last3.length}</small>`)}${ballStat("Snitt gjorda", (pf3 / last3.length).toFixed(0))}${ballStat("Snitt insläppta", (pa3 / last3.length).toFixed(0))}</div>
-        <div class="sb3">${last3.slice().reverse().map(m => { const d = m.us - m.them; const ourName = (SERIES[m.series] || SERIES.serie).team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
-          <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
-          <div class="sbbar">
-            <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
-            <div class="sbscore${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
-            <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div>
-          </div>
-        </div>`; }).join("")}
-        </div>
-      </div></div>` : ""}
     <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
-    <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>
+    ${last5.length ? `<div><h2 class="h2 under">Senast spelade</h2><div class="last5">
+      <div class="balls3">${ballStat("Vinster", `${w5}<small>/${last5.length}</small>`)}${ballStat("Snitt gjorda", (pf5 / last5.length).toFixed(0))}${ballStat("Snitt insläppta", (pa5 / last5.length).toFixed(0))}</div>
+      <div class="sbx-list">${last5.slice().reverse().map(sbxRow).join("")}</div></div></div>` : ""}
     <p class="eyebrow updated" id="updated">Data uppdaterad <b id="upd-data">${fmtStamp(DATA.updated)}</b><span id="upd-check">${lastCheck() ? ` · kontrollerad <b>${fmtStamp(lastCheck())}</b>` : ""}</span> · Profixio</p>`;
 }
 
 const compChip = m => { const k = m.series || (m.comp ? "cup" : "serie"); const t = SERIES[k] ? ` data-table="${k}" role="link" tabindex="0" title="Visa tabellen"` : ""; return `<span class="compt c-${chipKey(k)}${t ? " tlink" : ""}"${t}>${esc(compLabel(m))}</span>`; };
 function goTable(k) { backToStats = false; document.getElementById("match").hidden = true; show("tabeller"); const el = document.getElementById("tbl-" + k); if (el) el.scrollIntoView({ block: "start" }); }
-const sbxRow = m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; return `<article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
-  <p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p>
+const sbxRow = m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; return `<div class="sbxw"><p class="sbmeta">${WD[m.d.getDay()]} ${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()}</p><article class="sbx${has ? " link" : ""}"${has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
   <div class="sbbar">
     <div class="sbt us">${logo(ourName, 26)}<span>Blackeberg</span></div>
     <div class="sbscore${m.win ? " win" : ""}"><i class="chev l"></i><span>${m.us} – ${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span><i class="chev r"></i></div>
     <div class="sbt them"><span>${esc(shortName(m.opp))}</span>${logo(m.opp, 26)}</div>
   </div>
   <div class="sbfoot"><span class="sbcomp">${compChip(m)} <span>${m.home ? "Hemma" : "Borta"}</span></span><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="sblinks">${has ? `<span class="mplay">Matchspel ▸</span>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div>
-</article>`; };
+</article></div>`; };
 const cupRow = c => `<li class="row cup">${dayCell(c)}
   <div class="mid"><div class="t">${esc(c.name)}</div><div class="s">${c.start === c.end ? "" : `${c.d.getDate()}${c.d.getMonth() !== c.e.getMonth() ? " " + MON[c.d.getMonth()] : ""}–${c.e.getDate()} ${MON[c.e.getMonth()]} · `}${esc(c.place)}</div>${c.detail ? `<div class="s cupd">${esc(c.detail)}</div>` : ""}</div>
   <div class="right"><a class="cupbadge" href="${c.url}" target="_blank" rel="noopener" aria-label="${esc(c.name)} hos Cup Manager">Cup <small>↗</small></a></div></li>`;
