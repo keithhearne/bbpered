@@ -17,7 +17,7 @@ Profixio (league + USM)  ─┐
 Cup Manager (cups)       ─┘        runs on GitHub's servers          in this repo   on your phone
 ```
 
-1. **The update job.** A GitHub Action (`.github/workflows/update.yml`) wakes up **every hour**. It runs the script `scraper/scrape.py`, which first decides whether there is anything to do right now (see the schedule below).
+1. **The update job.** A GitHub Action (`.github/workflows/update.yml`) wakes up **twice an hour**. It runs the script `scraper/scrape.py`, which first decides whether there is anything to do right now (see the schedule below).
 2. **Fetching.** When it is time, the script reads Blackeberg's pages on **Profixio**:
    - fixtures and results
    - league tables
@@ -31,18 +31,22 @@ The app has a full copy of the data built in, from the day it was last published
 
 ## The schedule
 
-The job wakes every hour, but it only contacts Profixio when there's a reason to.
-Most hours it stops after a few seconds, which keeps the load on Profixio light.
+The job wakes **twice an hour**, but it only contacts Profixio when there's a reason to.
+Most runs stop after a few seconds, which keeps the load on Profixio light.
 
 | When | What happens |
 |---|---|
-| **Every night at 03:00** (Swedish time) | Full check: new or changed fixtures, results, tables — and a check of the club's team list on Profixio for **new competitions** P11 Röd has been entered into (see below). |
-| **Fridays–Sundays at 09:00 and 14:00** | Extra check for late changes before a game weekend. |
-| **Game day: ~1 hour before tip-off** | The job starts and waits for the game. |
+| **Every night: the first run after 03:00** (Swedish time) | Full check: new or changed fixtures, results and tables. It also checks the club's team list on Profixio for **new competitions** P11 Röd has been entered into (see below). |
+| **Fridays–Sundays, 08:00–22:00** | A check at least every 5 hours, for late changes before a game weekend. |
+| **Game day: from ~3 hours before tip-off** | The first run in this window stays on and waits for the game. |
 | **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** score and Matchspel are updated **every 10 minutes**. |
 | **Game day: after the live window** | One full update, including tables. |
 | **The 6 hours after a game** | Hourly catch-up, to pick up the final score sheet if it's uploaded late. |
-| **Any other hour** | Nothing; the job exits straight away. |
+| **Any other time** | Nothing; the job exits straight away. |
+
+GitHub doesn't guarantee that scheduled runs happen on time, and it sometimes skips them altogether. On the first night (18–19 Oct 2026) it skipped the 03:00 run. So the job doesn't rely on exact times:
+- **Night check:** if no full update has happened since 03:00, the next run that does happen does one, even if that's in the morning.
+- **Live mode:** it starts up to 3 hours before tip-off, so one missed run doesn't matter.
 
 The job works out game days by itself from the same fixture list you see in **Kalender**, for league, USM and cup games alike. Weekday games are covered too. Times follow Swedish time, including the summer/winter time change.
 
@@ -104,8 +108,8 @@ If the repository is ever made private, the job would only have a limited number
 |---|---|
 | `index.html` | The app: one page with the design, the code and a built-in copy of the data. |
 | `data.json` | The latest data, written by the update job. Don't edit it by hand. |
-| `scraper/scrape.py` | The update script: fetching, the schedule and live mode. Settings are at the top: `LIVE_STEP` (10 min), `NIGHTLY_HOUR` (03), `WEEKEND_CHECK_HOURS` (09, 14), `LIVE_BEFORE`/`LIVE_AFTER`. |
-| `.github/workflows/update.yml` | Tells GitHub to run the script every hour, and when you click "Run workflow". |
+| `scraper/scrape.py` | The update script: fetching, the schedule and live mode. Settings are at the top: `LIVE_STEP` (10 min), `NIGHT_START` (03), `WEEKEND_EVERY` (5 h), `LIVE_LEAD` (3 h), `LIVE_BEFORE`/`LIVE_AFTER`. |
+| `.github/workflows/update.yml` | Tells GitHub to run the script twice an hour, and when you click "Run workflow". |
 | `sw.js`, `manifest.webmanifest`, icons | Make the site installable on the home screen and usable offline. |
 
 ## Good to know
