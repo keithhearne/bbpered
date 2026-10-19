@@ -807,7 +807,7 @@ function renderCalendar() {
   const ahead = m => m.cup ? (m.end || m.start) >= today : (m.date === today || (!m.played && m.date >= today) || m.live);
   matches.concat(cups).filter(ahead).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
   document.getElementById("kalender").innerHTML = `
-    ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2>
+    ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1].replace(/^./, c => c.toUpperCase())} ${k.slice(0, 4)}</h2>
       <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}`;
 }
 
