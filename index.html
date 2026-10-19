@@ -772,12 +772,7 @@ function renderOverview() {
     ${compsCard()}
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
-      <article class="lastmini cc-${chipKey(L.series)}">${hoop}
-        <div class="lm-date"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
-        <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
-          <div class="lm-meta">${compChip(L)} · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
-        <div class="lm-score ${L.win ? "w" : "l"}"><span class="pill ${L.win ? "w" : "l"}">${L.win ? "V" : "F"}</span><span class="n">${L.us}–${L.them}</span></div>
-      </article>
+      ${sbxRow(L)}
     </div>` : ""}
     <div>
       <p class="eyebrow red" style="margin-bottom:10px">Nästa match · ${days <= 0 ? "i dag" : days === 1 ? "i morgon" : `om ${days} dagar`}</p>
