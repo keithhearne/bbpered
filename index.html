@@ -506,14 +506,14 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 
 /* condensed competitions card (v2 test) */
 .ccard { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 4px rgba(20,24,39,.06); overflow: hidden; }
-.cc { display: grid; justify-items: center; align-content: start; gap: 3px; padding: 12px 6px 11px; text-align: center; color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; }
+.cc { display: grid; justify-items: center; align-content: start; gap: 2px; padding: 8px 6px 8px; text-align: center; color: inherit; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; position: relative; }
 .cc + .cc::before { content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 1px; background: var(--line); }
 .cc:active { background: var(--row-grey); }
 .cc:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.cc b { font-family: var(--display); font-weight: 800; font-size: 2.3rem; line-height: .95; color: var(--accent); margin-top: 4px; }
+.cc b { font-family: var(--display); font-weight: 800; font-size: 1.8rem; line-height: .95; color: var(--accent); margin-top: 3px; }
 .cc b.soon { white-space: nowrap; }
 .cc small { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.cc-name { font-size: .74rem; font-weight: 600; line-height: 1.2; color: var(--ink); margin-top: 2px; }
+.cc-name { font-size: .7rem; font-weight: 600; line-height: 1.15; color: var(--ink); margin-top: 1px; }
 
 /* live games */
 .livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; animation: livepulse 1.4s ease-in-out infinite; }
