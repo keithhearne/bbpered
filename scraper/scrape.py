@@ -21,6 +21,8 @@ import requests
 TZ = ZoneInfo("Europe/Stockholm")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data.json")
+STATUS_JSON = os.path.join(ROOT, "status.json")
+STATUS_MD = os.path.join(ROOT, "STATUS.md")
 UA = "BlackebergP11-app/1.0 (private team-following app; github.com/keithhearne/bbpered)"
 
 # Competitions on Profixio. teamWebId is the team id in the URL and in the match log.
@@ -31,7 +33,8 @@ SERIES = {
 OUR = "KFUM Blackebergs IK Röd"
 # The club's list of teams in every competition this season. Checked nightly for new competitions
 # (e.g. a new Ungdoms-SM round or a play-off series) that P11 Röd has been entered into.
-REG_URL = "https://www.profixio.com/app/league/registrations/25232?sn=776"
+# The list is filtered on "Pojkar U16" (the page's own search box, t=…), so only ~5 of the club's ~73 teams are read.
+REG_URL = "https://www.profixio.com/app/league/registrations/25232?sn=776&t=Pojkar%20U16"
 
 
 def addq(url, param):
@@ -437,11 +440,48 @@ def save(data):
     log("saved data.json", os.path.getsize(OUT), "bytes;", len(data["live"]), "live game(s)")
 
 
+def write_status(result, mode):
+    """status.json (read by the app) and STATUS.md (for people): when the job last ran and what it did."""
+    st = {}
+    if os.path.exists(STATUS_JSON):
+        try:
+            with open(STATUS_JSON, encoding="utf-8") as f:
+                st = json.load(f)
+        except Exception:  # noqa: BLE001
+            st = {}
+    t = now().strftime("%Y-%m-%dT%H:%M")
+    hist = ([[t, mode, result]] + st.get("history", []))[:40]
+    data_updated = ""
+    if os.path.exists(OUT):
+        with open(OUT, encoding="utf-8") as f:
+            data_updated = json.load(f).get("updated", "")
+    st = {"lastCheck": t, "lastResult": result, "dataUpdated": data_updated, "history": hist}
+    with open(STATUS_JSON, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+    rows = "\n".join(f"| {h[0].replace('T', ' ')} | {h[2]} |" for h in hist)
+    with open(STATUS_MD, "w", encoding="utf-8") as f:
+        f.write(f"""# Update status
+
+This file is rewritten every time the update job runs (Swedish time).
+
+- **Last run:** {t.replace('T', ' ')} — {result}
+- **Data last refreshed:** {data_updated.replace('T', ' ') or '–'}
+
+GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
+
+## Recent runs (newest first)
+
+| Time | What happened |
+|---|---|
+{rows}
+""")
+
+
 def commit(msg):
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
     os.system('git config user.name "p11-bot" && git config user.email "actions@users.noreply.github.com"')
-    os.system("git add data.json")
+    os.system("git add data.json status.json STATUS.md")
     if os.system("git diff --cached --quiet") != 0:
         os.system(f'git commit -q -m "{msg}" && (git push -q || (git pull -q --rebase && git push -q))')
         log("pushed")
@@ -467,9 +507,12 @@ def main():
                 f.write(f"browser={'true' if needs_browser(force, mode, info, prev) else 'false'}\n")
         return
     if mode == "skip":
+        write_status("Checked — nothing due", "skip")
+        commit("Status: checked")
         return
     if mode == "full":
         save(build(prev, discover_new=needs_browser(force, mode, info, prev)))
+        write_status(f"Full update ({info})", "full")
         commit("Update data")
         return
     # Live mode: wait for tip-off, then update every 10 minutes until the game window closes.
@@ -482,10 +525,13 @@ def main():
         if not active and nxt:
             wait = (nxt - LIVE_BEFORE - t).total_seconds()
             log(f"waiting {int(wait // 60)} min for tip-off at {nxt.strftime('%H:%M')}")
+            write_status(f"Game day — waiting for tip-off at {nxt.strftime('%H:%M')}", "live")
+            commit("Status: waiting for game")
             time.sleep(wait)
             continue
         data = build(prev, live_only=True)
         save(data)
+        write_status(f"Live update ({len(data['live'])} game(s) in progress)" if data["live"] else "Live mode: waiting for / checking the game", "live")
         commit("Live update")
         prev = data
         end = max([end] + [k + LIVE_AFTER for k, _, done in fixtures(prev) if not done and k <= now() + LIVE_BEFORE])
@@ -493,6 +539,7 @@ def main():
             break
         time.sleep(LIVE_STEP)
     save(build(prev))  # full update (tables too) when the window closes
+    write_status("Full update after the game", "full")
     commit("Update data after game")
 
 

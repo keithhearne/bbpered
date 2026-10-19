@@ -1,12 +1,12 @@
 // Offline support: show the latest version when online, the last saved copy when offline.
-const CACHE = "p11-rod-v3";
+const CACHE = "p11-rod-v4";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
-  if (req.url.includes("data.json")) return; // live data: always from the network (the app keeps its own copy)
+  if (req.url.includes("data.json") || req.url.includes("status.json")) return; // live data: always from the network (the app keeps its own copy)
   const sameOrigin = new URL(req.url).origin === location.origin;
   e.respondWith(
     fetch(req).then(res => {

@@ -68,14 +68,15 @@ The job works out game days by itself from the same fixture list you see in **Ka
 The new data is in the app about 2–3 minutes later.
 
 ### Check that updates are running
-**Actions** tab → **Update data**. Each run is listed with a green tick ✓ or a red cross ✗. Most runs take under a minute. A live game-day run can take up to about 2½ hours, and that's normal.
-You can also open `data.json` and look at `"updated"` near the top.
+- **In the app:** at the bottom of **Översikt** it says, for example, *"Data uppdaterad 19 okt 22:13 · kontrollerad 19 okt 22:31"*. "Data uppdaterad" is when new data was last fetched. "Kontrollerad" is the last time the job ran, even if it found nothing to do.
+- **`STATUS.md`** in this repository lists the last run and the 40 most recent runs, with what each one did: "Checked — nothing due", "Full update (nightly check)", "Live update", and so on. `status.json` holds the same information for the app.
+- **Actions tab → Update data:** every run with a green tick ✓ or red cross ✗. Most runs take under a minute; a game-day run can take up to about 4½ hours, because it waits for tip-off.
 
 ### If the hourly schedule ever stops
 GitHub pauses scheduled jobs in a public repository after **60 days without any activity**. The nightly data commits should count as activity, so this shouldn't happen. If it ever does, GitHub shows a banner on the **Actions** tab, with a button to turn the workflow back on.
 
 ### New competitions are picked up automatically
-Every night the job looks through Blackeberg's list of teams on Profixio (the club's "registrations" page), going through all of its pages.
+Every night the job looks through Blackeberg's list of teams on Profixio (the club's "registrations" page). It uses the page's own search filter, "Pojkar U16", so it only reads the club's ~5 Pojkar U16 teams instead of all ~73.
 It looks for Pojkar U16 entries that belong to P11 Röd: **"KFUM Blackebergs IK Röd"** in a Stockholm series, or **"KFUM Blackebergs IK"** in Ungdoms-SM or Riksmästerskap.
 
 When it finds one that isn't followed yet, it starts following it straight away. A new USM round, for example, then shows up in the app the next morning:
@@ -108,6 +109,7 @@ If the repository is ever made private, the job would only have a limited number
 |---|---|
 | `index.html` | The app: one page with the design, the code and a built-in copy of the data. |
 | `data.json` | The latest data, written by the update job. Don't edit it by hand. |
+| `STATUS.md`, `status.json` | When the job last ran and what it did (rewritten on every run). |
 | `scraper/scrape.py` | The update script: fetching, the schedule and live mode. Settings are at the top: `LIVE_STEP` (10 min), `NIGHT_START` (03), `WEEKEND_EVERY` (5 h), `LIVE_LEAD` (3 h), `LIVE_BEFORE`/`LIVE_AFTER`. |
 | `.github/workflows/update.yml` | Tells GitHub to run the script twice an hour, and when you click "Run workflow". |
 | `sw.js`, `manifest.webmanifest`, icons | Make the site installable on the home screen and usable offline. |

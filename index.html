@@ -498,6 +498,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .sbscore small.lv { color: var(--accent); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
 .livepill { display: inline-block; font: 800 .7rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--accent); border-radius: 999px; padding: 4px 8px 3px; }
 .board .big.lv { color: var(--ink); }
+.eyebrow.updated { margin: 4px 0 0; text-align: center; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -712,6 +713,9 @@ function compsCard() {
   const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()} ${MON[c.d.getMonth()]}</b><small>startar</small><span class="cc-name">${esc(c.name)}</span></a>`);
   return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
+const fmtStamp = v => { const d = new Date(v); return `${d.getDate()} ${MON[d.getMonth()]} ${String(v).slice(11, 16)}`; };
+/* When the update job last ran (status.json), even if it found nothing new. */
+const lastCheck = () => { try { const c = localStorage.getItem("p11-checked"); return c && c > DATA.updated ? c : ""; } catch (e) { return ""; } };
 function renderOverview() {
   const n = upcoming[0];
   const days = daysUntil(n.d);
@@ -721,7 +725,6 @@ function renderOverview() {
   const w3 = last3.filter(m => m.win).length;
   const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
-    <p class="eyebrow">Uppdaterad <b>${now.getDate()} ${MON[now.getMonth()]} ${DATA.updated.slice(11)}</b> · Profixio</p>
     ${liveCard()}
     ${compsCard()}
     ${L ? `<div>
@@ -763,7 +766,8 @@ function renderOverview() {
         </div>
       </div></div>` : ""}
     <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
-    <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>`;
+    <div><h2 class="h2">Senast spelade</h2><ul class="list"></ul><div class="sbx-list">${played.slice(-5).reverse().map(sbxRow).join("")}</div></div>
+    <p class="eyebrow updated" id="updated">Data uppdaterad <b id="upd-data">${fmtStamp(DATA.updated)}</b><span id="upd-check">${lastCheck() ? ` · kontrollerad <b>${fmtStamp(lastCheck())}</b>` : ""}</span> · Profixio</p>`;
 }
 
 const compChip = m => { const k = m.series || (m.comp ? "cup" : "serie"); const t = SERIES[k] ? ` data-table="${k}" role="link" tabindex="0" title="Visa tabellen"` : ""; return `<span class="compt c-${chipKey(k)}${t ? " tlink" : ""}"${t}>${esc(compLabel(m))}</span>`; };
@@ -1161,10 +1165,16 @@ try {
   const sig = d => JSON.stringify(Object.assign({}, d, { updated: 0 }));
   const curSig = FRESH ? sig(FRESH) : "";
   const gameTime = () => { const t = Date.now(); return matches.some(m => !m.played && m.time && Math.abs(t - new Date(`${m.date}T${m.time}`).getTime() - 45 * 60000) < 90 * 60000); };
-  const check = () => fetch("data.json?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(d => {
+  const status = () => fetch("status.json?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(st => {
+    if (!st || !st.lastCheck) return;
+    try { localStorage.setItem("p11-checked", st.lastCheck); } catch (e) {}
+    const c = document.getElementById("upd-check");
+    if (c && st.lastCheck > DATA.updated) c.innerHTML = ` · kontrollerad <b>${fmtStamp(st.lastCheck)}</b>`;
+  }).catch(() => {});
+  const check = () => (status(), fetch("data.json?t=" + Date.now(), { cache: "no-store" })).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !d.updated || !(d.updated > EMBED_UPDATED) || !d.series) return;
     try { localStorage.setItem("p11-data", JSON.stringify(d)); } catch (e) { return; }
-    if (sig(d) === curSig) { const b = document.querySelector("#oversikt .eyebrow b"); if (b) { const u = new Date(d.updated); b.textContent = `${u.getDate()} ${MON[u.getMonth()]} ${d.updated.slice(11)}`; } return; }
+    if (sig(d) === curSig) { const b = document.getElementById("upd-data"); if (b) b.textContent = fmtStamp(d.updated); return; }
     try { sessionStorage.setItem("p11-view", JSON.stringify({ match: !document.getElementById("match").hidden ? window.__openMatch : null, y: window.scrollY })); } catch (e) {}
     location.reload();
   }).catch(() => {});
