@@ -414,6 +414,87 @@ def decide(prev, t):
     return "skip", "nothing scheduled"
 
 
+# ---------- Instagram (the owner keeps the list in instagram.txt) ----------
+INSTA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "instagram.txt")
+INSTA_MAX = 3
+MONTHS_EN = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
+                                         "August", "September", "October", "November", "December"], 1)}
+
+
+def insta_ids():
+    """Reel/post ids from instagram.txt, newest first (the top of the file)."""
+    ids = []
+    try:
+        for line in open(INSTA_FILE, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            m = re.search(r"instagram\.com/(?:[\w.]+/)?(?:reel|reels|p)/([\w-]+)", line)
+            if m and m.group(1) not in ids:
+                ids.append(m.group(1))
+    except FileNotFoundError:
+        pass
+    return ids[:INSTA_MAX]
+
+
+def insta_cover(url):
+    """Download a cover picture and shrink it to a 240px square WebP (base64). Empty string if not possible."""
+    try:
+        from PIL import Image  # installed in the workflow
+        import base64, io
+        r = S.get(url, timeout=30)
+        r.raise_for_status()
+        im = Image.open(io.BytesIO(r.content)).convert("RGB")
+        w, h = im.size
+        side = min(w, h)
+        im = im.crop(((w - side) // 2, (h - side) // 2, (w + side) // 2, (h + side) // 2)).resize((240, 240))
+        buf = io.BytesIO()
+        im.save(buf, "WEBP", quality=60)
+        return base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:  # noqa: BLE001
+        print("  instagram cover failed:", e)
+        return ""
+
+
+def insta_post(rid):
+    """Date, short caption and cover for one reel, read from the public post page (one try, no retries)."""
+    date, text, cover = "", "", ""
+    try:
+        r = S.get(f"https://www.instagram.com/reel/{rid}/", timeout=30)
+        html_ = r.text if r.ok else ""
+    except Exception as e:  # noqa: BLE001
+        print("  instagram page failed:", e)
+        html_ = ""
+    meta = lambda prop: (re.search(r'<meta[^>]+property="%s"[^>]+content="([^"]*)"' % prop, html_) or [None, ""])[1]
+    desc, title, img = html.unescape(meta("og:description")), html.unescape(meta("og:title")), html.unescape(meta("og:image"))
+    m = re.search(r" on (\w+) (\d{1,2}), (\d{4})", desc)
+    if m and m.group(1) in MONTHS_EN:
+        date = f"{m.group(3)}-{MONTHS_EN[m.group(1)]:02d}-{int(m.group(2)):02d}"
+    m = re.search(r'"(.*)"', title, re.S) or re.search(r': "(.*)', desc, re.S)
+    if m:
+        t = re.sub(r"[#@][\w.]+", "", m.group(1)).replace("\n", " ")
+        t = re.split(r"(?<=[.!?])\s", re.sub(r"\s+", " ", t).strip())[0]
+        text = t if len(t) <= 110 else t[:107].rsplit(" ", 1)[0] + "…"
+    if img:
+        cover = insta_cover(img)
+    time.sleep(1.5)
+    return [rid, date, text, cover]
+
+
+def scrape_insta(prev):
+    """Keep data.json "insta" in step with instagram.txt. Only new or incomplete entries are fetched."""
+    old = {x[0]: x for x in prev.get("insta", []) if x}
+    out = []
+    for rid in insta_ids():
+        x = old.get(rid)
+        if not x or not x[1] or not x[3]:
+            log("instagram: fetching", rid)
+            y = insta_post(rid)
+            x = [rid] + [y[k] or (x[k] if x else "") for k in (1, 2, 3)]
+        out.append(x)
+    return out
+
+
 def build(prev, live_only=False, discover_new=False):
     if discover_new:
         prev = dict(prev, comps=discover(prev))
@@ -429,6 +510,7 @@ def build(prev, live_only=False, discover_new=False):
         "live": {**p["live"], **cup_live},
         "comps": prev.get("comps", {}),
         "discovery": LAST_DISCOVERY or prev.get("discovery", {}),
+        "insta": prev.get("insta", []) if live_only else scrape_insta(prev),
     }
     data["final"] = sorted({r[7] for s in data["series"].values() for r in s.get("matches", []) if len(r) > 7 and r[5] is not None and r[7]})
     return data

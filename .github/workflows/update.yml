@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests==2.32.3
+      - run: pip install requests==2.32.3 pillow==10.4.0
       # A browser is only needed for the nightly check for new competitions (and manual runs).
       - name: Plan
         id: plan
