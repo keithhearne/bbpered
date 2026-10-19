@@ -76,6 +76,8 @@ section[role="tabpanel"] { display: grid; gap: 28px; }
 
 .h2 { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 2rem; line-height: 1; margin: 0 0 4px; }
 .h2::before { content: ""; width: 24px; height: 24px; flex: none; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11.5' fill='%23d0142c'/><path d='M6.3 3.2Q2.6 12 6.3 20.8M17.7 3.2Q21.4 12 17.7 20.8M1.5 12H5.4M18.6 12H22.5M12 1.5V4.8M12 19.2V22.5' fill='none' stroke='%23fff' stroke-width='1.5' stroke-linecap='round'/><text x='12' y='16.9' text-anchor='middle' font-family='Arial Black,Arial,Helvetica,sans-serif' font-weight='900' font-size='14' fill='%23fff' stroke='%23d0142c' stroke-width='1.6' paint-order='stroke'>B</text></svg>") center / contain no-repeat; }
+/* Red line under a section heading (Matchspel page), same look as Senaste 3 / Trupp */
+.h2.under { margin-bottom: 14px; padding-bottom: 4px; border-bottom: 3px solid var(--accent); }
 .h2.rule::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
 /* Next-match card */
@@ -990,10 +992,10 @@ function openMatch(id) {
         <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
         <span class="nm">Motståndare</span>${thP.map(v => `<span class="c">${v}</span>`).join("")}</div>
     </div>
-    <div><h2 class="h2">Matchens förlopp</h2>
+    <div><h2 class="h2 under">Matchens förlopp</h2>
       <div class="flow">${chart}<div class="cap"><span>Över linjen: Blackeberg leder</span><span>Störst ledning ${best > 0 ? "+" + best : "–"} · störst underläge ${worst < 0 ? worst : "–"}</span></div></div></div>
-    <div><h2 class="h2">Poäng Blackeberg</h2><div class="scorers">${scorers.map(s => `<div class="scorer">${photoOf(name(usSide, s.num)) ? `<span class="avatar"><img src="${photoOf(name(usSide, s.num))}" alt=""><b>${esc(s.num)}</b></span>` : `<span class="jersey">${esc(s.num)}</span>`}<span class="pn">${esc(name(usSide, s.num))}${extra(s) ? ` <span class="py">· ${extra(s)}</span>` : ""}</span><span class="pts">${s.pts}</span><span class="bar"><i style="width:${(s.pts / top * 100).toFixed(0)}%"></i></span></div>`).join("") || '<p class="note">Inga poäng registrerade.</p>'}</div></div>
-    <div><h2 class="h2">Matchspel</h2>
+    <div><h2 class="h2 under">Poäng Blackeberg</h2><div class="scorers">${scorers.map(s => `<div class="scorer">${photoOf(name(usSide, s.num)) ? `<span class="avatar"><img src="${photoOf(name(usSide, s.num))}" alt=""><b>${esc(s.num)}</b></span>` : `<span class="jersey">${esc(s.num)}</span>`}<span class="pn">${esc(name(usSide, s.num))}${extra(s) ? ` <span class="py">· ${extra(s)}</span>` : ""}</span><span class="pts">${s.pts}</span><span class="bar"><i style="width:${(s.pts / top * 100).toFixed(0)}%"></i></span></div>`).join("") || '<p class="note">Inga poäng registrerade.</p>'}</div></div>
+    <div><h2 class="h2 under">Matchspel</h2>
       <div class="seg" role="group" aria-label="Visa händelser">
         <button type="button" data-f="us">Blackeberg</button><button type="button" data-f="alla">Alla</button><button type="button" data-f="them">Motståndare</button></div>
       <div class="legend" style="margin:12px 0 6px"><span><i style="background:var(--accent)"></i>Blackeberg</span><span><i style="background:#5d6070"></i>${esc(themName)}</span><span><i style="background:var(--chip)"></i>Foul</span></div>
