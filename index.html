@@ -499,6 +499,19 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .livepill { display: inline-block; font: 800 .7rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--accent); border-radius: 999px; padding: 4px 8px 3px; }
 .board .big.lv { color: var(--ink); }
 .eyebrow.updated { margin: 4px 0 0; text-align: center; line-height: 1.6; }
+
+/* competition colour accents (same colours as the competition labels) */
+.cc-serie { --cc: #1a447d; --cc-bg: #dde8f7; }
+.cc-usm { --cc: #9a5d00; --cc-bg: #fbe8c8; }
+.cc-cup { --cc: #4f3280; --cc-bg: #e9e0f8; }
+.cc-x { --cc: #0d5c63; --cc-bg: #d8f0f1; }
+.lastmini[class*="cc-"] { box-shadow: inset 0 0 0 3px var(--cc); }
+.ticket.next-up[class*="cc-"] .tag { border-color: var(--cc); color: var(--cc); background: var(--cc-bg); }
+.ticket.next-up[class*="cc-"] .tiles > div { box-shadow: inset 0 -3px 0 var(--cc); }
+a.cupbadge { text-decoration: none; -webkit-tap-highlight-color: transparent; }
+a.cupbadge small { font-family: var(--body); font-size: .75em; font-weight: 700; margin-left: 2px; }
+a.cupbadge:active { transform: scale(.95); }
+a.cupbadge:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -729,7 +742,7 @@ function renderOverview() {
     ${compsCard()}
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
-      <article class="lastmini">${hoop}
+      <article class="lastmini cc-${chipKey(L.series)}">${hoop}
         <div class="lm-date"><span>${WD[L.d.getDay()]}</span><b>${L.d.getDate()}</b><span>${MON[L.d.getMonth()]}</span></div>
         <div class="lm-mid"><div class="lm-opp">${esc(L.opp)}</div>
           <div class="lm-meta">${compChip(L)} · ${L.home ? "Hemma" : "Borta"}${L.id && PBP[L.id] ? ` <button class="mplay" type="button" data-match="${L.id}">Matchspel ▸</button>` : ""}</div></div>
@@ -738,7 +751,7 @@ function renderOverview() {
     </div>` : ""}
     <div>
       <p class="eyebrow red" style="margin-bottom:10px">Nästa match · ${days <= 0 ? "i dag" : days === 1 ? "i morgon" : `om ${days} dagar`}</p>
-      <article class="ticket next-up">${ball}
+      <article class="ticket next-up cc-${chipKey(n.series)}">${ball}
         <span class="tag">${n.comp ? "Cup · " + esc(n.comp) : esc(compLabel(n)) + " · " + (n.home ? "Hemma" : "Borta")}</span>
         <div class="head"><div class="datetile"><span>${WD[n.d.getDay()]}</span><b>${n.d.getDate()}</b><span>${MON[n.d.getMonth()]}</span></div>
           <div><p class="vs">Blackeberg Röd ${n.home ? "tar emot" : "möter"}</p><h2>${esc(n.opp)}</h2></div></div>
@@ -782,8 +795,8 @@ const sbxRow = m => { const ourName = (SERIES[m.series] || SERIES.serie).team; c
   <div class="sbfoot"><span class="sbcomp">${compChip(m)} <span>${m.home ? "Hemma" : "Borta"}</span></span><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="sblinks">${has ? `<span class="mplay">Matchspel ▸</span>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div>
 </article>`; };
 const cupRow = c => `<li class="row cup">${dayCell(c)}
-  <div class="mid"><div class="t"><a href="${c.url}" target="_blank" rel="noopener">${esc(c.name)} ↗</a></div><div class="s">${c.start === c.end ? "" : `${c.d.getDate()}${c.d.getMonth() !== c.e.getMonth() ? " " + MON[c.d.getMonth()] : ""}–${c.e.getDate()} ${MON[c.e.getMonth()]} · `}${esc(c.place)}</div>${c.detail ? `<div class="s cupd">${esc(c.detail)}</div>` : ""}</div>
-  <div class="right"><span class="cupbadge">Cup</span></div></li>`;
+  <div class="mid"><div class="t">${esc(c.name)}</div><div class="s">${c.start === c.end ? "" : `${c.d.getDate()}${c.d.getMonth() !== c.e.getMonth() ? " " + MON[c.d.getMonth()] : ""}–${c.e.getDate()} ${MON[c.e.getMonth()]} · `}${esc(c.place)}</div>${c.detail ? `<div class="s cupd">${esc(c.detail)}</div>` : ""}</div>
+  <div class="right"><a class="cupbadge" href="${c.url}" target="_blank" rel="noopener" aria-label="${esc(c.name)} hos Cup Manager">Cup <small>↗</small></a></div></li>`;
 function renderCalendar() {
   const groups = {};
   matches.concat(cups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
