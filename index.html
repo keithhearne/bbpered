@@ -745,7 +745,7 @@ function compsCard() {
   const cols = COMP_KEYS.filter(k => SERIES[k].table && SERIES[k].table.length).map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
     return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${chipKey(k)}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
   const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()}</b><small>${MON[c.d.getMonth()]} · start</small><span class="cc-name">${esc(c.name)}</span></a>`);
-  return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
+  return `<section aria-label="Våra turneringar"><h2 class="h2 under">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
 // Outline basketball with a number inside (Senaste 3 matcherna, Resultat). Design B, chosen 19 Oct 2026.
 const BALL_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--card-soft)" stroke="var(--accent)" stroke-width="4"/><path d="M26 12Q8 50 26 88M74 12Q92 50 74 88M4 50H96M50 4V96" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/></svg>`;
