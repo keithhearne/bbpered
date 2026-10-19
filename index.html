@@ -339,6 +339,13 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .tops .tp b { font-family: var(--display); font-size: 1.3rem; color: var(--accent); margin-right: 2px; }
 .ticket .foot .mlinks { display: flex; gap: 12px; align-items: center; }
 .form3 { display: grid; gap: 14px; border-top: 3px solid var(--accent); padding-top: 14px; }
+.balls3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bstat { display: grid; justify-items: center; gap: 6px; min-width: 0; }
+.bstat .ball { position: relative; width: 84px; max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.bstat .ball svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bstat .num { position: relative; font-family: var(--display); font-size: 2rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; text-shadow: 0 0 3px var(--card-soft), 0 0 6px var(--card-soft), 0 0 8px var(--card-soft); }
+.bstat .num small { font-size: 1.1rem; color: var(--muted); }
+.bstat .k { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; line-height: 1.2; }
 .f3sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .f3sum > div { background: var(--card-soft); border-radius: 14px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
 .f3sum .k { font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -729,6 +736,9 @@ function compsCard() {
   const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()}</b><small>${MON[c.d.getMonth()]} · start</small><span class="cc-name">${esc(c.name)}</span></a>`);
   return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
+// Outline basketball with a number inside (Senaste 3 matcherna, Resultat). Design B, chosen 19 Oct 2026.
+const BALL_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--card-soft)" stroke="var(--accent)" stroke-width="4"/><path d="M26 12Q8 50 26 88M74 12Q92 50 74 88M4 50H96M50 4V96" fill="none" stroke="var(--accent)" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/></svg>`;
+const ballStat = (k, v) => `<div class="bstat"><div class="ball">${BALL_SVG}<span class="num">${v}</span></div><span class="k">${k}</span></div>`;
 const fmtStamp = v => { const d = new Date(v); return `${d.getDate()} ${MON[d.getMonth()]} ${String(v).slice(11, 16)}`; };
 /* When the update job last ran (status.json), even if it found nothing new. */
 const lastCheck = () => { try { const c = localStorage.getItem("p11-checked"); return c && c > DATA.updated ? c : ""; } catch (e) { return ""; } };
@@ -766,11 +776,7 @@ function renderOverview() {
     </div>
     ${last3.length ? `<div><h2 class="h2">Senaste ${last3.length} matcherna</h2>
       <div class="form3">
-        <div class="f3sum">
-          <div><span class="k">Vinster</span><span class="v">${w3}<small>/${last3.length}</small></span></div>
-          <div><span class="k">Snitt gjorda</span><span class="v">${(pf3 / last3.length).toFixed(0)}</span></div>
-          <div><span class="k">Snitt insläppta</span><span class="v">${(pa3 / last3.length).toFixed(0)}</span></div>
-        </div>
+        <div class="balls3">${ballStat("Vinster", `${w3}<small>/${last3.length}</small>`)}${ballStat("Snitt gjorda", (pf3 / last3.length).toFixed(0))}${ballStat("Snitt insläppta", (pa3 / last3.length).toFixed(0))}</div>
         <div class="sb3">${last3.slice().reverse().map(m => { const d = m.us - m.them; const ourName = (SERIES[m.series] || SERIES.serie).team; return `<div class="sbg${m.id && PBP[m.id] ? " link" : ""}"${m.id && PBP[m.id] ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ""}>
           <p class="sbmeta">${m.d.getDate()} ${MON[m.d.getMonth()]} ${m.d.getFullYear()} · ${esc(compLabel(m))}${m.venue ? " · " + esc(m.venue) : ""}</p>
           <div class="sbbar">
@@ -841,11 +847,7 @@ function renderResults() {
   const pf = list.reduce((s, m) => s + m.us, 0), pa = list.reduce((s, m) => s + m.them, 0);
   document.getElementById("resultat").innerHTML = `
     ${filterSeg("resseg", resFilter)}
-    <div class="stats three">
-      <div class="stat"><div class="k">Matcher</div><div class="v">${gp}</div></div>
-      <div class="stat"><div class="k">Vinster</div><div class="v">${w}</div></div>
-      <div class="stat"><div class="k">Snitt</div><div class="v">${gp ? (pf / gp).toFixed(1) : "–"}</div></div>
-    </div>
+    <div class="balls3">${ballStat("Matcher", gp)}${ballStat("Vinster", w)}${ballStat("Snitt", gp ? (pf / gp).toFixed(1) : "–")}</div>
     <div><p class="eyebrow" style="margin-bottom:8px">Form</p><div class="form">${list.map(m => `<span class="pill ${m.win ? "w" : "l"}" title="${esc(m.opp)} ${m.us}–${m.them}">${m.win ? "V" : "F"}</span>`).join("")}</div></div>
     <div><h2 class="h2">Alla matcher</h2><ul class="list">${list.slice().reverse().map(m => resRow(m, true)).join("")}</ul></div>`;
   document.querySelectorAll("#resseg button").forEach(b => b.addEventListener("click", () => { resFilter = b.dataset.f; renderResults(); }));
