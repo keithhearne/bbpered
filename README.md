@@ -92,6 +92,14 @@ Two limits:
 - **New season:** the club list is per season. When the 27/28 season starts, the address in `REG_URL` (in `scraper/scrape.py`) needs updating once.
 - **Cup Manager cups:** cups run on Cup Manager are not listed on Profixio, so each new one is still added by hand (below). Their knock-out games do appear automatically once the groups are finished.
 
+### Add a new Instagram video
+The **@Instagram** section on Översikt shows the 3 newest videos listed in **`instagram.txt`** in this repository.
+1. In Instagram, open the video → **Share** → **Copy link**.
+2. On GitHub, open `instagram.txt` → the pencil icon (**Edit**).
+3. Paste the link on a new line at the **top** of the list, then click **Commit changes**.
+
+The next update run (at the latest the nightly check, or straight away with **Run workflow**) reads the date and caption from Instagram and fetches the cover picture. If Instagram refuses to give the job the cover picture, the video shows as a red tile with a play button instead; ask Claude to fill in the cover. The private copy shows new videos only when Claude republishes it.
+
 ### Add a new cup
 Cups are not on Profixio, so each new cup is added by hand in `scraper/scrape.py` under `CUPS`. That needs the cup's Cup Manager address, plus its `tournamentId` and `categoryId`. The easiest way is to ask Claude to add it, giving the cup's link.
 
@@ -108,6 +116,7 @@ If the repository is ever made private, the job would only have a limited number
 | File | What it is |
 |---|---|
 | `index.html` | The app: one page with the design, the code and a built-in copy of the data. |
+| `instagram.txt` | The Instagram video links shown on Översikt (newest at the top). You can edit this one. |
 | `data.json` | The latest data, written by the update job. Don't edit it by hand. |
 | `STATUS.md`, `status.json` | When the job last ran and what it did (rewritten on every run). |
 | `scraper/scrape.py` | The update script: fetching, the schedule and live mode. Settings are at the top: `LIVE_STEP` (10 min), `NIGHT_START` (03), `WEEKEND_EVERY` (5 h), `LIVE_LEAD` (3 h), `LIVE_BEFORE`/`LIVE_AFTER`. |
