@@ -768,6 +768,7 @@ function renderOverview() {
   const pf3 = last3.reduce((s, m) => s + m.us, 0), pa3 = last3.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
     ${liveCard()}
+    ${instaSection()}
     ${compsCard()}
     ${L ? `<div>
       <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
@@ -790,7 +791,6 @@ function renderOverview() {
         <div class="foot"><span></span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
     </div>
-    ${instaSection()}
     ${last3.length ? `<div><h2 class="h2">Senaste ${last3.length} matcherna</h2>
       <div class="form3">
         <div class="balls3">${ballStat("Vinster", `${w3}<small>/${last3.length}</small>`)}${ballStat("Snitt gjorda", (pf3 / last3.length).toFixed(0))}${ballStat("Snitt insläppta", (pa3 / last3.length).toFixed(0))}</div>
