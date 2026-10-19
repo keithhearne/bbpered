@@ -487,7 +487,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .cc:active { background: var(--row-grey); }
 .cc:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cc b { font-family: var(--display); font-weight: 800; font-size: 2.3rem; line-height: .95; color: var(--accent); margin-top: 4px; }
-.cc b.soon { font-size: 1.55rem; line-height: 1.2; color: #4f3280; }
+.cc b.soon { white-space: nowrap; }
 .cc small { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .cc-name { font-size: .74rem; font-weight: 600; line-height: 1.2; color: var(--ink); margin-top: 2px; }
 
@@ -724,7 +724,7 @@ function liveCard() {
 function compsCard() {
   const cols = COMP_KEYS.filter(k => SERIES[k].table && SERIES[k].table.length).map(k => { const S = SERIES[k]; const me = S.table.find(r => r[1] === S.team); if (!me) return "";
     return `<div class="cc" data-table="${k}" role="link" tabindex="0" aria-label="${esc(S.head)}: plats ${me[0]} av ${S.table.length}"><span class="compt c-${chipKey(k)}">${S.short}</span><b>${ORD(+me[0])}</b><small>av ${S.table.length}</small><span class="cc-name">${esc(S.head.replace(/^USM /, ""))}</span></div>`; });
-  const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()} ${MON[c.d.getMonth()]}</b><small>startar</small><span class="cc-name">${esc(c.name)}</span></a>`);
+  const cup = cups.filter(c => !c.overview && c.e >= new Date(new Date(DATA.updated).toDateString())).map(c => `<a class="cc" href="${c.url}" target="_blank" rel="noopener"><span class="compt c-cup">Cup</span><b class="soon">${c.d.getDate()}</b><small>${MON[c.d.getMonth()]} · start</small><span class="cc-name">${esc(c.name)}</span></a>`);
   return `<section aria-label="Våra turneringar"><h2 class="h2">Våra turneringar</h2><div class="ccard">${cols.join("")}${cup.join("")}</div></section>`;
 }
 const fmtStamp = v => { const d = new Date(v); return `${d.getDate()} ${MON[d.getMonth()]} ${String(v).slice(11, 16)}`; };
