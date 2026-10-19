@@ -873,7 +873,7 @@ const TEAM_PHOTO = "UklGRpqGAABXRUJQVlA4WAoAAAAgAAAALwIAGgEASUNDUMgBAAAAAAHIAAAA
 const photoOf = name => PHOTOS[name] ? "data:image/jpeg;base64," + PHOTOS[name] : "";
 
 function renderTeam() {
-  const sorted = SQUAD.slice().sort((a, b) => (a[0] ?? 999) - (b[0] ?? 999) || a[1].localeCompare(b[1], "sv"));
+  const sorted = SQUAD.slice().sort((a, b) => (!photoOf(a[1]) - !photoOf(b[1])) || (a[0] ?? 999) - (b[0] ?? 999) || a[1].localeCompare(b[1], "sv"));
   const logo = document.querySelector(".brand img").src;
   document.getElementById("laget").innerHTML = `
     <div class="team-hero"><img src="${logo}" alt="Blackeberg Basket"><div><h1 class="n">P11 Röd</h1>
