@@ -839,6 +839,8 @@ const SQUAD = [
 const LINEUPS = {"32726246":[["2","Vidar Sjösvärd",0,3,20],["7","Axel Jürss",0,1,8],["9","Sufyan Mohamed Ali",1,4,21],["11","Keelan Hearne Leander",0,0,2],["14","Alfred Kartano",0,3,11],["23","Albert Solman",0,3,6],["24","Tyler Iguchi",0,2,6],["29","Zaccarias Roman",0,1,7],["91","Hugo Lundberg",0,0,0]],"32726271":[["2","Vidar Sjösvärd",0,2,12],["7","Axel Jürss",0,0,2],["9","Sufyan Mohamed Ali",1,4,2],["11","Keelan Hearne Leander",0,1,5],["14","Alfred Kartano",0,1,8],["23","Albert Solman",0,0,2],["24","Tyler Iguchi",0,0,8],["29","Zaccarias Roman",0,2,7],["49","Max Palmkvist",0,0,2],["91","Hugo Lundberg",0,1,6]],"32726284":[["2","Vidar Sjösvärd",1,1,30],["7","Axel Jürss",0,1,12],["11","Keelan Hearne Leander",0,2,0],["18","Elliot Engvall",0,3,5],["20","Simon Carlén",0,5,4],["24","Tyler Iguchi",0,0,0],["33","Noel Tesfaye",0,5,7],["34","Axel Borglund",0,1,17],["49","Max Palmkvist",0,0,2]],"32726293":[["2","Vidar Sjösvärd",1,4,14],["9","Sufyan Mohamed Ali",0,4,2],["11","Keelan Hearne Leander",0,0,3],["20","Simon Carlén",0,2,17],["23","Albert Solman",0,1,2],["29","Zaccarias Roman",0,3,7],["33","Noel Tesfaye",0,0,3],["34","Axel Borglund",0,1,6],["91","Hugo Lundberg",0,1,7]]};
 Object.assign(LINEUPS, {"32787402":[["2","Vidar Sjösvärd",1,2,20],["7","Axel Jürss",0,1,1],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,1,3],["13","Neo Negret",0,4,14],["20","Simon Carlén",0,3,10],["24","Tyler Iguchi",0,0,3],["29","Zaccarias Roman",0,2,3],["49","Max Palmkvist",0,2,2],["91","Hugo Lundberg",0,1,12]],"32787404":[["2","Vidar Sjösvärd",1,2,26],["7","Axel Jürss",0,0,0],["9","Sufyan Mohamed Ali",0,3,11],["11","Keelan Hearne Leander",0,2,2],["13","Neo Negret",0,4,22],["20","Simon Carlén",0,5,10],["23","Albert Solman",0,1,1],["24","Tyler Iguchi",0,0,13],["29","Zaccarias Roman",0,1,2],["49","Max Palmkvist",0,1,2],["91","Hugo Lundberg",0,2,8]],"32787407":[["2","Vidar Sjösvärd",1,0,16],["9","Sufyan Mohamed Ali",0,3,20],["11","Keelan Hearne Leander",0,0,10],["13","Neo Negret",0,1,13],["20","Simon Carlén",0,1,9],["23","Albert Solman",0,3,2],["24","Tyler Iguchi",0,3,9],["49","Max Palmkvist",0,0,4],["91","Hugo Lundberg",0,3,7]],"32787410":[["2","Vidar Sjösvärd",1,4,10],["9","Sufyan Mohamed Ali",0,3,7],["11","Keelan Hearne Leander",0,0,3],["13","Neo Negret",0,3,17],["20","Simon Carlén",0,2,8],["23","Albert Solman",0,4,3],["24","Tyler Iguchi",0,0,11],["29","Zaccarias Roman",0,4,6],["49","Max Palmkvist",0,2,0],["91","Hugo Lundberg",0,0,2]]});
 if (FRESH) Object.assign(LINEUPS, FRESH.lineups || {});
+/* Laget tab (squad, player pages, season stats). build_site.py sets this to false for the public site while it is switched off there. */
+const SHOW_LAGET = false;
 const STAFF = ["Rasmus Özboga Abrahmsén"];
 // Player photos from the team's laget.se page. PRIVATE VERSION ONLY: build_site.py empties this for the public site.
 const PHOTOS = {};
@@ -859,7 +861,8 @@ function renderTeam() {
     <p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>`;
 }
 
-renderOverview(); renderCalendar(); renderTable(); renderResults(); renderTeam();
+if (!SHOW_LAGET) { document.getElementById("t-laget")?.remove(); document.getElementById("laget")?.remove(); }
+renderOverview(); renderCalendar(); renderTable(); renderResults(); if (SHOW_LAGET) renderTeam();
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 function show(id) {
@@ -1084,6 +1087,7 @@ function renderStats() {
 }
 
 function openSeason() {
+  if (!SHOW_LAGET) return;
   backToStats = false;
   const el = document.getElementById("match");
   if (el.hidden) { const cur = tabs.find(t => t.getAttribute("aria-selected") === "true"); lastTab = cur ? cur.dataset.tab : "laget"; }
@@ -1096,6 +1100,7 @@ function openSeason() {
   renderStats();
 }
 function openPlayer(name, rerender) {
+  if (!SHOW_LAGET) return;
   const fromStats = rerender ? backToStats : !!document.getElementById("statsbox") && !document.getElementById("match").hidden;
   const { list } = buildStats(); const p = list.find(x => x.name === name); if (!p) return;
   const maxPer = Math.max(1, ...p.per);
