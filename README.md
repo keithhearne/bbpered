@@ -116,7 +116,7 @@ If the repository is ever made private, the job would only have a limited number
 
 ## Good to know
 
-- **Player photos** are only in the owner's private copy of the app, not on this public site.
+- **Player photos** are shown in Trupp and in the Matchspel scorer list (the parents agreed, 19 Oct 2026). They can be removed from the public site again with one switch (`PUBLIC_PHOTOS` in the build script).
 - **The private copy** (a Claude artifact) doesn't update itself. Use the public app for live data.
 - **Backup:** the version from before the October 2026 redesign is kept on the branch `backup-before-v2`.
 - **Polite fetching:** the script identifies itself, fetches only this team's pages, and waits between requests.
