@@ -46,8 +46,9 @@ LIVE_BEFORE = timedelta(minutes=10)     # start polling this long before tip-off
 LIVE_AFTER = timedelta(minutes=100)     # ...and keep going this long after tip-off
 LIVE_STEP = 600                         # seconds between live updates
 AFTER_GAME = timedelta(hours=6)         # hourly catch-up checks after a game
-NIGHTLY_HOUR = 3                        # full fixture check every night (Swedish time)
-WEEKEND_CHECK_HOURS = (9, 14)           # extra light check on Fri–Sun
+NIGHT_START, NIGHT_END = 3, 9           # nightly full check: the first run after 03:00 each day (Swedish time)
+WEEKEND_EVERY = timedelta(hours=5)      # Fri–Sun daytime: a check at least every 5 hours
+LIVE_LEAD = timedelta(hours=3)          # a run this close before tip-off stays on and waits for the game
 
 S = requests.Session()
 S.headers["User-Agent"] = UA
@@ -382,20 +383,31 @@ def fixtures(prev):
 
 
 def decide(prev, t):
-    """Return ('live', end_time) / ('full', None) / ('skip', reason)."""
-    games = fixtures(prev)
-    soon = [k for k, _, done in games if not done and k - LIVE_BEFORE - timedelta(minutes=65) <= t <= k + LIVE_AFTER]
-    if soon:
-        return "live", max(soon) + LIVE_AFTER
-    recent = [k for k, _, _ in games if k + LIVE_AFTER < t <= k + AFTER_GAME]
-    if recent:
-        return "full", "catch-up after a game"
-    if t.hour == NIGHTLY_HOUR:
-        return "full", "nightly check"
-    if t.weekday() >= 4 and t.hour in WEEKEND_CHECK_HOURS:
-        return "full", "weekend check"
+    """Return ('live', end_time) / ('full', reason) / ('skip', reason).
+
+    GitHub sometimes skips or delays scheduled runs, so nothing here depends on running at an exact
+    minute: checks are due when the last update is old enough, and live mode starts up to 3 hours
+    before tip-off and simply waits for the game.
+    """
     if not prev:
         return "full", "first run"
+    games = fixtures(prev)
+    soon = [k for k, _, done in games if not done and k - LIVE_LEAD <= t <= k + LIVE_AFTER]
+    if soon:
+        return "live", max(soon) + LIVE_AFTER
+    try:
+        last = datetime.fromisoformat(prev["updated"]).replace(tzinfo=TZ)
+    except Exception:  # noqa: BLE001
+        last = t - timedelta(days=9)
+    age = t - last
+    night = t.replace(hour=NIGHT_START, minute=0, second=0, microsecond=0)
+    recent = [k for k, _, _ in games if k + LIVE_AFTER < t <= k + AFTER_GAME]
+    if recent and age >= timedelta(minutes=50):
+        return "full", "catch-up after a game"
+    if t >= night and last < night:
+        return "full", "nightly check" if t.hour < NIGHT_END else "daily check (the night run was missed)"
+    if t.weekday() >= 4 and 8 <= t.hour <= 21 and age >= WEEKEND_EVERY:
+        return "full", "weekend check"
     return "skip", "nothing scheduled"
 
 
@@ -435,6 +447,10 @@ def commit(msg):
         log("pushed")
 
 
+def needs_browser(force, mode, info, prev):
+    return mode == "full" and (force or "comps" not in prev or str(info).startswith(("nightly", "daily")))
+
+
 def main():
     prev = {}
     if os.path.exists(OUT):
@@ -444,10 +460,16 @@ def main():
     t = now()
     mode, info = ("full", "manual run") if force else decide(prev, t)
     log("mode:", mode, info if not isinstance(info, datetime) else "until " + info.strftime("%H:%M"))
+    if "--plan" in sys.argv:  # tells the workflow whether to install the browser for this run
+        out = os.environ.get("GITHUB_OUTPUT")
+        if out:
+            with open(out, "a") as f:
+                f.write(f"browser={'true' if needs_browser(force, mode, info, prev) else 'false'}\n")
+        return
     if mode == "skip":
         return
     if mode == "full":
-        save(build(prev, discover_new=force or info == "nightly check" or "comps" not in prev))
+        save(build(prev, discover_new=needs_browser(force, mode, info, prev)))
         commit("Update data")
         return
     # Live mode: wait for tip-off, then update every 10 minutes until the game window closes.

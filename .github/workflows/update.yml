@@ -1,15 +1,18 @@
 # Keeps data.json up to date from Profixio and Cup Manager.
-# Wakes every hour; scraper/scrape.py decides whether there is anything to do:
-#  - nightly full check at 03:00 (Swedish time) for new fixtures and changes, and for new
+# Wakes twice an hour; scraper/scrape.py decides whether there is anything to do:
+#  - nightly full check (first run after 03:00 Swedish time) for new fixtures and changes, and for new
 #    competitions P11 Röd has been entered into on Profixio (e.g. a new USM round)
-#  - a light check at 09:00 and 14:00 on Fridays–Sundays
-#  - on game days: live updates every 10 minutes from tip-off for about 1.5 hours, then hourly catch-up
+#  - Fridays–Sundays daytime: a check at least every 5 hours
+#  - game days: a run up to 3 hours before tip-off stays on, then updates every 10 minutes for about
+#    1.5 hours from tip-off; hourly catch-up afterwards
+#  GitHub sometimes skips scheduled runs, so the checks are based on "how long since the last update"
+#  rather than exact times.
 # Free on a public repository. Run it by hand from the Actions tab ("Run workflow").
 name: Update data
 
 on:
   schedule:
-    - cron: "7 * * * *"
+    - cron: "7,37 * * * *"   # twice an hour, because GitHub sometimes skips scheduled runs
   workflow_dispatch:
     inputs:
       force:
@@ -30,7 +33,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,13 +41,14 @@ jobs:
           python-version: "3.12"
       - run: pip install requests==2.32.3
       # A browser is only needed for the nightly check for new competitions (and manual runs).
-      - name: Install browser for the nightly competition check
-        if: ${{ github.event_name != 'schedule' || inputs.force }}
+      - name: Plan
+        id: plan
+        env:
+          FORCE: ${{ (github.event_name == 'push' || inputs.force) && '1' || '0' }}
+        run: python scraper/scrape.py --plan
+      - name: Install browser for the competition check
+        if: ${{ steps.plan.outputs.browser == 'true' }}
         run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
-      - name: Install browser (nightly)
-        if: ${{ github.event_name == 'schedule' }}
-        run: |
-          if [ "$(TZ=Europe/Stockholm date +%H)" = "03" ]; then pip install playwright==1.48.0 && python -m playwright install --with-deps chromium; fi
       - name: Fetch data
         env:
           FORCE: ${{ (github.event_name == 'push' || inputs.force) && '1' || '0' }}
