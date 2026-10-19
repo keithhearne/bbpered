@@ -798,7 +798,10 @@ const cupRow = c => `<li class="row cup">${dayCell(c)}
   <div class="right"><a class="cupbadge" href="${c.url}" target="_blank" rel="noopener" aria-label="${esc(c.name)} hos Cup Manager">Cup <small>↗</small></a></div></li>`;
 function renderCalendar() {
   const groups = {};
-  matches.concat(cups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
+  // Only today's games and games not played yet; results live on the Resultat page.
+  const t = new Date(), today = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+  const ahead = m => m.cup ? (m.end || m.start) >= today : (m.date === today || (!m.played && m.date >= today) || m.live);
+  matches.concat(cups).filter(ahead).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).forEach(m => { const k = m.date.slice(0, 7); (groups[k] = groups[k] || []).push(m); });
   document.getElementById("kalender").innerHTML = `
     ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1]} ${k.slice(0, 4)}</h2>
       <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}`;
