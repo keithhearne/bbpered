@@ -755,8 +755,7 @@ const ballStat = (k, v) => `<div class="bstat"><div class="ball">${BALL_SVG}<spa
 const instaSection = () => INSTA.length ? `<div><h2 class="h2 under">@Instagram</h2>
       <div class="insta">${INSTA.map(([id, date, text, img]) => { const d = date ? d8(date) : null; return `<a class="ig" href="https://www.instagram.com/${INSTA_USER}/reel/${id}/" target="_blank" rel="noopener">
         <span class="igimg">${img ? `<img src="data:image/webp;base64,${img}" alt="" loading="lazy">` : ""}<i class="play" aria-hidden="true"></i></span>
-        <span class="igd">${d ? `${d.getDate()} ${MON[d.getMonth()]}` : "Instagram"}</span>${text ? `<span class="igt">${esc(text)}</span>` : ""}</a>`; }).join("")}</div>
-      <a class="igall" href="https://www.instagram.com/${INSTA_USER}/" target="_blank" rel="noopener">Följ @${INSTA_USER} på <span class="nb">Instagram ›</span></a></div>` : "";
+        <span class="igd">${d ? `${d.getDate()} ${MON[d.getMonth()]}` : "Instagram"}</span>${text ? `<span class="igt">${esc(text)}</span>` : ""}</a>`; }).join("")}</div></div>` : "";
 const fmtStamp = v => { const d = new Date(v); return `${d.getDate()} ${MON[d.getMonth()]} ${String(v).slice(11, 16)}`; };
 /* When the update job last ran (status.json), even if it found nothing new. */
 const lastCheck = () => { try { const c = localStorage.getItem("p11-checked"); return c && c > DATA.updated ? c : ""; } catch (e) { return ""; } };
