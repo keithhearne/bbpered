@@ -381,6 +381,17 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 .avatar { position: relative; width: 46px; height: 46px; flex: none; }
 .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; box-shadow: 0 0 0 2px var(--accent); }
 .avatar b { position: absolute; right: -6px; bottom: -4px; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 11px; background: var(--accent); color: #fff; font-family: var(--display); font-weight: 400; font-size: .95rem; line-height: 22px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+#photobox { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(20, 24, 39, .55); padding: 16px; }
+#photobox[hidden] { display: none; }
+.pbcard { position: relative; background: var(--surface); border-radius: 18px; padding: 40px 22px 16px; display: grid; justify-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); max-width: 100%; }
+.pbcard img { width: 220px; max-width: 70vw; aspect-ratio: 1; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--accent); display: block; }
+.pbname { margin: 0; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; text-align: center; }
+.pbname b { background: var(--accent); color: #fff; font-family: var(--display); font-weight: 400; border-radius: 12px; min-width: 26px; padding: 0 6px; line-height: 24px; text-align: center; }
+.pbclose { position: absolute; top: 6px; right: 8px; width: 34px; height: 34px; border: 0; background: transparent; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; }
+.pbclose:focus-visible { outline: 2px solid var(--accent); border-radius: 50%; }
+.hoverpop { position: fixed; z-index: 40; width: 180px; height: 180px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--accent), 0 8px 24px rgba(0,0,0,.25); pointer-events: none; background: var(--surface); }
+.hoverpop[hidden] { display: none; }
+.roster .player.static:has(.avatar[data-photo]) { cursor: pointer; }
 .avatar.big { width: 72px; height: 72px; }
 .avatar.big b { min-width: 28px; height: 28px; line-height: 28px; border-radius: 14px; font-size: 1.2rem; }
 .roster .player { cursor: pointer; }
@@ -890,7 +901,7 @@ function renderTeam() {
     ${TEAM_PHOTO ? `<figure class="team-photo"><img src="data:image/webp;base64,${TEAM_PHOTO}" alt="P11 Röd, lagbild" width="560" height="420"></figure>` : `<div class="photo-slot">Lagbild kommer här</div>`}
     <div><h2 class="h2">Tränare</h2><div class="staff">${STAFF.map(n => `<span><b>Coach</b>${esc(n)}</span>`).join("")}</div></div>
     <div><h2 class="h2">Trupp · ${SQUAD.length} spelare</h2><ul class="roster">${sorted.map(p => `<li class="player${PLAYER_STATS ? "" : " static"}"${PLAYER_STATS ? ` data-player="${esc(p[1])}" tabindex="0" role="button"` : ""}>
-      ${photoOf(p[1]) ? `<span class="avatar"><img src="${photoOf(p[1])}" alt=""><b>${p[0] == null ? "–" : p[0]}</b></span>` : `<span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>`}
+      ${photoOf(p[1]) ? `<span class="avatar" data-photo="${esc(p[1])}" data-no="${p[0] == null ? "" : p[0]}"><img src="${photoOf(p[1])}" alt=""><b>${p[0] == null ? "–" : p[0]}</b></span>` : `<span class="jersey ${p[0] == null ? "none" : ""}">${p[0] == null ? "–" : p[0]}</span>`}
       <span class="pn">${esc(p[1])}</span><span class="py">${p[2]}</span></li>`).join("")}</ul></div>
     <p class="note">Truppen enligt Profixio. Nummer saknas för spelare som inte har något registrerat.</p>
     ${PLAYER_STATS ? `<p style="margin:0"><button type="button" class="quiet" id="openstats">Säsongsstatistik ›</button></p>` : ""}`;
@@ -1170,6 +1181,41 @@ function openPlayer(name, rerender) {
   document.querySelectorAll('section[role="tabpanel"]').forEach(s => s.hidden = true);
   el.hidden = false; window.scrollTo(0, 0);
 }
+// Bigger player photo. Public site (no player pages): tap a squad row. Private version: hover the photo
+// with a mouse, or tap the photo itself on a phone; the rest of the row still opens the player page.
+const photoBox = document.createElement("div");
+photoBox.id = "photobox"; photoBox.hidden = true;
+photoBox.innerHTML = `<div class="pbcard" role="dialog" aria-modal="true" aria-label="Spelarbild"><button type="button" class="pbclose" aria-label="Stäng">×</button><img alt=""><p class="pbname"></p></div>`;
+document.body.appendChild(photoBox);
+function openPhoto(name, no) {
+  if (!PHOTOS[name]) return;
+  photoBox.querySelector("img").src = photoOf(name);
+  photoBox.querySelector(".pbname").innerHTML = `${no ? `<b>${esc(no)}</b>` : ""}${esc(name)}`;
+  photoBox.hidden = false; photoBox.querySelector(".pbclose").focus();
+}
+const closePhoto = () => { photoBox.hidden = true; };
+photoBox.addEventListener("click", e => { if (!e.target.closest("img")) closePhoto(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !photoBox.hidden) closePhoto(); });
+const noHover = () => window.matchMedia && matchMedia("(hover: none)").matches;
+document.addEventListener("click", e => {
+  const av = e.target.closest && e.target.closest("#laget .avatar[data-photo]");
+  const row = e.target.closest && e.target.closest("#laget .player.static");
+  if (av && (!PLAYER_STATS || noHover())) { e.stopImmediatePropagation(); openPhoto(av.dataset.photo, av.dataset.no); return; }
+  if (row && !PLAYER_STATS) { const a = row.querySelector(".avatar[data-photo]"); if (a) openPhoto(a.dataset.photo, a.dataset.no); }
+}, true);
+const hoverPop = document.createElement("img");
+hoverPop.className = "hoverpop"; hoverPop.alt = ""; hoverPop.hidden = true; document.body.appendChild(hoverPop);
+document.addEventListener("mouseover", e => {
+  if (!PLAYER_STATS || noHover()) return;
+  const av = e.target.closest && e.target.closest("#laget .avatar[data-photo]");
+  if (!av) { hoverPop.hidden = true; return; }
+  const r = av.getBoundingClientRect();
+  hoverPop.src = photoOf(av.dataset.photo);
+  hoverPop.style.left = Math.round(r.right + 12) + "px";
+  hoverPop.style.top = Math.round(Math.max(8, r.top + r.height / 2 - 90)) + "px";
+  hoverPop.hidden = false;
+});
+document.addEventListener("scroll", () => { hoverPop.hidden = true; }, { passive: true });
 document.addEventListener("click", e => { const b = e.target.closest("[data-player]"); if (b) openPlayer(b.dataset.player); });
 document.addEventListener("keydown", e => { if (e.key === "Enter") { const tl = e.target.closest && e.target.closest("[data-table]"); if (tl) { goTable(tl.dataset.table); return; } const b = e.target.closest && e.target.closest("tr[data-player], li[data-player]"); if (b) openPlayer(b.dataset.player); const mm = e.target.closest && e.target.closest(".sbg[data-match], .sbx[data-match]"); if (mm) openMatch(mm.dataset.match); } });
 document.addEventListener("click", e => { if (e.target.closest("#openstats")) openSeason(); });
