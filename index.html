@@ -180,17 +180,24 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .plus { color: var(--win); } .minus { color: var(--loss); }
 .extra { display: none; }
 .wide .extra { display: table-cell; }
-.calsub { background: var(--surface, #fff); border: 2px solid var(--accent); border-radius: 14px; padding: 14px 16px; display: grid; gap: 12px; }
-.calhead { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: start; }
+.calsub { background: var(--surface, #fff); border: 2px solid var(--accent); border-radius: 14px; overflow: hidden; }
+.calsub > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; }
+.calsub > summary::-webkit-details-marker { display: none; }
+.calsub > summary::after { content: ""; width: 10px; height: 10px; border-right: 3px solid var(--accent); border-bottom: 3px solid var(--accent); transform: rotate(45deg); margin: -4px 6px 0 0; transition: transform .15s; }
+.calsub[open] > summary::after { transform: rotate(-135deg); margin-top: 6px; }
 .calico { width: 40px; height: 40px; border-radius: 10px; background: var(--card-soft); color: var(--accent); display: grid; place-items: center; }
 .calico svg { width: 24px; height: 24px; }
-.calsub h3 { margin: 0 0 2px; font-family: var(--display); font-size: 1.35rem; line-height: 1.1; color: var(--ink); }
-.calsub p { margin: 0; font-size: .9rem; color: var(--muted); line-height: 1.35; }
+.calt { display: grid; gap: 2px; min-width: 0; }
+.calt b { font-family: var(--display); font-size: 1.25rem; line-height: 1.1; color: var(--ink); }
+.calt small { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.calbody { display: grid; gap: 12px; padding: 4px 14px 14px; border-top: 2px solid var(--card-soft); padding-top: 12px; }
+.calq { margin: 0; font-weight: 800; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.calnote, .calhelp p { margin: 0; font-size: .86rem; color: var(--muted); line-height: 1.4; }
 .calbtns { display: flex; flex-wrap: wrap; gap: 8px; }
 .calbtn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--accent); background: #fff; color: var(--accent); font: 700 .9rem var(--body); text-decoration: none; cursor: pointer; overflow-wrap: anywhere; }
 .calbtn.main { background: var(--accent); color: #fff; }
 .calhelp summary { cursor: pointer; font-weight: 700; font-size: .88rem; color: var(--accent); }
-.calhelp p { margin-top: 8px; font-size: .85rem; }
+.calhelp p { margin-top: 8px; }
 .toggle { background: var(--chip); border: 0; border-radius: 999px; padding: 8px 14px; font: 700 .85rem var(--body); color: var(--ink); cursor: pointer; }
 .note { color: var(--muted); font-size: .85rem; }
 .src { color: var(--muted); font-size: .85rem; }
@@ -844,21 +851,43 @@ const cupRow = c => `<li class="row cup">${dayCell(c)}
   <div class="right"><a class="cupbadge" href="${c.url}" target="_blank" rel="noopener" aria-label="${esc(c.name)} hos Cup Manager">Cup <small>↗</small></a></div></li>`;
 /* Calendar subscription (option 2): the update job writes matcher.ics next to data.json. */
 const CAL_FEED = false;
-const CAL_HOST = "keithhearne.github.io/bbpered/matcher.ics";
-const calCard = () => !CAL_FEED ? "" : `<section class="calsub" aria-label="Matcherna i din kalender">
-  <div class="calhead"><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
-    <div><h3>Matcherna i din kalender</h3><p>Prenumerera en gång – nya matcher, ändrade tider och resultat kommer in av sig själva.</p></div></div>
-  <div class="calbtns">
-    <a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + CAL_HOST)}" target="_blank" rel="noopener">Google Kalender</a>
-    <a class="calbtn" href="webcal://${CAL_HOST}">iPhone / Outlook</a>
-    <button class="calbtn" type="button" id="calcopy">Kopiera länk</button>
+const CAL_BASE = "keithhearne.github.io/bbpered/";
+const CAL_FEEDS = [["alla", "Alla", "matcher.ics"], ["serie", "Serien", "matcher-serie.ics"], ["usm", "USM", "matcher-usm.ics"], ["cup", "Cuper", "matcher-cup.ics"]];
+let calPick = "alla", calOpen = false;
+const calHost = () => CAL_BASE + (CAL_FEEDS.find(f => f[0] === calPick) || CAL_FEEDS[0])[2];
+const calLinks = () => `<a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + calHost())}" target="_blank" rel="noopener">Google Kalender</a>
+    <a class="calbtn" href="webcal://${calHost()}">iPhone / Outlook</a>
+    <button class="calbtn" type="button" id="calcopy">Kopiera länk</button>`;
+const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
+  <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
+    <span class="calt"><b>Lägg till matcherna i din kalender</b><small>Prenumerera en gång – uppdateras automatiskt</small></span></summary>
+  <div class="calbody">
+    <p class="calq">Vilka matcher vill du ha?</p>
+    <div class="seg calseg" role="group" id="calseg">${CAL_FEEDS.map(([k, l]) => `<button type="button" data-cal="${k}" aria-pressed="${k === calPick}">${l}</button>`).join("")}</div>
+    <p class="calnote">Nya matcher, ändrade tider och resultat kommer in av sig själva. USM tar med alla omgångar, Cuper alla cuper vi spelar.</p>
+    <div class="calbtns" id="calbtns">${calLinks()}</div>
+    <details class="calhelp"><summary>Hur gör jag?</summary>
+      <p><b>Android (Google Kalender):</b> välj vilka matcher ovan, tryck på <i>Google Kalender</i>, logga in om det behövs och tryck <i>Lägg till</i>. Kalendern syns sedan i Google Kalender och i Samsung Kalender (om den synkar med ditt Google-konto). Öppnas inget? Öppna calendar.google.com i webbläsaren, välj <i>Andra kalendrar → + → Från webbadress</i> och klistra in länken.</p>
+      <p><b>iPhone:</b> tryck på <i>iPhone / Outlook</i> och sedan <i>Prenumerera</i>.</p>
+      <p>Välj antingen <i>Alla</i> eller enstaka tävlingar – annars kommer matcherna dubbelt. Ändringar kan ta några timmar innan de syns, eftersom Google hämtar kalendern några gånger per dygn. Det är bara en lista med matcher; inget installeras i telefonen.</p>
+    </details>
   </div>
-  <details class="calhelp"><summary>Hur gör jag?</summary>
-    <p><b>Android (Google Kalender):</b> tryck på <i>Google Kalender</i>, logga in om det behövs och tryck <i>Lägg till</i>. Kalendern "P11 Röd – matcher" syns sedan i Google Kalender och i Samsung Kalender (om den synkar med ditt Google-konto). Öppnas inget? Öppna calendar.google.com i webbläsaren, välj <i>Andra kalendrar → + → Från webbadress</i> och klistra in länken.</p>
-    <p><b>iPhone:</b> tryck på <i>iPhone / Outlook</i> och sedan <i>Prenumerera</i>.</p>
-    <p>Ändringar kan ta några timmar innan de syns – Google hämtar kalendern några gånger per dygn. Det är bara en lista med matcher; inget installeras i telefonen.</p>
-  </details>
-</section>`;
+</details>`;
+function calWire() {
+  const box = document.querySelector("#kalender .calsub"); if (!box) return;
+  box.addEventListener("toggle", () => { calOpen = box.open; });
+  const copy = () => { const cb = document.getElementById("calcopy"); if (!cb) return; cb.addEventListener("click", async () => {
+    const url = "https://" + calHost();
+    try { await navigator.clipboard.writeText(url); cb.textContent = "Kopierad ✓"; } catch (e) { cb.textContent = url; }
+    setTimeout(() => { cb.textContent = "Kopiera länk"; }, 2500);
+  }); };
+  copy();
+  box.querySelectorAll("#calseg button").forEach(b => b.addEventListener("click", () => {
+    calPick = b.dataset.cal;
+    box.querySelectorAll("#calseg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    document.getElementById("calbtns").innerHTML = calLinks(); copy();
+  }));
+}
 function renderCalendar() {
   const groups = {};
   // Only today's games and games not played yet; results live on the Resultat page.
@@ -868,13 +897,7 @@ function renderCalendar() {
   document.getElementById("kalender").innerHTML = `${calCard()}
     ${Object.entries(groups).map(([k, ms]) => `<div><h2 class="h2 rule">${MONL[+k.slice(5) - 1].replace(/^./, c => c.toUpperCase())} ${k.slice(0, 4)}</h2>
       <ul class="list">${ms.map(m => m.cup ? cupRow(m) : m.played ? resRow(m, true) : upRow(m)).join("")}</ul></div>`).join("")}`;
-  const cb = document.getElementById("calcopy");
-  if (cb) cb.addEventListener("click", async () => {
-    const url = "https://" + CAL_HOST;
-    try { await navigator.clipboard.writeText(url); cb.textContent = "Kopierad ✓"; }
-    catch (e) { cb.textContent = url; }
-    setTimeout(() => { cb.textContent = "Kopiera länk"; }, 2500);
-  });
+  calWire();
 }
 
 function renderTable() {

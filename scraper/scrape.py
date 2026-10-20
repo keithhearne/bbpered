@@ -571,7 +571,10 @@ def save(data):
 
 # ---------- calendar feed ----------
 
-ICS = os.path.join(ROOT, "matcher.ics")
+# Calendar feeds: (file, group or None for everything, calendar name). Group = serie / usm (all rounds) / cup.
+ICS_FEEDS = [("matcher.ics", None, "P11 Röd – matcher"), ("matcher-serie.ics", "serie", "P11 Röd – serien"),
+             ("matcher-usm.ics", "usm", "P11 Röd – USM"), ("matcher-cup.ics", "cup", "P11 Röd – cuper")]
+OUR_EXTRA = set()
 APP_URL = "https://keithhearne.github.io/bbpered/"
 COMP_NAMES = {"serie": "Serie", "usm": "USM"}
 
@@ -596,7 +599,7 @@ def ics_fold(line):
 def write_ics(data):
     """Subscribable calendar with every P11 Röd game (series, USM rounds and cups). Rewritten on every update,
     so calendars that subscribe to it pick up new games, time changes and results by themselves."""
-    ours = {OUR, "KFUM Blackebergs IK"} | {c.get("team") for c in (data.get("comps") or {}).values() if c.get("team")}
+    OUR_EXTRA.update(c.get("team") for c in (data.get("comps") or {}).values() if c.get("team"))
     games = []
     for key, s in (data.get("series") or {}).items():
         comp = s.get("short") or COMP_NAMES.get(key, "Serie")
@@ -604,22 +607,29 @@ def write_ics(data):
             comp = s.get("head") or comp
         for r in s.get("matches", []):
             date, tm, home, away, venue, hs, as_, mid = (r + [None] * 8)[:8]
-            games.append((date, tm, home, away, venue, hs, as_, mid, comp, None))
+            games.append((date, tm, home, away, venue, hs, as_, mid, comp, None, "usm" if (s.get("short") or COMP_NAMES.get(key, "")) == "USM" else "serie"))
     for r in data.get("cupGames") or []:
         date, tm, home, away, venue, url, comp, hs, as_, mid = (r + [None] * 10)[:10]
-        games.append((date, tm, home, away, venue, hs, as_, mid, comp, url))
+        games.append((date, tm, home, away, venue, hs, as_, mid, comp, url, "cup"))
     try:  # stable stamp = time of the data, so the file only changes when the data does
         stamp = datetime.strptime(data["updated"], "%Y-%m-%dT%H:%M").replace(tzinfo=TZ).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     except (KeyError, ValueError):
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    for fname, group, calname in ICS_FEEDS:
+        sel = [g for g in games if group is None or g[10] == group]
+        write_feed(os.path.join(ROOT, fname), sel, calname, stamp)
+
+
+def write_feed(path, games, calname, stamp):
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//bbpered//P11 Röd matcher//SV", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
-         "X-WR-CALNAME:P11 Röd – matcher", "X-WR-CALDESC:Blackeberg P11 Röds matcher (serie\\, USM och cuper). Uppdateras automatiskt.",
+         f"X-WR-CALNAME:{ics_text(calname)}", "X-WR-CALDESC:Blackeberg P11 Röds matcher. Uppdateras automatiskt.",
          "X-WR-TIMEZONE:Europe/Stockholm", "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H",
          "BEGIN:VTIMEZONE", "TZID:Europe/Stockholm",
          "BEGIN:DAYLIGHT", "TZOFFSETFROM:+0100", "TZOFFSETTO:+0200", "TZNAME:CEST", "DTSTART:19700329T020000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU", "END:DAYLIGHT",
          "BEGIN:STANDARD", "TZOFFSETFROM:+0200", "TZOFFSETTO:+0100", "TZNAME:CET", "DTSTART:19701025T030000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
          "END:VTIMEZONE"]
-    for date, tm, home, away, venue, hs, as_, mid, comp, url in sorted(games, key=lambda g: (g[0] or "", g[1] or "")):
+    ours = {OUR, "KFUM Blackebergs IK"} | OUR_EXTRA
+    for date, tm, home, away, venue, hs, as_, mid, comp, url, _grp in sorted(games, key=lambda g: (g[0] or "", g[1] or "")):
         if not date or not mid:
             continue
         home_us = home in ours
@@ -648,9 +658,9 @@ def write_ics(data):
             L.append(f"LOCATION:{ics_text(venue)}")
         L += [f"URL:{url or APP_URL}", "END:VEVENT"]
     L.append("END:VCALENDAR")
-    with open(ICS, "w", encoding="utf-8", newline="") as f:
+    with open(path, "w", encoding="utf-8", newline="") as f:
         f.write("\r\n".join(ics_fold(x) for x in L) + "\r\n")
-    log("saved matcher.ics,", len(games), "games")
+    log("saved", os.path.basename(path) + ",", len(games), "games")
 
 
 def write_status(result, mode):
@@ -694,7 +704,7 @@ def commit(msg):
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
     os.system('git config user.name "p11-bot" && git config user.email "actions@users.noreply.github.com"')
-    os.system("git add data.json status.json STATUS.md matcher.ics")
+    os.system("git add data.json status.json STATUS.md matcher*.ics")
     if os.system("git diff --cached --quiet") != 0:
         os.system(f'git commit -q -m "{msg}" && (git push -q || (git pull -q --rebase && git push -q))')
         log("pushed")

@@ -1,0 +1,64 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//bbpered//P11 Röd matcher//SV
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:P11 Röd – cuper
+X-WR-CALDESC:Blackeberg P11 Röds matcher. Uppdateras automatiskt.
+X-WR-TIMEZONE:Europe/Stockholm
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VTIMEZONE
+TZID:Europe/Stockholm
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+TZNAME:CEST
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+TZNAME:CET
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:p11rod-88323409@bbpered
+DTSTAMP:20261020T211000Z
+DTSTART;TZID=Europe/Stockholm:20261030T111500
+DTEND;TZID=Europe/Stockholm:20261030T124500
+SUMMARY:Södertälje BBK EF – P11 Röd
+DESCRIPTION:Södertälje Open\nAllt om matchen: https://keithhearne.github
+ .io/bbpered/\nhttps://sodertaljeopen.cupmanager.net/2026\,sv/result/match/
+ 88323409
+LOCATION:Rosenborgshallen
+URL:https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323409
+END:VEVENT
+BEGIN:VEVENT
+UID:p11rod-88323411@bbpered
+DTSTAMP:20261020T211000Z
+DTSTART;TZID=Europe/Stockholm:20261030T171500
+DTEND;TZID=Europe/Stockholm:20261030T184500
+SUMMARY:P11 Röd – BMS Herlev
+DESCRIPTION:Södertälje Open\nAllt om matchen: https://keithhearne.github
+ .io/bbpered/\nhttps://sodertaljeopen.cupmanager.net/2026\,sv/result/match/
+ 88323411
+LOCATION:Rosenborgshallen
+URL:https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323411
+END:VEVENT
+BEGIN:VEVENT
+UID:p11rod-88323414@bbpered
+DTSTAMP:20261020T211000Z
+DTSTART;TZID=Europe/Stockholm:20261031T110500
+DTEND;TZID=Europe/Stockholm:20261031T123500
+SUMMARY:Viby Basket 2 – P11 Röd
+DESCRIPTION:Södertälje Open\nAllt om matchen: https://keithhearne.github
+ .io/bbpered/\nhttps://sodertaljeopen.cupmanager.net/2026\,sv/result/match/
+ 88323414
+LOCATION:Rosenborgshallen
+URL:https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323414
+END:VEVENT
+END:VCALENDAR

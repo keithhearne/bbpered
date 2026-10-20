@@ -4,8 +4,7 @@ PRODID:-//bbpered//P11 Röd matcher//SV
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:P11 Röd – matcher
-X-WR-CALDESC:Blackeberg P11 Röds matcher (serie\, USM och cuper). Uppdate
- ras automatiskt.
+X-WR-CALDESC:Blackeberg P11 Röds matcher. Uppdateras automatiskt.
 X-WR-TIMEZONE:Europe/Stockholm
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 X-PUBLISHED-TTL:PT6H
