@@ -562,7 +562,92 @@ def build(prev, live_only=False, discover_new=False):
 def save(data):
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    try:
+        write_ics(data)
+    except Exception as e:  # noqa: BLE001  (the calendar must never stop the data update)
+        log("calendar feed failed:", e)
     log("saved data.json", os.path.getsize(OUT), "bytes;", len(data["live"]), "live game(s)")
+
+
+# ---------- calendar feed ----------
+
+ICS = os.path.join(ROOT, "matcher.ics")
+APP_URL = "https://keithhearne.github.io/bbpered/"
+COMP_NAMES = {"serie": "Serie", "usm": "USM"}
+
+
+def ics_text(t):
+    t = str(t or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+    return t
+
+
+def ics_fold(line):
+    out, b = [], line.encode("utf-8")
+    while len(b) > 74:
+        cut = 74
+        while (b[cut] & 0xC0) == 0x80:  # don't split a UTF-8 character
+            cut -= 1
+        out.append(b[:cut].decode("utf-8"))
+        b = b[cut:]
+    out.append(b.decode("utf-8"))
+    return "\r\n ".join(out)
+
+
+def write_ics(data):
+    """Subscribable calendar with every P11 Röd game (series, USM rounds and cups). Rewritten on every update,
+    so calendars that subscribe to it pick up new games, time changes and results by themselves."""
+    ours = {OUR, "KFUM Blackebergs IK"} | {c.get("team") for c in (data.get("comps") or {}).values() if c.get("team")}
+    games = []
+    for key, s in (data.get("series") or {}).items():
+        comp = s.get("short") or COMP_NAMES.get(key, "Serie")
+        if key not in COMP_NAMES and comp == "USM":
+            comp = s.get("head") or comp
+        for r in s.get("matches", []):
+            date, tm, home, away, venue, hs, as_, mid = (r + [None] * 8)[:8]
+            games.append((date, tm, home, away, venue, hs, as_, mid, comp, None))
+    for r in data.get("cupGames") or []:
+        date, tm, home, away, venue, url, comp, hs, as_, mid = (r + [None] * 10)[:10]
+        games.append((date, tm, home, away, venue, hs, as_, mid, comp, url))
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//bbpered//P11 Röd matcher//SV", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+         "X-WR-CALNAME:P11 Röd – matcher", "X-WR-CALDESC:Blackeberg P11 Röds matcher (serie\\, USM och cuper). Uppdateras automatiskt.",
+         "X-WR-TIMEZONE:Europe/Stockholm", "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H",
+         "BEGIN:VTIMEZONE", "TZID:Europe/Stockholm",
+         "BEGIN:DAYLIGHT", "TZOFFSETFROM:+0100", "TZOFFSETTO:+0200", "TZNAME:CEST", "DTSTART:19700329T020000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU", "END:DAYLIGHT",
+         "BEGIN:STANDARD", "TZOFFSETFROM:+0200", "TZOFFSETTO:+0100", "TZNAME:CET", "DTSTART:19701025T030000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
+         "END:VTIMEZONE"]
+    for date, tm, home, away, venue, hs, as_, mid, comp, url in sorted(games, key=lambda g: (g[0] or "", g[1] or "")):
+        if not date or not mid:
+            continue
+        home_us = home in ours
+        opp = away if home_us else home
+        title = f"P11 Röd – {opp}" if home_us else f"{opp} – P11 Röd"
+        desc = [comp + (" · Hemma" if home_us and not url else " · Borta" if not url else "")]
+        if hs is not None and as_ is not None:
+            us, them = (hs, as_) if home_us else (as_, hs)
+            res = "Vinst" if us > them else "Förlust"
+            title += f" ({hs}–{as_}, {res})"
+            desc.append(f"Resultat: {hs}–{as_} ({res})")
+        desc.append(f"Allt om matchen: {APP_URL}")
+        if url:
+            desc.append(url)
+        d = date.replace("-", "")
+        L += ["BEGIN:VEVENT", f"UID:p11rod-{mid}@bbpered", f"DTSTAMP:{stamp}"]
+        if tm:
+            start = datetime.strptime(date + " " + tm, "%Y-%m-%d %H:%M")
+            end = start + timedelta(minutes=90)
+            L += [f"DTSTART;TZID=Europe/Stockholm:{start:%Y%m%dT%H%M%S}", f"DTEND;TZID=Europe/Stockholm:{end:%Y%m%dT%H%M%S}"]
+        else:
+            nxt = (datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y%m%d")
+            L += [f"DTSTART;VALUE=DATE:{d}", f"DTEND;VALUE=DATE:{nxt}"]
+        L += [f"SUMMARY:{ics_text(title)}", f"DESCRIPTION:{ics_text(chr(10).join(desc))}"]
+        if venue:
+            L.append(f"LOCATION:{ics_text(venue)}")
+        L += [f"URL:{url or APP_URL}", "END:VEVENT"]
+    L.append("END:VCALENDAR")
+    with open(ICS, "w", encoding="utf-8", newline="") as f:
+        f.write("\r\n".join(ics_fold(x) for x in L) + "\r\n")
+    log("saved matcher.ics,", len(games), "games")
 
 
 def write_status(result, mode):
