@@ -735,7 +735,7 @@ const upRow = m => `<li class="row">${dayCell(m)}
   <div class="right"><div class="clock">${m.time}</div><div class="ha ${m.comp ? "cupha" : m.home ? "home" : ""}">${m.comp ? "Cup" : m.home ? "Hemma" : "Borta"}</div></div></li>`;
 const resRow = (m, sb) => `<li class="row">${dayCell(m)}
   <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span>${compChip(m)} · ${m.home ? "Hemma" : "Borta"}</span>${m.id && PBP[m.id] ? `<button class="mplay" type="button" data-match="${m.id}">Matchspel ▸</button>` : `<a href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a>`}</span></div></div>
-  ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}</span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
+  ${sb ? `<div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span></div>` : `<div class="score ${m.win ? "w" : "l"}"><span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span><span class="n">${m.us}–${m.them}</span></div>`}</li>`;
 
 const us = DATA.table.find(r => r[1] === DATA.team);
 const court = `<svg class="court" viewBox="0 0 220 300" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3">
@@ -877,7 +877,7 @@ function prevSeasons() {
     return `<details class="season"><summary><span class="st">Säsongen ${season}</span><span class="ss">${age ? "Pojkar " + age + " · " : ""}${games.length} matcher · ${w} V – ${games.length - w} F</span></summary>
       <ul class="list">${games.map(m => `<li class="row">${dayCell(m)}
         <div class="mid"><div class="t">${esc(m.opp)}</div><div class="s links"><span class="mlinks"><span><span class="compt c-${m.c}">${m.l}</span> · ${esc(m.where)}</span><a href="${m.url}" target="_blank" rel="noopener">${m.src || "Profixio"} ↗</a></span></div></div>
-        <div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}</span></div></li>`).join("")}</ul></details>`; }).join("")}</div>`;
+        <div class="sbscore rowsb${m.win ? " win" : ""}"><b class="pill rpill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</b><i class="chev l"></i><span>${m.us}–${m.them}<small class="${m.win ? "w" : "l"}">${m.win ? "Vinst" : "Förlust"}</small></span></div></li>`).join("")}</ul></details>`; }).join("")}</div>`;
 }
 let resFilter = "alla";
 const seriesFilter = (list, f) => f === "alla" ? list : list.filter(m => m.series === f);
