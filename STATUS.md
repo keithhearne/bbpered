@@ -2,8 +2,8 @@
 
 This file is rewritten every time the update job runs (Swedish time).
 
-- **Last run:** 2026-10-20 23:10 — Full update (manual run)
-- **Data last refreshed:** 2026-10-20 23:10
+- **Last run:** 2026-10-20 23:25 — Full update (manual run)
+- **Data last refreshed:** 2026-10-20 23:25
 
 GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
 
@@ -11,6 +11,7 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 
 | Time | What happened |
 |---|---|
+| 2026-10-20 23:25 | Full update (manual run) |
 | 2026-10-20 23:10 | Full update (manual run) |
 | 2026-10-20 23:09 | Full update (manual run) |
 | 2026-10-20 22:01 | Full update (manual run) |
