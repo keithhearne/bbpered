@@ -94,9 +94,9 @@ Two limits:
 - **New season:** the club list is per season. When the 27/28 season starts, the address in `REG_URL` (in `scraper/scrape.py`) needs updating once.
 - **Cup Manager cups:** cups run on Cup Manager are not listed on Profixio, so each new one is still added by hand (below). Their knock-out games do appear automatically once the groups are finished.
 
-### The calendar feed (matcher.ics)
-Every update also writes **`matcher.ics`**, a calendar with all P11 Röd games (league, USM rounds and cups). People can subscribe to it once, at https://keithhearne.github.io/bbpered/matcher.ics, and new games, changed times and results then show up in their calendar by themselves (Google Calendar checks a few times a day, so changes can take some hours). It is a plain text list of games; nothing is installed on anyone's phone.
-The "Matcherna i din kalender" box at the top of **Kalender** has the subscribe buttons. It is only shown in the private version for now; set `PUBLIC_CAL_FEED = True` in `build_site.py` (or ask Claude) to show it on the public site.
+### The calendar feeds (matcher*.ics)
+Every update also writes four calendars with P11 Röd's games: **`matcher.ics`** (all games), **`matcher-serie.ics`** (the league), **`matcher-usm.ics`** (all USM rounds) and **`matcher-cup.ics`** (all cups). People subscribe once, and new games, changed times and results then show up in their calendar by themselves (Google Calendar checks a few times a day, so changes can take some hours). They are plain text lists of games; nothing is installed on anyone's phone.
+The collapsible "Lägg till matcherna i din kalender" box at the top of **Kalender** lets people pick which games and subscribe. It is only shown in the private version for now; set `PUBLIC_CAL_FEED = True` in `build_site.py` (or ask Claude) to show it on the public site.
 
 ### Add a new Instagram video
 The **@Instagram** section on Översikt shows the 3 newest videos listed in **`instagram.txt`** in this repository.
