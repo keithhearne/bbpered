@@ -27,8 +27,8 @@ UA = "BlackebergP11-app/1.0 (private team-following app; github.com/keithhearne/
 
 # Competitions on Profixio. teamWebId is the team id in the URL and in the match log.
 SERIES = {
-    "serie": {"url": "https://www.profixio.com/app/leagueid27806/teams/1586476?k=1184305", "teamWebId": 1586476},
-    "usm": {"url": "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504", "teamWebId": 1625380},
+    "serie": {"url": "https://www.profixio.com/app/leagueid27806/teams/1586476?k=1184305", "teamWebId": 1586476, "team": "KFUM Blackebergs IK Röd"},
+    "usm": {"url": "https://www.profixio.com/app/leagueid27658/teams/1625380?k=1186504", "teamWebId": 1625380, "team": "KFUM Blackebergs IK"},
 }
 OUR = "KFUM Blackebergs IK Röd"
 # The club's list of teams in every competition this season. Checked nightly for new competitions
@@ -212,10 +212,17 @@ def parse_match_log(page, team_web_id):
 def scrape_profixio(prev, live_only=False):
     out = {"series": {}, "pbp": {}, "lineups": {}, "logos": {}, "live": {}}
     prev_series = prev.get("series", {})
-    for key, cfg in all_series(prev).items():
+    out["comps"] = {}
+    queue = list(all_series(prev).items())
+    while queue:
+        key, cfg = queue.pop(0)
         log("Profixio", key)
         try:
             page = get(cfg["url"])
+            if not live_only:
+                for nk, nc in find_rounds(page, cfg, [c for _, c in queue] + list(out["comps"].values()), prev).items():
+                    out["comps"][nk] = nc
+                    queue.append((nk, nc))
             matches = parse_matches(page)
         except Exception as e:  # noqa: BLE001
             log("  matches failed:", e)
@@ -262,16 +269,52 @@ def scrape_profixio(prev, live_only=False):
                 except Exception as e:  # noqa: BLE001
                     log("  match log failed:", e)
         out["series"][key] = {"matches": rows, "table": table}
-        if key in prev.get("comps", {}):
-            out["series"][key].update({k: v for k, v in prev["comps"][key].items() if k in ("short", "head", "name", "team", "url")})
+        info = out["comps"].get(key) or prev.get("comps", {}).get(key)
+        if info:
+            out["series"][key].update({k: v for k, v in info.items() if k in ("short", "head", "name", "team", "url")})
     return out
+
+
+def find_rounds(page, cfg, also, prev):
+    """A team page lists every competition (Profixio "klasse") the same team is entered in, e.g. the next
+    Ungdoms-SM round ("Omg 2") once it is published. Return the ones we don't follow yet, so they get
+    their own fixtures and table (scores empty until played)."""
+    m = re.search(r"/app/(leagueid\d+)/teams/(\d+)", cfg["url"])
+    if not m:
+        return {}
+    urls = [c["url"] for c in all_series(prev).values()] + [c["url"] for c in also]
+    known = {k for u in urls for k in re.findall(r"[?&]k=(\d+)", u)}
+    new = {}
+    for k, label in re.findall(r'wire:click="chooseKlasse\((\d+)\)"[^>]*>\s*([^<]+?)\s*</button>', page):
+        label = clean(label)
+        if k in known or "k" + k in new or "Pojkar U16" not in label:
+            continue
+        omg = re.search(r"Omg\.?\s*(\d+)", label, re.I)
+        usm = "USM" in label or "Ungdoms-SM" in label
+        short = "USM" if usm else "RM" if "RM" in label or "Riksmästerskap" in label else "Serie"
+        group = ""
+        try:
+            cat = get(f"https://www.profixio.com/app/{m.group(1)}/category/{k}")
+            i = cat.find(f"teams/{m.group(2)}")
+            g = re.findall(r">\s*(Grupp [^<]{1,20}?)\s*<", cat[:i]) if i > 0 else []
+            group = g[-1] if g else ""
+        except Exception as e:  # noqa: BLE001
+            log("  group lookup failed:", e)
+        part = " ".join(x for x in [f"Omg {omg.group(1)}" if omg else "", group] if x)
+        head = (("USM U16" if usm else short + " U16") + (" · " + part if part else "")).strip()
+        name = ("Ungdoms-SM · Pojkar U16" if usm else label) + (f", omgång {omg.group(1)}" if omg else "") + (f" {group.lower()}" if group else "")
+        new["k" + k] = {"url": f"https://www.profixio.com/app/{m.group(1)}/teams/{m.group(2)}?k={k}", "teamWebId": int(m.group(2)),
+                        "team": cfg.get("team") or OUR, "short": short,
+                        "head": head, "name": name, "found": now().strftime("%Y-%m-%d")}
+        log("  new round/competition:", head, new["k" + k]["url"])
+    return new
 
 
 def all_series(prev):
     out = dict(SERIES)
     for k, c in (prev.get("comps") or {}).items():
         if k not in out:
-            out[k] = {"url": c["url"], "teamWebId": c["teamWebId"]}
+            out[k] = {"url": c["url"], "teamWebId": c["teamWebId"], "team": c.get("team")}
     return out
 
 
@@ -508,7 +551,7 @@ def build(prev, live_only=False, discover_new=False):
         "lineups": {**prev.get("lineups", {}), **p["lineups"]},
         "logos": {**prev.get("logos", {}), **p["logos"]},
         "live": {**p["live"], **cup_live},
-        "comps": prev.get("comps", {}),
+        "comps": {**prev.get("comps", {}), **p["comps"]},
         "discovery": LAST_DISCOVERY or prev.get("discovery", {}),
         "insta": prev.get("insta", []) if live_only else scrape_insta(prev),
     }
