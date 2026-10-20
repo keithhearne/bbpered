@@ -384,12 +384,12 @@ tfoot td { border-top: 2px solid var(--accent); font-weight: 800; }
 #photobox { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(20, 24, 39, .55); padding: 16px; }
 #photobox[hidden] { display: none; }
 .pbcard { position: relative; background: var(--surface); border-radius: 18px; padding: 40px 22px 16px; display: grid; justify-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); max-width: 100%; }
-.pbcard img { width: 260px; max-width: 72vw; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; border-radius: 16px; box-shadow: 0 0 0 4px var(--accent); display: block; }
+.pbcard img { width: 240px; max-width: 70vw; aspect-ratio: 1; object-fit: cover; object-position: 50% 12%; border-radius: 50%; box-shadow: 0 0 0 4px var(--accent); display: block; }
 .pbname { margin: 0; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; text-align: center; }
 .pbname b { background: var(--accent); color: #fff; font-family: var(--display); font-weight: 400; border-radius: 12px; min-width: 26px; padding: 0 6px; line-height: 24px; text-align: center; }
 .pbclose { position: absolute; top: 6px; right: 8px; width: 34px; height: 34px; border: 0; background: transparent; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; }
 .pbclose:focus-visible { outline: 2px solid var(--accent); border-radius: 50%; }
-.hoverpop { position: fixed; z-index: 40; width: 180px; height: 240px; object-fit: cover; object-position: top; border-radius: 14px; box-shadow: 0 0 0 4px var(--accent), 0 8px 24px rgba(0,0,0,.25); pointer-events: none; background: var(--surface); }
+.hoverpop { position: fixed; z-index: 40; width: 180px; height: 180px; object-fit: cover; object-position: 50% 12%; border-radius: 50%; box-shadow: 0 0 0 4px var(--accent), 0 8px 24px rgba(0,0,0,.25); pointer-events: none; background: var(--surface); }
 .hoverpop[hidden] { display: none; }
 .roster .player.static:has(.avatar[data-photo]) { cursor: pointer; }
 .avatar.big { width: 72px; height: 72px; }
@@ -1210,7 +1210,7 @@ document.addEventListener("mouseover", e => {
   const r = av.getBoundingClientRect();
   hoverPop.src = bigPhotoOf(av.dataset.photo);
   hoverPop.style.left = Math.round(r.right + 12) + "px";
-  hoverPop.style.top = Math.round(Math.max(8, r.top + r.height / 2 - 120)) + "px";
+  hoverPop.style.top = Math.round(Math.max(8, r.top + r.height / 2 - 90)) + "px";
   hoverPop.hidden = false;
 });
 document.addEventListener("scroll", () => { hoverPop.hidden = true; }, { passive: true });
