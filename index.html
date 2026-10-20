@@ -781,10 +781,6 @@ function renderOverview() {
     ${liveCard()}
     ${instaSection()}
     ${compsCard()}
-    ${L ? `<div>
-      <p class="eyebrow" style="margin-bottom:8px">Senaste match · ${daysUntil(L.d) === 0 ? "i dag" : -daysUntil(L.d) === 1 ? "i går" : `för ${-daysUntil(L.d)} dagar sedan`}</p>
-      ${sbxRow(L)}
-    </div>` : ""}
     <div>
       <p class="eyebrow red" style="margin-bottom:10px">Nästa match · ${days <= 0 ? "i dag" : days === 1 ? "i morgon" : `om ${days} dagar`}</p>
       <article class="ticket next-up cc-${chipKey(n.series)}">${ball}
@@ -797,7 +793,7 @@ function renderOverview() {
         <div class="foot"><span></span>${n.comp ? `<a href="${n.url}" target="_blank" rel="noopener">Följ hos Cup Manager →</a>` : `<a href="${matchUrl(n)}" target="_blank" rel="noopener">Följ hos Profixio →</a>`}</div>
       </article>
     </div>
-    <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.slice(1).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
+    <div><h2 class="h2">Kommande matcher</h2><ul class="list">${upcoming.filter(m => m !== n).concat(upcomingCups).sort((a, b) => sortKey(a).localeCompare(sortKey(b))).slice(0, 5).map(x => x.cup ? cupRow(x) : upRow(x)).join("")}</ul></div>
     ${last5.length ? `<div><h2 class="h2 under">Senast spelade</h2><div class="last5">
       <div class="balls3">${ballStat("Vinster", `${w5}<small>/${last5.length}</small>`)}${ballStat("Snitt gjorda", (pf5 / last5.length).toFixed(0))}${ballStat("Snitt insläppta", (pa5 / last5.length).toFixed(0))}</div>
       <div class="sbx-list">${last5.slice().reverse().map(sbxRow).join("")}</div></div></div>` : ""}
