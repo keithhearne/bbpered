@@ -79,10 +79,12 @@ GitHub pauses scheduled jobs in a public repository after **60 days without any 
 Every night the job looks through Blackeberg's list of teams on Profixio (the club's "registrations" page). It uses the page's own search filter, "Pojkar U16", so it only reads the club's ~5 Pojkar U16 teams instead of all ~73.
 It looks for Pojkar U16 entries that belong to P11 Röd: **"KFUM Blackebergs IK Röd"** in a Stockholm series, or **"KFUM Blackebergs IK"** in Ungdoms-SM or Riksmästerskap.
 
-When it finds one that isn't followed yet, it starts following it straight away. A new USM round, for example, then shows up in the app the next morning:
+**New rounds of a competition we already follow** (for example USM "Omg 2" after "Omg 1") are found a different way: Profixio lists every round the team is entered in on the team's own page. Every full update (not just the nightly one) looks at that list, so a newly published round is picked up at the next full update. That is how USM Omg 2 (6–8 November) was found.
+
+When it finds one that isn't followed yet, it starts following it straight away. A new USM round, for example, then shows up in the app:
 - its games appear in **Kalender**, **Översikt** and **Resultat**
-- its table appears in **Tabeller** and **Våra turneringar**
-- its label is in teal (for example "USM 2"), and it gets its own filter button
+- its table appears in **Tabeller** and **Våra turneringar**: before any games are played, the table shows dashes and Våra turneringar shows the start date
+- it gets its own label (for example "USM 2"; USM rounds keep the amber USM colour, other new competitions are teal) and, once a game has been played, its own filter button
 
 New games, times and results *inside* competitions we already follow (league, USM, and the cup's knock-out games on Cup Manager) were already picked up every night.
 
