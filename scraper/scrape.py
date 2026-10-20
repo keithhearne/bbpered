@@ -608,7 +608,10 @@ def write_ics(data):
     for r in data.get("cupGames") or []:
         date, tm, home, away, venue, url, comp, hs, as_, mid = (r + [None] * 10)[:10]
         games.append((date, tm, home, away, venue, hs, as_, mid, comp, url))
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    try:  # stable stamp = time of the data, so the file only changes when the data does
+        stamp = datetime.strptime(data["updated"], "%Y-%m-%dT%H:%M").replace(tzinfo=TZ).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    except (KeyError, ValueError):
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//bbpered//P11 Röd matcher//SV", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
          "X-WR-CALNAME:P11 Röd – matcher", "X-WR-CALDESC:Blackeberg P11 Röds matcher (serie\\, USM och cuper). Uppdateras automatiskt.",
          "X-WR-TIMEZONE:Europe/Stockholm", "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H",
@@ -691,7 +694,7 @@ def commit(msg):
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
     os.system('git config user.name "p11-bot" && git config user.email "actions@users.noreply.github.com"')
-    os.system("git add data.json status.json STATUS.md")
+    os.system("git add data.json status.json STATUS.md matcher.ics")
     if os.system("git diff --cached --quiet") != 0:
         os.system(f'git commit -q -m "{msg}" && (git push -q || (git pull -q --rebase && git push -q))')
         log("pushed")
