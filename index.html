@@ -112,6 +112,7 @@ section[role="tabpanel"] { display: grid; gap: 28px; }
 .season .ss { grid-column: 1; font-size: .82rem; font-weight: 600; color: var(--muted); }
 .season > .list { border-top: 2px solid var(--accent); }
 .season .compt { white-space: nowrap; }
+.compt.c-gbf { color: #8c1d5a; background: #f9e1ee; border-color: #8c1d5a; }
 .row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .day { text-align: center; line-height: 1; }
 .day .wd { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
@@ -870,7 +871,7 @@ function prevSeasons() {
   const seasons = [...new Set(Object.keys(PREV_SEASONS).concat(Object.keys(PREV_CUPS)))].sort((a, b) => b.localeCompare(a));
   return `<div class="prevs"><h2 class="h2 under">Tidigare säsonger</h2>${seasons.map(season => { const S = PREV_SEASONS[season] || { comps: {}, games: [] };
     const league = S.games.map(([date, time, home, away, hs, as, k, venue, id]) => { const h = /Blacke/.test(home); const us = h ? hs : as, them = h ? as : hs; const [l, c] = chipOf(S.comps[k][0]); return { date, time, d: d8(date), opp: h ? away : home, where: h ? "Hemma" : "Borta", us, them, win: us > them, l, c, url: S.comps[k][1] + "&expandmatch=" + id }; });
-    const cupg = (PREV_CUPS[season] || []).flatMap(C => C.games.map(([date, time, home, away, hs, as, id, stage]) => { const h = /Blacke/.test(home); const us = h ? hs : as, them = h ? as : hs; return { date, time, d: d8(date), opp: h ? away : home, where: stage, us, them, win: us > them, l: C.name, c: "cup", url: C.url + id, src: "Cup Manager" }; }));
+    const cupg = (PREV_CUPS[season] || []).flatMap(C => C.games.map(([date, time, home, away, hs, as, id, stage]) => { const h = /Blacke/.test(home); const us = h ? hs : as, them = h ? as : hs; return { date, time, d: d8(date), opp: h ? away : home, where: stage, us, them, win: us > them, l: C.name, c: C.name === "Göteborg" ? "gbf" : "cup", url: C.url + id, src: "Cup Manager" }; }));
     const games = league.concat(cupg).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
     const w = games.filter(g => g.win).length, age = (Object.values(S.comps).map(c => c[0].match(/U\d+/)).find(Boolean) || [""])[0];
     return `<details class="season"><summary><span class="st">Säsongen ${season}</span><span class="ss">${age ? "Pojkar " + age + " · " : ""}${games.length} matcher · ${w} V – ${games.length - w} F</span></summary>
