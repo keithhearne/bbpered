@@ -2,7 +2,7 @@
 
 This file is rewritten every time the update job runs (Swedish time).
 
-- **Last run:** 2026-10-23 12:27 — Full update (weekend check)
+- **Last run:** 2026-10-23 17:25 — Checked — nothing due
 - **Data last refreshed:** 2026-10-23 12:27
 
 GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
@@ -11,6 +11,7 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 
 | Time | What happened |
 |---|---|
+| 2026-10-23 17:25 | Checked — nothing due |
 | 2026-10-23 12:27 | Full update (weekend check) |
 | 2026-10-23 07:17 | Full update (nightly check) |
 | 2026-10-23 02:33 | Checked — nothing due |
