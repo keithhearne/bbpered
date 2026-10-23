@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-23T07:17",
- "lastResult": "Full update (nightly check)",
- "dataUpdated": "2026-10-23T07:17",
+ "lastCheck": "2026-10-23T12:27",
+ "lastResult": "Full update (weekend check)",
+ "dataUpdated": "2026-10-23T12:27",
  "history": [
+  [
+   "2026-10-23T12:27",
+   "full",
+   "Full update (weekend check)"
+  ],
   [
    "2026-10-23T07:17",
    "full",
