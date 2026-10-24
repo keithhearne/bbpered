@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-24T19:33",
- "lastResult": "Full update (weekend check)",
+ "lastCheck": "2026-10-24T21:43",
+ "lastResult": "Checked — nothing due",
  "dataUpdated": "2026-10-24T19:33",
  "history": [
+  [
+   "2026-10-24T21:43",
+   "skip",
+   "Checked — nothing due"
+  ],
   [
    "2026-10-24T19:33",
    "full",
