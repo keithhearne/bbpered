@@ -193,7 +193,7 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .calt b { font-family: var(--display); font-size: 1.25rem; line-height: 1.1; color: var(--ink); }
 .calt small { font-size: .82rem; color: var(--muted); font-weight: 600; line-height: 1.3; }
 .calnew { display: inline-block; margin-left: 8px; padding: 2px 7px 1px; border-radius: 999px; background: var(--accent); color: #fff; font: 800 .62rem var(--body); letter-spacing: .1em; text-transform: uppercase; vertical-align: 3px; }
-.calbody { display: grid; gap: 14px; padding: 12px 14px 14px; border-top: 2px solid var(--card-soft); }
+.calbody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px 14px 14px; border-top: 2px solid var(--card-soft); }
 .calstep { display: grid; gap: 8px; }
 .calq-s { font-weight: 600; letter-spacing: .06em; color: var(--muted); text-transform: none; font-size: .8rem; }
 .calq { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
@@ -208,8 +208,9 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .calopt[aria-pressed="true"] .co-n { background: #fff; color: var(--accent); }
 .calopt .calnew { margin-left: 0; vertical-align: 0; }
 .calapps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.calother { margin: 0; font-size: .82rem; color: var(--muted); }
-.callink { background: none; border: 0; padding: 0; font: 700 .82rem var(--body); color: var(--accent); text-decoration: underline; cursor: pointer; }
+.calother { margin: 0; font-size: .82rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.calother-how { margin: 0; font-size: .8rem; color: var(--muted); line-height: 1.45; background: var(--card-soft); border-radius: 10px; padding: 8px 10px; }
+.callink { overflow-wrap: anywhere; text-align: left; background: none; border: 0; padding: 0; font: 700 .82rem var(--body); color: var(--accent); text-decoration: underline; cursor: pointer; }
 .callink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .calmore { display: grid; gap: 8px; margin-top: 8px; }
 .calmore p { margin: 0; font-size: .82rem; color: var(--muted); line-height: 1.45; }
@@ -906,7 +907,7 @@ const calFeeds = () => {
   return all.filter(f => f.extra !== "cup" || cups.length > 1).map(f => f.key === "cup" && cups.length === 1 ? { ...f, label: cups[0].label } : f);
 };
 const calIsNew = f => (f.extra || f.note) && f.since && (Date.now() - new Date(f.since + "T00:00").getTime()) / 864e5 < CAL_NEW_DAYS;
-let calPick = "alla", calApp = "google", calOpen = false;
+let calPick = "alla", calApp = "google", calOpen = false, calMore = false;
 const calFeed = () => calFeeds().find(f => f.key === calPick) || calFeeds()[0];
 const calHost = () => CAL_BASE + calFeed().file;
 const CAL_APPS = [
@@ -914,10 +915,14 @@ const CAL_APPS = [
   ["apple", "iPhone", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c0-2 1.4-3.6 3.2-4"/><path d="M12 8c-1.2-.9-2.4-1.2-3.6-1.1C5.9 7.1 4.5 9.3 4.5 12c0 3.6 2.5 8.5 4.6 8.5 1.1 0 1.6-.7 2.9-.7s1.8.7 2.9.7c2.1 0 4.6-4.9 4.6-8.5 0-2.7-1.4-4.9-3.9-5.1-1.2-.1-2.4.2-3.6 1.1z"/></svg>']];
 const calSteps = () => {
   const copyBtn = `<button class="calbtn" type="button" data-calcopy>Kopiera länk</button>`;
+  const more = body => `<details class="calhelp" id="calmore"${calMore ? " open" : ""}><summary>Fler instruktioner</summary><div class="calmore">${body}
+      <p><b>Ta bort</b><br>Ta bort kalendern i kalenderappen som vilken kalender som helst. Inget annat installeras.</p></div></details>`;
   if (calApp === "apple") return `<div class="calbtns"><a class="calbtn main" href="webcal://${calHost()}">Prenumerera</a>${copyBtn}</div>
-    <p class="calhint">Kalender-appen öppnas – tryck <b>Prenumerera</b>.</p>`;
+    <p class="calhint">Kalender-appen öppnas – tryck <b>Prenumerera</b>.</p>
+    ${more(`<p><b>iPhone / iPad / Mac</b><br>Tryck <i>Prenumerera</i>. Kalender-appen frågar om du vill prenumerera – tryck <i>Prenumerera</i> igen, välj gärna en färg och tryck <i>Klar</i>. Händer inget? Kopiera länken och välj i Kalender-appen <i>Kalendrar → Lägg till kalender → Lägg till prenumerationskalender</i> och klistra in.</p>`)}`;
   return `<div class="calbtns"><a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + calHost())}" target="_blank" rel="noopener">Öppna Google Kalender</a>${copyBtn}</div>
-    <p class="calhint">Tryck <b>Lägg till</b> när Google frågar. Syns även i Samsung Kalender.</p>`;
+    <p class="calhint">Tryck <b>Lägg till</b> när Google frågar. Syns även i Samsung Kalender.</p>
+    ${more(`<p><b>Android / Google</b><br>Tryck <i>Öppna Google Kalender</i>, logga in om det behövs och tryck <i>Lägg till</i>. Öppnas bara appen utan att fråga? Öppna länken i Chrome, välj <i>Datorversion</i> i menyn och tryck igen – eller gå till calendar.google.com → <i>Andra kalendrar → + → Från webbadress</i> och klistra in länken. Syns inga matcher i appen: Google Kalender → Inställningar → kalendern → slå på <i>Synkronisera</i>.</p>`)}`;
 };
 const calChoices = () => calFeeds().map(f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}</button>`).join("");
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
@@ -928,16 +933,10 @@ const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " ope
       <div class="calopts" id="calopts">${calChoices()}</div></div>
     <div class="calstep"><p class="calq"><span class="cnum">2</span>Din kalender</p>
       <div class="calapps" id="calapps">${CAL_APPS.map(([k, l, ic]) => `<button type="button" class="calapp" data-app="${k}" aria-pressed="${k === calApp}"><span class="ca-i" aria-hidden="true">${ic}</span>${l}</button>`).join("")}</div>
-      <p class="calother">Annan kalender, t.ex. Outlook? <button type="button" class="callink" data-calcopy>Kopiera länken</button></p></div>
+      <p class="calother">Annan kalender, t.ex. Outlook? <button type="button" class="callink" data-calcopy data-other>Kopiera länken</button></p>
+      <p class="calother-how" id="calotherhow" hidden>Klistra in länken i din kalender. I Outlook: Outlook på webben → <i>Lägg till kalender</i> → <i>Prenumerera från webben</i>. Den syns sedan även i Outlook-appen.</p></div>
     <div class="calstep"><p class="calq"><span class="cnum">3</span>Lägg till</p>
       <div id="calhow">${calSteps()}</div></div>
-    <details class="calhelp"><summary>Fler instruktioner</summary>
-      <div class="calmore">
-        <p><b>Android / Google</b><br>Tryck <i>Öppna Google Kalender</i> och sedan <i>Lägg till</i>. Öppnas bara appen utan att fråga? Öppna länken i Chrome, välj <i>Datorversion</i> i menyn och tryck igen. Syns inga matcher i appen: Google Kalender → Inställningar → kalendern → slå på <i>Synkronisera</i>.</p>
-        <p><b>iPhone / iPad / Mac</b><br>Tryck <i>Prenumerera</i> – Kalender-appen frågar, tryck <i>Prenumerera</i> igen och sedan <i>Klar</i>.</p>
-        <p><b>Outlook och andra kalendrar</b><br>Kopiera länken. Öppna Outlook på webben (outlook.live.com, eller outlook.office.com för jobbkonto) → <i>Lägg till kalender</i> → <i>Prenumerera från webben</i> och klistra in. Den syns sedan även i Outlook-appen. Andra kalenderprogram har oftast ett val som heter <i>Prenumerera</i> eller <i>Lägg till från webbadress</i>.</p>
-        <p><b>Ta bort</b><br>Ta bort kalendern i kalenderappen som vilken kalender som helst. Inget annat installeras.</p>
-      </div></details>
     <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar · välj <i>Alla</i> eller enstaka, inte båda</p>
   </div>
 </details>`;
@@ -946,8 +945,10 @@ function calWire() {
   box.addEventListener("toggle", () => { calOpen = box.open; });
   const how = () => {
     document.getElementById("calhow").innerHTML = calSteps();
+    const md = document.getElementById("calmore"); if (md) md.addEventListener("toggle", () => { calMore = md.open; });
     box.querySelectorAll("[data-calcopy]:not([data-wired])").forEach(cb => (cb.dataset.wired = "1", cb).addEventListener("click", async () => {
       const url = "https://" + calHost(), was = cb.textContent;
+      if (cb.hasAttribute("data-other")) { const o = document.getElementById("calotherhow"); if (o) o.hidden = false; }
       try { await navigator.clipboard.writeText(url); cb.textContent = "Kopierad ✓"; } catch (e) { cb.textContent = url; }
       setTimeout(() => { cb.textContent = was; }, 2500);
     }));
