@@ -563,7 +563,9 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 /* live games */
 .livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; animation: livepulse 1.4s ease-in-out infinite; }
 @keyframes livepulse { 50% { opacity: .25; } }
-@media (prefers-reduced-motion: reduce) { .livedot { animation: none; } }
+#livebox .sbbar { border: 3px solid var(--accent); animation: liveglow 3s ease-out infinite; }
+@keyframes liveglow { 0% { box-shadow: 0 0 0 0 rgba(225, 30, 39, .55); } 70% { box-shadow: 0 0 0 9px rgba(225, 30, 39, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 30, 39, 0); } }
+@media (prefers-reduced-motion: reduce) { .livedot { animation: none; } #livebox .sbbar { animation: none; box-shadow: 0 0 0 4px rgba(225, 30, 39, .25); } }
 .sbscore small.lv { color: var(--accent); background: #fff; border-radius: 999px; padding: 2px 6px 1px; letter-spacing: .1em; }
 .livepill { display: inline-block; font: 800 .7rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #fff; background: var(--accent); border-radius: 999px; padding: 4px 8px 3px; }
 .board .big.lv { color: var(--ink); }
