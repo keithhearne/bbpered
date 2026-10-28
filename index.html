@@ -817,7 +817,7 @@ const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n 
 function liveCard() {
   const lv = matches.filter(m => m.live);
   if (!lv.length) return "";
-  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu <span class="liveupd">· uppdateras varannan minut</span></p><div class="sb3">${lv.map(m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; const ext = !has && m.url;
+  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu <span class="liveupd">(uppdateras varannan minut)</span></p><div class="sb3">${lv.map(m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; const ext = !has && m.url;
     /* Cup games have no Matchspel: the whole card opens the cup's own live page (Cup Manager) in a new tab. */
     const tag = ext ? "a" : "div";
     const attrs = has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ext ? ` href="${esc(m.url)}" target="_blank" rel="noopener" aria-label="Följ matchen mot ${esc(m.opp)} live på Cup Manager"` : "";
