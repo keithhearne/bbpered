@@ -39,7 +39,7 @@ Most runs stop after a few seconds, which keeps the load on Profixio light.
 | **Every night: the first run after 03:00** (Swedish time) | Full check: new or changed fixtures, results and tables. It also checks the club's team list on Profixio for **new competitions** P11 Röd has been entered into (see below). |
 | **Fridays–Sundays, 08:00–22:00** | A check at least every 5 hours, for late changes before a game weekend. |
 | **Game day: from ~3 hours before tip-off** | The first run in this window stays on and waits for the game. |
-| **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** score and Matchspel are updated **every 10 minutes**. |
+| **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** the score is checked **every 2 minutes** and written to `live.json` on the separate **`live`** branch. The full data (Matchspel, tables) is published every 15 minutes and as soon as a game ends. |
 | **Game day: after the live window** | One full update, including tables. |
 | **The 6 hours after a game** | Hourly catch-up, to pick up the final score sheet if it's uploaded late. |
 | **Any other time** | Nothing; the job exits straight away. |
@@ -51,10 +51,11 @@ GitHub doesn't guarantee that scheduled runs happen on time, and it sometimes sk
 The job works out game days by itself from the same fixture list you see in **Kalender**, for league, USM and cup games alike. Weekday games are covered too. Times follow Swedish time, including the summer/winter time change.
 
 ### What you see in the app during a game
+- **Why a separate `live` branch?** Every change on `main` makes GitHub rebuild the website, and GitHub only likes about 10 rebuilds an hour. The live score goes to the `live` branch instead, which isn't part of the website, so it can change every 2 minutes. The app reads it straight from GitHub and only redraws the score; the page doesn't reload. Don't delete the `live` branch.
 
 - **Översikt** shows a **"Pågår nu"** strip with the live score. Tap it to open Matchspel.
 - **Matchspel** fills in basket by basket and shows a **LIVE** badge instead of V/F.
-- While a game is on, the open app checks for new data every minute. Normally it checks every 15 minutes, and whenever you switch back to it.
+- While a game is on, the open app reads the live score every 2 minutes and the full data every 5 minutes. Normally it checks every 15 minutes, and whenever you switch back to it.
 - **Delay:** expect the score to be up to about **10–13 minutes** behind real life. It's fetched every 10 minutes, plus 1–3 minutes for GitHub to publish it.
 - **Each game is read from its own source.** League and USM games come from Profixio; cup games (e.g. Södertälje Open) come from Cup Manager, where the cup publishes its scores. During a cup game the job only asks Cup Manager, and during a league/USM game only Profixio.
 - **It depends on the scorers.** Live data only exists if they enter it during the game (in Profixio, or in Cup Manager for cups). If a hall uses a paper score sheet, the result appears once it has been uploaded.
