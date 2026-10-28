@@ -215,7 +215,8 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .co-done { color: var(--win, #1e7d4f); font-weight: 800; }
 .calsome > summary { cursor: pointer; font-weight: 700; font-size: .84rem; color: var(--accent); }
 .calsome[open] > summary { margin-bottom: 8px; }
-.calsome-note { margin: 8px 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
+.calsome-note b { color: var(--accent); }
+.calsome-note { margin: 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 .calwarn { font-size: .82rem; line-height: 1.4; color: var(--ink); background: #fff6e0; border: 1.5px solid #e0a400; border-radius: 10px; padding: 8px 10px; }
 .calwarn .callink { font-size: .8rem; }
 .calapps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -948,16 +949,9 @@ const calWarn = () => {
   return "";
 };
 const calOpt = f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}${calSubs.includes(f.key) ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</button>`;
-const calChoices = () => {
-  const all = calFeeds().find(f => f.key === "alla"), rest = calFeeds().filter(f => f.key !== "alla");
-  return `${all ? `<button type="button" class="calopt calall" data-cal="alla" aria-pressed="${calPick === "alla"}">
-      <span class="ca-top">Alla matcher${all.upcoming != null ? ` <span class="co-n">${all.upcoming}</span>` : ""}${calSubs.includes("alla") ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</span>
-      <span class="ca-sub">Rekommenderas – får även nya tävlingar och cuper automatiskt</span></button>` : ""}
-    <details class="calsome"${calPick !== "alla" ? " open" : ""}><summary>Bara vissa tävlingar?</summary>
-      <div class="calopts">${rest.map(calOpt).join("")}</div>
-      <p class="calsome-note">Väljer du enstaka tävlingar och senare <i>Alla</i> visas matcherna dubbelt – ta då bort de enstaka. Appen kommer ihåg vad du lagt till härifrån och varnar dig.</p></details>
+const calChoices = () => `<div class="calopts">${calFeeds().map(calOpt).join("")}</div>
+    <p class="calsome-note"><b>Alla</b> rekommenderas – får även nya tävlingar och cuper automatiskt. Väljer du enstaka och senare <i>Alla</i> visas matcherna dubbelt; appen kommer ihåg vad du lagt till härifrån och varnar dig.</p>
     <div id="calwarn">${calWarn()}</div>`;
-};
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
     <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera – uppdateras av sig själv</small></span></summary>
@@ -970,7 +964,7 @@ const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " ope
       <p class="calother-how" id="calotherhow" hidden>Klistra in länken i din kalender. I Outlook: Outlook på webben → <i>Lägg till kalender</i> → <i>Prenumerera från webben</i>. Den syns sedan även i Outlook-appen.</p></div>
     <div class="calstep"><p class="calq"><span class="cnum">3</span>Lägg till</p>
       <div id="calhow">${calSteps()}</div></div>
-    <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar · appen kommer ihåg vad du lagt till härifrån och varnar för dubbletter</p>
+    <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar</p>
   </div>
 </details>`;
 function calWire() {
@@ -978,9 +972,7 @@ function calWire() {
   box.addEventListener("toggle", () => { calOpen = box.open; });
   const remember = () => { if (!calSubs.includes(calPick)) { calSubs.push(calPick); calSubsSave(); } };
   const choose = () => {
-    const some = box.querySelector(".calsome"), wasOpen = some && some.open;
     document.getElementById("calopts").innerHTML = calChoices();
-    const s2 = box.querySelector(".calsome"); if (s2 && wasOpen) s2.open = true;
     box.querySelectorAll(".calopt").forEach(b => b.addEventListener("click", () => { calPick = b.dataset.cal; choose(); how(); }));
     box.querySelectorAll("[data-calforget]").forEach(b => b.addEventListener("click", () => {
       calSubs = calSubs.includes(calPick) ? calSubs.filter(k => k !== calPick) : calPick === "alla" ? calSubs.filter(k => k === "alla") : calSubs.filter(k => k !== "alla");
