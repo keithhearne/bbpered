@@ -705,7 +705,7 @@ def write_feed(path, games, calname, stamp):
             continue
         home_us = home in ours
         opp = away if home_us else home
-        title = f"P11 Röd – {opp}" if home_us else f"{opp} – P11 Röd"
+        title = "🏀 " + (f"P11 Röd – {opp}" if home_us else f"{opp} – P11 Röd")
         desc = [comp + (" · Hemma" if home_us and not url else " · Borta" if not url else "")]
         if hs is not None and as_ is not None:
             us, them = (hs, as_) if home_us else (as_, hs)
