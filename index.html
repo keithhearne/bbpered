@@ -940,7 +940,6 @@ const G_ADDURL_WEB = "https://calendar.google.com/calendar/u/0/r/settings/addbyu
 const gChrome = url => /Android/i.test(navigator.userAgent)
   ? "intent://" + url.replace(/^https:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(url) + ";end"
   : url;
-const G_SUB = () => "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent("webcal://" + calHost());
 const calSteps = () => {
   const more = body => `<details class="calhelp" id="calmore"${calMore ? " open" : ""}><summary>Fler instruktioner</summary><div class="calmore">${body}
       <p><b>Ta bort</b><br>Ta bort kalendern i kalenderappen som vilken kalender som helst. Inget annat installeras.</p></div></details>`;
@@ -948,13 +947,13 @@ const calSteps = () => {
     <p class="calhint">Tryck <b>Prenumerera</b> i Kalender.</p>
     ${more(`<p><b>iPhone / iPad / Mac</b><br>Tryck <i>Prenumerera</i>. Kalender-appen frågar om du vill prenumerera – tryck <i>Prenumerera</i> igen, välj gärna en färg och tryck <i>Klar</i>. Händer inget? Tryck <i>Kopiera länken</i> under steg 2 och välj i Kalender-appen <i>Kalendrar → Lägg till kalender → Lägg till prenumerationskalender</i> och klistra in.</p>`)}`;
   return `<ol class="gsteps">
-      <li><a class="calbtn main" data-calcopy data-keep href="${gChrome(G_SUB())}" target="_blank" rel="noopener">Öppna Google Kalender</a>
-        <span class="calhint">Välj ditt Gmail-konto och tryck <b>Lägg till</b>.</span></li>
+      <li><a class="calbtn main" data-calcopy data-keep href="${gChrome(G_ADDURL_WEB)}" target="_blank" rel="noopener">Kopiera länk &amp; öppna Google</a>
+        <span class="calhint">Länken kopieras och Google Kalender öppnas i Chrome.</span></li>
+      <li><span class="calhint">Håll fingret i rutan <b>Webbadress för kalendern</b> → <b>Klistra in</b> → tryck <b>Lägg till kalender</b>.</span></li>
       <li class="gsync"><b>Slå på synk – det måste du göra själv!</b>
-        <span>Google Kalender-appen → ☰ → <i>Inställningar</i> → <i>P11 Röd – matcher</i> → <b>Synkronisera</b>. Annars syns inga matcher i telefonen.</span></li>
+        <span>Öppna Google Kalender-appen → <b>☰</b> uppe till vänster → längst ner <b>Inställningar</b> → under din Gmail-adress tryck <b>P11 Röd – matcher</b> (syns den inte: <i>Visa fler</i>) → slå på <b>Synkronisera</b>.</span></li>
     </ol>
-    <p class="calhint gfall">Frågade Google inte? Länken är redan kopierad – <a href="${gChrome(G_ADDURL_WEB)}" target="_blank" rel="noopener">öppna Från webbadress</a>, klistra in och tryck <b>Lägg till kalender</b>.</p>
-    ${more(`<p><b>Ser du ingen fråga eller ruta?</b><br>Tryck ⋮ uppe till höger i Chrome, välj <i>Datorversion</i> och försök igen. Kolla att rätt Google-konto är inloggat (bilden uppe till höger).</p>
+    ${more(`<p><b>Ser du ingen ruta?</b><br>Tryck ⋮ uppe till höger i Chrome och välj <i>Datorversion</i>. Kolla att rätt Google-konto är inloggat (bilden uppe till höger).</p>
       <p><b>Kom inte länken med?</b><br>Tryck <i>Kopiera länken</i> under steg 2 och klistra in igen.</p>
       <p><b>På datorn</b><br>calendar.google.com → <i>Andra kalendrar</i> → <i>+</i> → <i>Från webbadress</i> → klistra in.</p>
       <p><b>Samsung Kalender</b><br>När Synkronisera är på visas matcherna även där.</p>`)}`
