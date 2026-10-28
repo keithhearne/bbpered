@@ -929,10 +929,10 @@ const calSteps = () => {
   const more = body => `<details class="calhelp" id="calmore"${calMore ? " open" : ""}><summary>Fler instruktioner</summary><div class="calmore">${body}
       <p><b>Ta bort</b><br>Ta bort kalendern i kalenderappen som vilken kalender som helst. Inget annat installeras.</p></div></details>`;
   if (calApp === "apple") return `<div class="calbtns"><a class="calbtn main" href="webcal://${calHost()}">Prenumerera</a></div>
-    <p class="calhint">Kalender-appen öppnas – tryck <b>Prenumerera</b>.</p>
+    <p class="calhint">Tryck <b>Prenumerera</b> i Kalender.</p>
     ${more(`<p><b>iPhone / iPad / Mac</b><br>Tryck <i>Prenumerera</i>. Kalender-appen frågar om du vill prenumerera – tryck <i>Prenumerera</i> igen, välj gärna en färg och tryck <i>Klar</i>. Händer inget? Tryck <i>Kopiera länken</i> under steg 2 och välj i Kalender-appen <i>Kalendrar → Lägg till kalender → Lägg till prenumerationskalender</i> och klistra in.</p>`)}`;
   return `<div class="calbtns"><a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + calHost())}" target="_blank" rel="noopener">Öppna Google Kalender</a></div>
-    <p class="calhint">Tryck <b>Lägg till</b> när Google frågar. Syns även i Samsung Kalender.</p>
+    <p class="calhint">Tryck <b>Lägg till</b>. Syns även i Samsung Kalender.</p>
     ${more(`<p><b>Android / Google</b><br>Tryck <i>Öppna Google Kalender</i>, logga in om det behövs och tryck <i>Lägg till</i>. Öppnas bara appen utan att fråga? Öppna länken i Chrome, välj <i>Datorversion</i> i menyn och tryck igen – eller tryck <i>Kopiera länken</i> under steg 2, gå till calendar.google.com → <i>Andra kalendrar → + → Från webbadress</i> och klistra in den. Syns inga matcher i appen: Google Kalender → Inställningar → kalendern → slå på <i>Synkronisera</i>.</p>`)}`;
 };
 /* The app remembers (on this phone, in this browser) which calendars were added from here, to warn about duplicates. */
@@ -943,24 +943,24 @@ const calLabel = k => (calFeeds().find(f => f.key === k) || {}).label || k;
 const calList = ks => { const l = ks.map(calLabel); return l.length > 1 ? l.slice(0, -1).join(", ") + " och " + l[l.length - 1] : l[0] || ""; };
 const calWarn = () => {
   const others = calSubs.filter(k => k !== "alla" && calFeeds().some(f => f.key === k));
-  if (calSubs.includes(calPick)) return `<div class="calwarn"><b>Du har redan lagt till ${esc(calLabel(calPick))} härifrån.</b> Lägger du till den igen visas matcherna dubbelt. <button type="button" class="callink" data-calforget>Har du tagit bort den? Glöm det.</button></div>`;
-  if (calPick === "alla" && others.length) return `<div class="calwarn"><b>Du har redan lagt till ${esc(calList(others))} härifrån.</b> Alla innehåller även de matcherna – ta bort ${others.length > 1 ? "dem" : "den"} i kalenderappen när du lagt till Alla, annars visas de dubbelt. <button type="button" class="callink" data-calforget>Redan borttagen? Glöm det.</button></div>`;
-  if (calPick !== "alla" && calSubs.includes("alla")) return `<div class="calwarn"><b>Du har redan lagt till Alla härifrån</b> – den innehåller redan ${esc(calLabel(calPick))}. Lägger du till den också visas matcherna dubbelt. <button type="button" class="callink" data-calforget>Har du tagit bort Alla? Glöm det.</button></div>`;
+  if (calSubs.includes(calPick)) return `<div class="calwarn"><b>${esc(calLabel(calPick))} är redan tillagd härifrån.</b> En gång till ger dubbletter. <button type="button" class="callink" data-calforget>Borttagen? Glöm det.</button></div>`;
+  if (calPick === "alla" && others.length) return `<div class="calwarn"><b>${esc(calList(others))} är redan tillagd härifrån.</b> Ta bort ${others.length > 1 ? "dem" : "den"} i kalendern när du lagt till Alla, annars blir det dubbletter. <button type="button" class="callink" data-calforget>Redan borttagen? Glöm det.</button></div>`;
+  if (calPick !== "alla" && calSubs.includes("alla")) return `<div class="calwarn"><b>Alla är redan tillagd härifrån</b> och har redan ${esc(calLabel(calPick))} – båda ger dubbletter. <button type="button" class="callink" data-calforget>Tagit bort Alla? Glöm det.</button></div>`;
   return "";
 };
 const calOpt = f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}${calSubs.includes(f.key) ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</button>`;
 const calChoices = () => `<div class="calopts">${calFeeds().map(calOpt).join("")}</div>
-    <p class="calsome-note"><b>Alla</b> rekommenderas – då läggs även nya tävlingar och cuper till automatiskt. Väljer du enstaka tävlingar eller cuper och senare väljer <i>Alla</i>, visas matcherna dubbelt i din kalender; appen kommer ihåg vad du lagt till härifrån och varnar dig.</p>
+    <p class="calsome-note"><b>Alla</b> rekommenderas – nya tävlingar och cuper kommer med automatiskt. Enstaka och sedan <i>Alla</i> ger dubbletter – appen varnar dig.</p>
     <div id="calwarn">${calWarn()}</div>`;
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
-    <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera – uppdateras av sig själv</small></span></summary>
+    <span class="calt"><b>Till kalendern${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Matcherna uppdateras automatiskt</small></span></summary>
   <div class="calbody">
     <div class="calstep"><p class="calq"><span class="cnum">1</span>Matcher <span class="calq-s">kommande</span></p>
       <div class="calchoose" id="calopts">${calChoices()}</div></div>
     <div class="calstep"><p class="calq"><span class="cnum">2</span>Din kalender</p>
       <div class="calapps" id="calapps">${CAL_APPS.map(([k, l, ic]) => `<button type="button" class="calapp" data-app="${k}" aria-pressed="${k === calApp}"><span class="ca-i" aria-hidden="true">${ic}</span>${l}</button>`).join("")}</div>
-      <p class="calother">Annan kalender, t.ex. Outlook? <button type="button" class="callink" data-calcopy data-other>Kopiera länken</button></p>
+      <p class="calother">Outlook eller annan? <button type="button" class="callink" data-calcopy data-other>Kopiera länken</button></p>
       <p class="calother-how" id="calotherhow" hidden>Klistra in länken i din kalender. I Outlook: Outlook på webben → <i>Lägg till kalender</i> → <i>Prenumerera från webben</i>. Den syns sedan även i Outlook-appen.</p></div>
     <div class="calstep"><p class="calq"><span class="cnum">3</span>Lägg till</p>
       <div id="calhow">${calSteps()}</div></div>
