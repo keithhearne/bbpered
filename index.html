@@ -193,41 +193,37 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .calt b { font-family: var(--display); font-size: 1.25rem; line-height: 1.1; color: var(--ink); }
 .calt small { font-size: .82rem; color: var(--muted); font-weight: 600; line-height: 1.3; }
 .calnew { display: inline-block; margin-left: 8px; padding: 2px 7px 1px; border-radius: 999px; background: var(--accent); color: #fff; font: 800 .62rem var(--body); letter-spacing: .1em; text-transform: uppercase; vertical-align: 3px; }
-.calbody { display: grid; gap: 18px; padding: 14px; border-top: 2px solid var(--card-soft); }
-.calstep { display: grid; gap: 10px; }
+.calbody { display: grid; gap: 14px; padding: 12px 14px 14px; border-top: 2px solid var(--card-soft); }
+.calstep { display: grid; gap: 8px; }
+.calq-s { font-weight: 600; letter-spacing: .06em; color: var(--muted); text-transform: none; font-size: .8rem; }
 .calq { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
 .cnum { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 800 .75rem var(--body); letter-spacing: 0; flex: none; }
-.calopts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.calopt, .calapp { text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; color: var(--ink); cursor: pointer; display: grid; gap: 2px; min-width: 0; transition: border-color .15s, background .15s, transform .1s, box-shadow .15s; -webkit-tap-highlight-color: transparent; }
-.calopt:hover, .calapp:hover { border-color: rgba(225, 30, 39, .55); box-shadow: 0 3px 10px rgba(20, 24, 39, .08); }
-.calopt:active, .calapp:active { transform: scale(.98); }
+.calopts { display: flex; flex-wrap: wrap; gap: 6px; }
+.calopt, .calapp { background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 6px 12px; font: 700 .86rem var(--body); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color .15s, background .15s, transform .1s; -webkit-tap-highlight-color: transparent; }
+.calopt:hover, .calapp:hover { border-color: rgba(225, 30, 39, .55); }
+.calopt:active, .calapp:active { transform: scale(.97); }
 .calopt:focus-visible, .calapp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.calopt[aria-pressed="true"], .calapp[aria-pressed="true"] { border-color: var(--accent); background: var(--card-soft); box-shadow: inset 0 0 0 1px var(--accent); }
-.co-l { font-weight: 800; font-size: .95rem; overflow-wrap: anywhere; }
-.co-s { font-size: .78rem; color: var(--muted); font-weight: 600; }
-.calopt .calnew { margin-left: 6px; vertical-align: 1px; }
-.calapps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.calapp { justify-items: center; text-align: center; padding: 10px 6px; }
-.ca-i { width: 34px; height: 34px; border-radius: 50%; background: var(--card-soft); color: var(--accent); display: grid; place-items: center; }
-.ca-i svg { width: 20px; height: 20px; }
-.calapp[aria-pressed="true"] .ca-i { background: var(--accent); color: #fff; }
-.ca-l { font-weight: 800; font-size: .86rem; line-height: 1.15; }
-.ca-d { font-size: .7rem; color: var(--muted); line-height: 1.2; }
-.calsteps { margin: 0; padding: 0; list-style: none; counter-reset: cs; display: grid; gap: 8px; }
-.calsteps li { counter-increment: cs; position: relative; padding-left: 30px; font-size: .92rem; line-height: 1.4; color: var(--ink); }
-.calsteps li::before { content: counter(cs); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: grid; place-items: center; font: 800 .7rem var(--body); }
-#calhow { display: grid; gap: 12px; }
-.calnote { margin: 0; font-size: .82rem; color: var(--muted); line-height: 1.45; background: #f6f6f8; border-radius: 10px; padding: 10px 12px; }
+.calopt[aria-pressed="true"], .calapp[aria-pressed="true"] { border-color: var(--accent); background: var(--card-soft); color: var(--accent); }
+.co-n { font-weight: 800; font-size: .74rem; color: var(--muted); background: var(--chip); border-radius: 999px; padding: 0 6px; font-variant-numeric: tabular-nums; }
+.calopt[aria-pressed="true"] .co-n { background: #fff; color: var(--accent); }
+.calopt .calnew { margin-left: 0; vertical-align: 0; }
+.calapps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.calapp { justify-content: center; border-radius: 10px; padding: 8px 6px; }
+.ca-i { display: grid; place-items: center; color: var(--accent); }
+.ca-i svg { width: 18px; height: 18px; }
+#calhow { display: grid; gap: 8px; }
+.calhint { margin: 0; font-size: .85rem; color: var(--muted); line-height: 1.4; }
+.calhint b { color: var(--ink); }
+.calhelp summary { cursor: pointer; font-weight: 700; font-size: .82rem; color: var(--accent); }
+.calhelp p { margin: 6px 0 0; font-size: .82rem; color: var(--muted); line-height: 1.4; }
 .calbtns { display: flex; flex-wrap: wrap; gap: 8px; }
-.calbtn { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 8px 16px; border-radius: 999px; border: 2px solid var(--accent); background: #fff; color: var(--accent); font: 800 .9rem var(--body); text-decoration: none; cursor: pointer; overflow-wrap: anywhere; transition: background .15s, color .15s, transform .1s, box-shadow .15s; -webkit-tap-highlight-color: transparent; }
-.calbtn:hover { background: var(--card-soft); box-shadow: 0 3px 10px rgba(168, 24, 46, .15); transform: translateY(-1px); }
-.calbtn:active { transform: translateY(0) scale(.98); box-shadow: none; }
+.calbtn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 16px; border-radius: 999px; border: 2px solid var(--accent); background: #fff; color: var(--accent); font: 800 .88rem var(--body); text-decoration: none; cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s; -webkit-tap-highlight-color: transparent; }
+.calbtn:hover { background: var(--card-soft); transform: translateY(-1px); }
+.calbtn:active { transform: translateY(0) scale(.98); }
 .calbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .calbtn.main { background: var(--accent); color: #fff; }
 .calbtn.main:hover { background: #c4141c; }
-.calfoot { border-top: 1px dashed var(--line); padding-top: 12px; font-size: .82rem; color: var(--muted); line-height: 1.45; }
-.calfoot p { margin: 0 0 4px; color: var(--ink); font-size: .8rem; }
-.calfoot ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.calfoot { margin: 0; border-top: 1px dashed var(--line); padding-top: 10px; font-size: .76rem; color: var(--muted); line-height: 1.4; }
 @media (prefers-reduced-motion: reduce) { .calbtn, .calopt, .calapp, .calsub > summary::after { transition: none; } .calbtn:hover { transform: none; } }
 .toggle { background: var(--chip); border: 0; border-radius: 999px; padding: 8px 14px; font: 700 .85rem var(--body); color: var(--ink); cursor: pointer; }
 .note { color: var(--muted); font-size: .85rem; }
@@ -900,51 +896,32 @@ let calPick = "alla", calApp = "google", calOpen = false;
 const calFeed = () => calFeeds().find(f => f.key === calPick) || calFeeds()[0];
 const calHost = () => CAL_BASE + calFeed().file;
 const CAL_APPS = [
-  ["google", "Google / Android", "Google Kalender och Samsung Kalender", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>'],
-  ["apple", "iPhone / Mac", "Apples Kalender-app", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c0-2 1.4-3.6 3.2-4"/><path d="M12 8c-1.2-.9-2.4-1.2-3.6-1.1C5.9 7.1 4.5 9.3 4.5 12c0 3.6 2.5 8.5 4.6 8.5 1.1 0 1.6-.7 2.9-.7s1.8.7 2.9.7c2.1 0 4.6-4.9 4.6-8.5 0-2.7-1.4-4.9-3.9-5.1-1.2-.1-2.4.2-3.6 1.1z"/></svg>'],
-  ["outlook", "Outlook", "Outlook på webben, i datorn och mobilen", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>']];
+  ["google", "Google", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>'],
+  ["apple", "iPhone", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c0-2 1.4-3.6 3.2-4"/><path d="M12 8c-1.2-.9-2.4-1.2-3.6-1.1C5.9 7.1 4.5 9.3 4.5 12c0 3.6 2.5 8.5 4.6 8.5 1.1 0 1.6-.7 2.9-.7s1.8.7 2.9.7c2.1 0 4.6-4.9 4.6-8.5 0-2.7-1.4-4.9-3.9-5.1-1.2-.1-2.4.2-3.6 1.1z"/></svg>'],
+  ["outlook", "Outlook", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>']];
 const calSteps = () => {
-  const name = `"P11 Röd – ${calFeed().label === "Alla" ? "matcher" : calFeed().label}"`;
-  const copyBtn = `<button class="calbtn" type="button" data-calcopy>Kopiera länk</button>`;
-  if (calApp === "apple") return `<ol class="calsteps">
-      <li>Tryck på <b>Prenumerera</b> nedan.</li>
-      <li>Kalender-appen öppnas och frågar om du vill prenumerera – tryck <b>Prenumerera</b>.</li>
-      <li>Välj gärna en färg och tryck <b>Klar</b>. Matcherna syns nu som kalendern ${name}.</li></ol>
-    <div class="calbtns"><a class="calbtn main" href="webcal://${calHost()}">Prenumerera</a>${copyBtn}</div>`;
-  if (calApp === "outlook") return `<ol class="calsteps">
-      <li>Tryck på <b>Kopiera länk</b>.</li>
-      <li>Öppna <b>Outlook på webben</b> och gå till <b>Kalender</b>. (Har du Outlook via jobbet: outlook.office.com.)</li>
-      <li>Välj <b>Lägg till kalender → Prenumerera från webben</b>, klistra in länken, ge den namnet ${name} och tryck <b>Importera</b>.</li>
-      <li>Kalendern syns sedan även i Outlook-appen i mobilen och på datorn.</li></ol>
-    <div class="calbtns">${copyBtn.replace('class="calbtn"', 'class="calbtn main"')}<a class="calbtn" href="https://outlook.live.com/calendar/" target="_blank" rel="noopener">Öppna Outlook på webben</a></div>
-    <p class="calnote">Outlook-appen i mobilen kan inte lägga till kalendern själv – gör det en gång på webben.</p>`;
-  return `<ol class="calsteps">
-      <li>Tryck på <b>Öppna Google Kalender</b> nedan.</li>
-      <li>Logga in med ditt Google-konto om det behövs och tryck <b>Lägg till</b>.</li>
-      <li>Kalendern ${name} syns nu i Google Kalender – och i <b>Samsung Kalender</b> om den synkar med ditt Google-konto.</li></ol>
-    <div class="calbtns"><a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + calHost())}" target="_blank" rel="noopener">Öppna Google Kalender</a>${copyBtn}</div>
-    <p class="calnote"><b>Öppnas bara appen utan att fråga?</b> Öppna länken i Chrome, välj <i>Datorversion</i> i menyn och tryck igen. Eller gå till calendar.google.com → <i>Andra kalendrar → + → Från webbadress</i> och klistra in länken.<br><b>Syns inte matcherna i appen?</b> Google Kalender → Meny → Inställningar → ${name} → slå på <i>Synkronisera</i>.</p>`;
+  const copyBtn = cls => `<button class="calbtn${cls || ""}" type="button" data-calcopy>Kopiera länk</button>`;
+  if (calApp === "apple") return `<div class="calbtns"><a class="calbtn main" href="webcal://${calHost()}">Prenumerera</a>${copyBtn()}</div>
+    <p class="calhint">Kalender-appen öppnas – tryck <b>Prenumerera</b>. Fungerar även på Mac och iPad.</p>`;
+  if (calApp === "outlook") return `<div class="calbtns">${copyBtn(" main")}<a class="calbtn" href="https://outlook.live.com/calendar/" target="_blank" rel="noopener">Outlook på webben</a></div>
+    <p class="calhint">Kopiera länken, öppna Outlook på webben och välj <b>Lägg till kalender → Prenumerera från webben</b>. Klistra in och spara – sedan syns den även i Outlook-appen.</p>`;
+  return `<div class="calbtns"><a class="calbtn main" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent("webcal://" + calHost())}" target="_blank" rel="noopener">Öppna Google Kalender</a>${copyBtn()}</div>
+    <p class="calhint">Tryck <b>Lägg till</b> när Google frågar. Syns även i Samsung Kalender.</p>
+    <details class="calhelp"><summary>Fungerade det inte?</summary>
+      <p>Öppnas bara appen? Öppna länken i Chrome, välj <i>Datorversion</i> och tryck igen. Syns inga matcher? Google Kalender → Inställningar → kalendern → slå på <i>Synkronisera</i>.</p></details>`;
 };
-const calChoices = () => calFeeds().map(f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}">
-    <span class="co-l">${esc(f.label)}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}</span>
-    <span class="co-s">${f.upcoming != null ? `${f.upcoming} kommande` : ""}${calIsNew(f) && f.note ? ` · ${esc(f.note)}` : ""}</span></button>`).join("");
+const calChoices = () => calFeeds().map(f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}</button>`).join("");
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
-    <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera en gång – nya matcher och ändrade tider kommer in av sig själva</small></span></summary>
+    <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera – uppdateras av sig själv</small></span></summary>
   <div class="calbody">
-    <div class="calstep"><p class="calq"><span class="cnum">1</span>Vilka matcher vill du ha?</p>
+    <div class="calstep"><p class="calq"><span class="cnum">1</span>Matcher <span class="calq-s">kommande</span></p>
       <div class="calopts" id="calopts">${calChoices()}</div></div>
-    <div class="calstep"><p class="calq"><span class="cnum">2</span>Vilken kalender använder du?</p>
-      <div class="calapps" id="calapps">${CAL_APPS.map(([k, l, d, ic]) => `<button type="button" class="calapp" data-app="${k}" aria-pressed="${k === calApp}"><span class="ca-i" aria-hidden="true">${ic}</span><span class="ca-l">${l}</span><span class="ca-d">${d}</span></button>`).join("")}</div></div>
-    <div class="calstep"><p class="calq"><span class="cnum">3</span>Så här gör du</p>
+    <div class="calstep"><p class="calq"><span class="cnum">2</span>Din kalender</p>
+      <div class="calapps" id="calapps">${CAL_APPS.map(([k, l, ic]) => `<button type="button" class="calapp" data-app="${k}" aria-pressed="${k === calApp}"><span class="ca-i" aria-hidden="true">${ic}</span>${l}</button>`).join("")}</div></div>
+    <div class="calstep"><p class="calq"><span class="cnum">3</span>Lägg till</p>
       <div id="calhow">${calSteps()}</div></div>
-    <div class="calfoot">
-      <p><b>Bra att veta</b></p>
-      <ul><li>Bara kommande matcher läggs in. När en match är spelad försvinner den ur kalendern – resultaten finns här i appen.</li>
-        <li>Välj <i>Alla</i> eller enstaka tävlingar – inte båda, annars kommer matcherna dubbelt.</li>
-        <li>Ändringar kan ta några timmar innan de syns; kalenderappen hämtar listan några gånger per dygn.</li>
-        <li>Det är bara en lista med matcher. Inget installeras i telefonen, och du tar bort den som vilken kalender som helst.</li></ul>
-    </div>
+    <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar · välj <i>Alla</i> eller enstaka, inte båda</p>
   </div>
 </details>`;
 function calWire() {
