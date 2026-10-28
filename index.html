@@ -954,7 +954,7 @@ const calChoices = () => `<div class="calopts">${calFeeds().map(calOpt).join("")
     <div id="calwarn">${calWarn()}</div>`;
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
-    <span class="calt"><b>Till kalendern${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Matcherna uppdateras automatiskt</small></span></summary>
+    <span class="calt"><b>Prenumerera${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Matcherna uppdateras automatiskt</small></span></summary>
   <div class="calbody">
     <div class="calstep"><p class="calq"><span class="cnum">1</span>Matcher <span class="calq-s">kommande</span></p>
       <div class="calchoose" id="calopts">${calChoices()}</div></div>
