@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-28T21:40",
- "lastResult": "Full update (manual run)",
+ "lastCheck": "2026-10-28T22:52",
+ "lastResult": "Checked — nothing due",
  "dataUpdated": "2026-10-28T21:40",
  "history": [
+  [
+   "2026-10-28T22:52",
+   "skip",
+   "Checked — nothing due"
+  ],
   [
    "2026-10-28T21:40",
    "full",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-10-22T23:53",
-   "skip",
-   "Checked — nothing due"
-  ],
-  [
-   "2026-10-22T20:08",
    "skip",
    "Checked — nothing due"
   ]
