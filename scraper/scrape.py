@@ -583,18 +583,19 @@ def build(prev, live_only=False, discover_new=False):
         "comps": {**prev.get("comps", {}), **p["comps"]},
         "discovery": LAST_DISCOVERY or prev.get("discovery", {}),
         "insta": prev.get("insta", []) if live_only else scrape_insta(prev),
+        "calfeeds": prev.get("calfeeds", []),
     }
     data["final"] = sorted({r[7] for s in data["series"].values() for r in s.get("matches", []) if len(r) > 7 and r[5] is not None and r[7]})
     return data
 
 
 def save(data):
-    with open(OUT, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     try:
-        write_ics(data)
+        write_ics(data)  # also fills data["calfeeds"]
     except Exception as e:  # noqa: BLE001  (the calendar must never stop the data update)
         log("calendar feed failed:", e)
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     log("saved data.json", os.path.getsize(OUT), "bytes;", len(data["live"]), "live game(s)")
 
 
@@ -625,29 +626,65 @@ def ics_fold(line):
     return "\r\n ".join(out)
 
 
+def slug(t):
+    t = t.lower().translate(str.maketrans("åäöé", "aaoe"))
+    return re.sub(r"[^a-z0-9]+", "-", t).strip("-") or "x"
+
+
 def write_ics(data):
-    """Subscribable calendar with every P11 Röd game (series, USM rounds and cups). Rewritten on every update,
-    so calendars that subscribe to it pick up new games, time changes and results by themselves."""
+    """Subscribable calendars with P11 Röd's games: all games, the league, all USM rounds, all cups — plus one per
+    extra competition the job finds (a new series, RM, …) and one per cup.
+    Rewritten on every update, so subscribed calendars pick up new games, time changes and results by themselves.
+    Also stores the list of calendars in data["calfeeds"] for the app (with the date each was first seen, for a "Ny" badge)."""
     OUR_EXTRA.update(c.get("team") for c in (data.get("comps") or {}).values() if c.get("team"))
-    games = []
+    comps = data.get("comps") or {}
+    games = []  # (date, time, home, away, venue, hs, as, id, comp label, url, group, feed key)
+    extra = {}  # feed key -> label
     for key, s in (data.get("series") or {}).items():
-        comp = s.get("short") or COMP_NAMES.get(key, "Serie")
-        if key not in COMP_NAMES and comp == "USM":
-            comp = s.get("head") or comp
+        short = s.get("short") or COMP_NAMES.get(key, "Serie")
+        comp = s.get("head") or short if key not in COMP_NAMES and short == "USM" else short
+        group = "usm" if short == "USM" else "serie" if key == "serie" else "x"
+        fkey = None if group in ("usm", "serie") else key
+        if fkey:
+            extra[fkey] = s.get("head") or short
         for r in s.get("matches", []):
             date, tm, home, away, venue, hs, as_, mid = (r + [None] * 8)[:8]
-            games.append((date, tm, home, away, venue, hs, as_, mid, comp, None, "usm" if (s.get("short") or COMP_NAMES.get(key, "")) == "USM" else "serie"))
+            games.append((date, tm, home, away, venue, hs, as_, mid, comp, None, group, fkey))
     for r in data.get("cupGames") or []:
         date, tm, home, away, venue, url, comp, hs, as_, mid = (r + [None] * 10)[:10]
-        games.append((date, tm, home, away, venue, hs, as_, mid, comp, url, "cup"))
+        fkey = "cup-" + slug(comp or "Cup")  # one calendar per cup (the app only offers them once there are 2+ cups)
+        extra[fkey] = comp or "Cup"
+        games.append((date, tm, home, away, venue, hs, as_, mid, comp, url, "cup", fkey))
     try:  # stable stamp = time of the data, so the file only changes when the data does
         stamp = datetime.strptime(data["updated"], "%Y-%m-%dT%H:%M").replace(tzinfo=TZ).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     except (KeyError, ValueError):
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    today = now().strftime("%Y-%m-%d")
+    seen = {f.get("key"): f.get("since") for f in data.get("calfeeds") or [] if isinstance(f, dict)}
+    first_run = not seen  # calendars that already existed when this list was introduced are not "new"
+    upcoming = lambda sel: sum(1 for g in sel if g[5] is None and (g[0] or "") >= today)  # noqa: E731
+    feeds = []
     for fname, group, calname in ICS_FEEDS:
         sel = [g for g in games if group is None or g[10] == group]
         write_feed(os.path.join(ROOT, fname), sel, calname, stamp)
-
+        key = group or "alla"
+        f = {"key": key, "file": fname, "label": {"alla": "Alla", "serie": "Serien", "usm": "USM", "cup": "Cuper"}[key],
+             "games": len(sel), "upcoming": upcoming(sel), "since": seen.get(key) or "2026-10-20"}
+        if key == "usm":  # a new USM round counts as news for the USM calendar
+            rounds = [c for c in comps.values() if c.get("short") == "USM" and c.get("found")]
+            if rounds:
+                newest = max(rounds, key=lambda c: c["found"])
+                f["since"], f["note"] = newest["found"], (newest.get("head") or "Ny omgång").replace("USM U16 · ", "")
+        feeds.append(f)
+    for fkey, label in extra.items():
+        sel = [g for g in games if g[11] == fkey]
+        fname = f"matcher-{fkey}.ics"
+        write_feed(os.path.join(ROOT, fname), sel, f"P11 Röd – {label}", stamp)
+        found = (comps.get(fkey) or {}).get("found")
+        feeds.append({"key": fkey, "file": fname, "label": label, "games": len(sel), "upcoming": upcoming(sel),
+                      "since": seen.get(fkey) or found or ("2026-10-20" if first_run else today),
+                      "extra": "cup" if fkey.startswith("cup-") else "comp"})
+    data["calfeeds"] = feeds
 
 def write_feed(path, games, calname, stamp):
     L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//bbpered//P11 Röd matcher//SV", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
@@ -658,7 +695,7 @@ def write_feed(path, games, calname, stamp):
          "BEGIN:STANDARD", "TZOFFSETFROM:+0200", "TZOFFSETTO:+0100", "TZNAME:CET", "DTSTART:19701025T030000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
          "END:VTIMEZONE"]
     ours = {OUR, "KFUM Blackebergs IK"} | OUR_EXTRA
-    for date, tm, home, away, venue, hs, as_, mid, comp, url, _grp in sorted(games, key=lambda g: (g[0] or "", g[1] or "")):
+    for date, tm, home, away, venue, hs, as_, mid, comp, url, *_ in sorted(games, key=lambda g: (g[0] or "", g[1] or "")):
         if not date or not mid:
             continue
         home_us = home in ours
