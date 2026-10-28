@@ -1,5 +1,5 @@
 // Offline support: show the latest version when online, the last saved copy when offline.
-const CACHE = "p11-rod-v4";
+const CACHE = "p11-rod-v5";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
@@ -8,6 +8,7 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   if (req.url.includes("data.json") || req.url.includes("status.json")) return; // live data: always from the network (the app keeps its own copy)
   const sameOrigin = new URL(req.url).origin === location.origin;
+  if (!sameOrigin && !req.url.startsWith("https://fonts.")) return; // other sites (e.g. the live score on GitHub): leave to the browser
   e.respondWith(
     fetch(req).then(res => {
       if (res.ok && (sameOrigin || req.url.startsWith("https://fonts."))) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }

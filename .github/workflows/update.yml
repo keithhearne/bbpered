@@ -3,8 +3,9 @@
 #  - nightly full check (first run after 03:00 Swedish time) for new fixtures and changes, and for new
 #    competitions P11 Röd has been entered into on Profixio (e.g. a new USM round)
 #  - Fridays–Sundays daytime: a check at least every 5 hours
-#  - game days: a run up to 3 hours before tip-off stays on, then updates every 10 minutes for about
-#    1.5 hours from tip-off; hourly catch-up afterwards
+#  - game days: a run up to 3 hours before tip-off stays on, then checks the score every 2 minutes for about
+#    1.5 hours from tip-off (live.json on the "live" branch; data.json every 15 min and when a game ends);
+#    hourly catch-up afterwards
 #  GitHub sometimes skips scheduled runs, so the checks are based on "how long since the last update"
 #  rather than exact times.
 # Free on a public repository. Run it by hand from the Actions tab ("Run workflow").
@@ -52,4 +53,5 @@ jobs:
       - name: Fetch data
         env:
           FORCE: ${{ (github.event_name == 'push' || inputs.force) && '1' || '0' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # lets the job write live.json to the "live" branch
         run: python scraper/scrape.py

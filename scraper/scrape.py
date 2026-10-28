@@ -47,7 +47,9 @@ CUPS = [
 
 LIVE_BEFORE = timedelta(minutes=10)     # start polling this long before tip-off
 LIVE_AFTER = timedelta(minutes=100)     # ...and keep going this long after tip-off
-LIVE_STEP = 600                         # seconds between live updates
+LIVE_STEP = 120                         # seconds between live checks (score goes to the "live" branch, no site rebuild)
+MAIN_EVERY = timedelta(minutes=15)      # during a game, the full data.json is published at most this often (plus when a game ends)
+LIVE_BRANCH = "live"                    # branch that holds live.json (not the website branch, so no GitHub Pages rebuild)
 AFTER_GAME = timedelta(hours=6)         # hourly catch-up checks after a game
 NIGHT_START, NIGHT_END = 3, 9           # nightly full check: the first run after 03:00 each day (Swedish time)
 WEEKEND_EVERY = timedelta(hours=5)      # Fri–Sun daytime: a check at least every 5 hours
@@ -727,6 +729,37 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 """)
 
 
+def push_live(data):
+    """Write live.json (just the live scores) to the "live" branch through the GitHub API.
+    The app reads it straight from GitHub every 2 minutes; pushing to this branch does not rebuild the website."""
+    payload = {"updated": now().strftime("%Y-%m-%dT%H:%M:%S"), "live": data.get("live", {}), "final": data.get("final", [])}
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    with open(os.path.join(ROOT, "live.json"), "w", encoding="utf-8") as f:
+        f.write(body)
+    token, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not token or not repo:
+        log("live.json written locally (no GitHub token)")
+        return
+    api = f"https://api.github.com/repos/{repo}"
+    h = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json", "User-Agent": UA}
+    try:
+        r = requests.get(f"{api}/git/ref/heads/{LIVE_BRANCH}", headers=h, timeout=20)
+        if r.status_code == 404:  # first time: create the branch from main
+            main_sha = requests.get(f"{api}/git/ref/heads/main", headers=h, timeout=20).json()["object"]["sha"]
+            requests.post(f"{api}/git/refs", headers=h, json={"ref": f"refs/heads/{LIVE_BRANCH}", "sha": main_sha}, timeout=20).raise_for_status()
+        cur = requests.get(f"{api}/contents/live.json", headers=h, params={"ref": LIVE_BRANCH}, timeout=20)
+        sha = cur.json().get("sha") if cur.ok else None
+        import base64
+        put = {"message": "Live score", "branch": LIVE_BRANCH, "content": base64.b64encode(body.encode()).decode(),
+               "committer": {"name": "p11-bot", "email": "actions@users.noreply.github.com"}}
+        if sha:
+            put["sha"] = sha
+        requests.put(f"{api}/contents/live.json", headers=h, json=put, timeout=20).raise_for_status()
+        log("live.json pushed:", len(payload["live"]), "live game(s)")
+    except Exception as e:  # noqa: BLE001  (live.json is a bonus; the normal update carries on)
+        log("live.json push failed:", e)
+
+
 def commit(msg):
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
@@ -761,12 +794,17 @@ def main():
         commit("Status: checked")
         return
     if mode == "full":
-        save(build(prev, discover_new=needs_browser(force, mode, info, prev)))
+        data = build(prev, discover_new=needs_browser(force, mode, info, prev))
+        save(data)
+        push_live(data)  # keeps live.json in step (empty when no game is on)
         write_status(f"Full update ({info})", "full")
         commit("Update data")
         return
-    # Live mode: wait for tip-off, then update every 10 minutes until the game window closes.
+    # Live mode: wait for tip-off, then check the score every 2 minutes until the game window closes.
+    # Each check goes to live.json on the "live" branch (no website rebuild); the full data.json is
+    # published every 15 minutes and as soon as a game ends.
     end = info
+    last_main = None
     while True:
         t = now()
         games = [(k, done) for k, _, done in fixtures(prev) if not done and k <= end]
@@ -779,16 +817,23 @@ def main():
             commit("Status: waiting for game")
             time.sleep(wait)
             continue
+        finals_before = set(prev.get("final", [])) | {g[9] for g in prev.get("cupGames", []) if len(g) > 9 and g[7] is not None}
         data = build(prev, live_only=True)
         save(data)
-        write_status(f"Live update ({len(data['live'])} game(s) in progress)" if data["live"] else "Live mode: waiting for / checking the game", "live")
-        commit("Live update")
+        push_live(data)
+        finals_now = set(data.get("final", [])) | {g[9] for g in data.get("cupGames", []) if len(g) > 9 and g[7] is not None}
+        if last_main is None or now() - last_main >= MAIN_EVERY or finals_now != finals_before:
+            write_status(f"Live update ({len(data['live'])} game(s) in progress)" if data["live"] else "Live mode: waiting for / checking the game", "live")
+            commit("Live update")
+            last_main = now()
         prev = data
         end = max([end] + [k + LIVE_AFTER for k, _, done in fixtures(prev) if not done and k <= now() + LIVE_BEFORE])
         if now() + timedelta(seconds=LIVE_STEP) > end:
             break
         time.sleep(LIVE_STEP)
-    save(build(prev))  # full update (tables too) when the window closes
+    data = build(prev)  # full update (tables too) when the window closes
+    save(data)
+    push_live(data)
     write_status("Full update after the game", "full")
     commit("Update data after game")
 

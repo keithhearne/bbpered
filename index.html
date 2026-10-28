@@ -248,6 +248,7 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .mid .s.links { white-space: normal; }
 .back { justify-self: start; background: var(--card-soft); border: 0; border-radius: 999px; padding: 8px 14px; font: 700 .9rem var(--body); color: var(--muted); cursor: pointer; transition: color .15s; }
 .back:hover, .back:focus-visible, .back:active { color: var(--accent); }
+#livebox { display: contents; }
 #match { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; }
 #statsbox { grid-template-columns: minmax(0, 1fr); }
 #match[hidden] { display: none; }
@@ -624,9 +625,9 @@ const DATA = {
   ],
   // Cup group games (Cup Manager). Listed team first = "home" on the schedule.
   cupGames: [
-    ["2026-10-30","11:15","Södertälje BBK EF","KFUM Blackebergs IK Röd","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323409"],
-    ["2026-10-30","17:15","KFUM Blackebergs IK Röd","BMS Herlev","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323411"],
-    ["2026-10-31","11:05","Viby Basket 2","KFUM Blackebergs IK Röd","Rosenborgshallen","https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323414"]
+    ["2026-10-30", "11:15", "Södertälje BBK EF", "KFUM Blackebergs IK Röd", "Rosenborgshallen", "https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323409", "Södertälje Open", null, null, "88323409"],
+    ["2026-10-30", "17:15", "KFUM Blackebergs IK Röd", "BMS Herlev", "Rosenborgshallen", "https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323411", "Södertälje Open", null, null, "88323411"],
+    ["2026-10-31", "11:05", "Viby Basket 2", "KFUM Blackebergs IK Röd", "Rosenborgshallen", "https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323414", "Södertälje Open", null, null, "88323414"]
   ],
   matches: [
     ["2026-09-12","12:00","KFUM Blackebergs IK Röd","Uppsala Basket Snakes","",81,63,"32726246"],
@@ -814,7 +815,7 @@ function renderOverview() {
   const w5 = last5.filter(m => m.win).length;
   const pf5 = last5.reduce((s, m) => s + m.us, 0), pa5 = last5.reduce((s, m) => s + m.them, 0);
   document.getElementById("oversikt").innerHTML = `
-    ${liveCard()}
+    <div id="livebox">${liveCard()}</div>
     ${instaSection()}
     ${compsCard()}
     <div>
@@ -1096,7 +1097,7 @@ function openMatch(id) {
     <button class="back" type="button" id="backbtn">← Tillbaka</button>
     <div class="board">
       <div class="btop"><div class="meta">${WDL[m.d.getDay()]} ${m.d.getDate()} ${MONL[m.d.getMonth()]} · ${m.home ? "Hemma" : "Borta"} · ${(SERIES[m.series] || SERIES.serie).head}</div><a class="plink" href="${matchUrl(m)}" target="_blank" rel="noopener">Profixio ↗</a></div>
-      <div class="vsrow"><div class="tm us">${usName}</div><div class="big ${m.live ? "lv" : m.win ? "w" : "l"}">${m.played ? m.us : m.liveUs}–${m.played ? m.them : m.liveThem}${m.live ? `<span class="livepill">Live</span>` : `<span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span>`}</div><div class="tm r">${esc(themName)}</div></div>
+      <div class="vsrow"><div class="tm us">${usName}</div><div class="big ${m.live ? "lv" : m.win ? "w" : "l"}"${m.live ? ` data-live="${m.id}"` : ""}>${m.played ? m.us : m.liveUs}–${m.played ? m.them : m.liveThem}${m.live ? `<span class="livepill">Live</span>` : `<span class="pill ${m.win ? "w" : "l"}">${m.win ? "V" : "F"}</span>`}</div><div class="tm r">${esc(themName)}</div></div>
       <div class="qs"><span></span>${[1, 2, 3, 4].map(p => `<span class="hd">P${p}</span>`).join("")}
         <span class="nm">Blackeberg</span>${usP.map((v, k) => `<span class="c ${v > thP[k] ? "won" : ""}">${v}</span>`).join("")}
         <span class="nm">Motståndare</span>${thP.map(v => `<span class="c">${v}</span>`).join("")}</div>
@@ -1324,6 +1325,44 @@ try {
   if (v) { if (v.match) openMatch(v.match); window.scrollTo(0, v.y || 0); }
 } catch (e) {}
 
+/* Live score: during a game the update job writes live.json to the "live" branch on GitHub every 2 minutes
+   (that does not rebuild the website). The app reads it every 2 minutes and updates only the score:
+   the "Pågår nu" strip on Översikt and the score in an open Matchspel. When a game ends it fetches data.json. */
+const LIVE_URLS = ["https://api.github.com/repos/keithhearne/bbpered/contents/live.json?ref=live",
+                   "https://raw.githubusercontent.com/keithhearne/bbpered/live/live.json"];
+function applyLive(L) {
+  if (!L || typeof L.live !== "object") return false;
+  let ended = false, changed = false;
+  matches.forEach(m => {
+    if (!m.id || m.played) return;
+    const lv = L.live[m.id];
+    if (lv) {
+      const us = m.home ? lv[0] : lv[1], them = m.home ? lv[1] : lv[0];
+      if (!m.live || m.liveUs !== us || m.liveThem !== them) changed = true;
+      Object.assign(m, { live: true, liveUs: us, liveThem: them }); LIVE_SCORES[m.id] = lv;
+    } else if (m.live) { ended = true; }
+  });
+  if (changed) {
+    const box = document.getElementById("livebox"); if (box) box.innerHTML = liveCard();
+    matches.filter(m => m.live).forEach(m => document.querySelectorAll(`[data-live="${m.id}"]`).forEach(el => {
+      el.innerHTML = `${m.liveUs}–${m.liveThem}<span class="livepill">Live</span>`;
+    }));
+  }
+  return ended;
+}
+(function keepLive() {
+  if (!/^https?:$/.test(location.protocol)) return;
+  let src = 0;
+  const due = () => { const t = Date.now(); return matches.some(m => m.live) || matches.some(m => !m.played && m.time && t > new Date(`${m.date}T${m.time}`).getTime() - 15 * 60000 && t < new Date(`${m.date}T${m.time}`).getTime() + 120 * 60000); };
+  const read = () => fetch(src ? LIVE_URLS[1] + "?t=" + Date.now() : LIVE_URLS[0], src ? { cache: "no-store" } : { cache: "no-cache", headers: { Accept: "application/vnd.github.raw+json" } })
+    .then(r => { if (!r.ok) { if (!src && (r.status === 403 || r.status === 429)) src = 1; return null; } return r.json(); })
+    .then(L => { if (L && applyLive(L) && window.__p11check) window.__p11check(); })
+    .catch(() => {});
+  if (due()) read();
+  setInterval(() => { if (document.visibilityState === "visible" && due()) read(); }, 120000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && due()) read(); });
+})();
+
 /* Keep the data fresh: fetch data.json (written by the GitHub Action) and refresh the page when it has changed.
    Checks on open, every 15 minutes, and every minute around game time. Silently does nothing where data.json isn't available. */
 (function keepFresh() {
@@ -1344,9 +1383,10 @@ try {
     try { sessionStorage.setItem("p11-view", JSON.stringify({ match: !document.getElementById("match").hidden ? window.__openMatch : null, y: window.scrollY })); } catch (e) {}
     location.reload();
   }).catch(() => {});
+  window.__p11check = check;
   check();
   let n = 0;
-  setInterval(() => { n++; if (matches.some(m => m.live) || gameTime() || n % 15 === 0) check(); }, 60000);
+  setInterval(() => { n++; if (((matches.some(m => m.live) || gameTime()) && n % 5 === 0) || n % 15 === 0) check(); }, 60000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
 })();
 </script>
