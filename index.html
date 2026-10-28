@@ -950,7 +950,7 @@ const calWarn = () => {
 };
 const calOpt = f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}${calSubs.includes(f.key) ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</button>`;
 const calChoices = () => `<div class="calopts">${calFeeds().map(calOpt).join("")}</div>
-    <p class="calsome-note"><b>Alla</b> rekommenderas – får även nya tävlingar och cuper automatiskt. Väljer du enstaka och senare <i>Alla</i> visas matcherna dubbelt; appen kommer ihåg vad du lagt till härifrån och varnar dig.</p>
+    <p class="calsome-note"><b>Alla</b> rekommenderas – då läggs även nya tävlingar och cuper till automatiskt. Väljer du enstaka och senare <i>Alla</i> visas matcherna dubbelt; appen kommer ihåg vad du lagt till härifrån och varnar dig.</p>
     <div id="calwarn">${calWarn()}</div>`;
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
