@@ -56,7 +56,8 @@ The job works out game days by itself from the same fixture list you see in **Ka
 - **Matchspel** fills in basket by basket and shows a **LIVE** badge instead of V/F.
 - While a game is on, the open app checks for new data every minute. Normally it checks every 15 minutes, and whenever you switch back to it.
 - **Delay:** expect the score to be up to about **10–13 minutes** behind real life. It's fetched every 10 minutes, plus 1–3 minutes for GitHub to publish it.
-- **It depends on the scorers.** Live data only exists if they enter it in Profixio during the game. If a hall uses a paper score sheet, the result appears once it has been uploaded.
+- **Each game is read from its own source.** League and USM games come from Profixio; cup games (e.g. Södertälje Open) come from Cup Manager, where the cup publishes its scores. During a cup game the job only asks Cup Manager, and during a league/USM game only Profixio.
+- **It depends on the scorers.** Live data only exists if they enter it during the game (in Profixio, or in Cup Manager for cups). If a hall uses a paper score sheet, the result appears once it has been uploaded.
 
 ## Common tasks
 

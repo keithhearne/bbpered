@@ -538,11 +538,38 @@ def scrape_insta(prev):
     return out
 
 
+def live_sources(prev, t=None):
+    """During a game, which sources have a game in the live window: Profixio (league/USM) and/or Cup Manager (cups).
+    Cup games only exist on Cup Manager, so a cup day doesn't need to ask Profixio every 10 minutes (and the other way round)."""
+    t = t or now()
+    def due(rows, date_i, time_i, done):
+        for r in rows:
+            if not r[time_i] or done(r):
+                continue
+            k = datetime.fromisoformat(f"{r[date_i]}T{r[time_i]}").replace(tzinfo=TZ)
+            if k - LIVE_BEFORE - timedelta(seconds=LIVE_STEP) <= t <= k + LIVE_AFTER:
+                return True
+        return False
+    prof = due([r for s in prev.get("series", {}).values() for r in s.get("matches", [])], 0, 1, lambda r: r[5] is not None)
+    cup = due(prev.get("cupGames", []), 0, 1, lambda g: len(g) > 7 and g[7] is not None)
+    return prof, cup
+
+
 def build(prev, live_only=False, discover_new=False):
     if discover_new:
         prev = dict(prev, comps=discover(prev))
-    p = scrape_profixio(prev, live_only)
-    cups, cup_live = scrape_cups(prev)
+    prof_due, cup_due = live_sources(prev) if live_only else (True, True)
+    if prof_due:
+        p = scrape_profixio(prev, live_only)
+    else:  # live window for a cup game only: keep the Profixio data as it is
+        log("Profixio skipped (no league/USM game right now)")
+        p = {"series": prev.get("series", {}), "pbp": {}, "lineups": {}, "logos": {}, "comps": {},
+             "live": {k: v for k, v in prev.get("live", {}).items() if k not in {str(g[9]) for g in prev.get("cupGames", []) if len(g) > 9}}}
+    if cup_due:
+        cups, cup_live = scrape_cups(prev)
+    else:  # live window for a Profixio game only: keep the cup data as it is
+        log("Cup Manager skipped (no cup game right now)")
+        cups, cup_live = prev.get("cupGames", []), {}
     data = {
         "updated": now().strftime("%Y-%m-%dT%H:%M"),
         "series": p["series"],
