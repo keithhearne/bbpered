@@ -207,6 +207,17 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .co-n { font-weight: 800; font-size: .74rem; color: var(--muted); background: var(--chip); border-radius: 999px; padding: 0 6px; font-variant-numeric: tabular-nums; }
 .calopt[aria-pressed="true"] .co-n { background: #fff; color: var(--accent); }
 .calopt .calnew { margin-left: 0; vertical-align: 0; }
+.calchoose { display: grid; gap: 8px; }
+.calopt.calall { display: grid; gap: 2px; justify-items: start; text-align: left; border-radius: 12px; padding: 10px 12px; width: 100%; }
+.ca-top { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 1rem; }
+.ca-sub { font-size: .78rem; font-weight: 600; color: var(--muted); }
+.calopt.calall[aria-pressed="true"] .ca-sub { color: var(--accent); }
+.co-done { color: var(--win, #1e7d4f); font-weight: 800; }
+.calsome > summary { cursor: pointer; font-weight: 700; font-size: .84rem; color: var(--accent); }
+.calsome[open] > summary { margin-bottom: 8px; }
+.calsome-note { margin: 8px 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
+.calwarn { font-size: .82rem; line-height: 1.4; color: var(--ink); background: #fff6e0; border: 1.5px solid #e0a400; border-radius: 10px; padding: 8px 10px; }
+.calwarn .callink { font-size: .8rem; }
 .calapps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .calother { margin: 0; font-size: .82rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
 .calother-how { margin: 0; font-size: .8rem; color: var(--muted); line-height: 1.45; background: var(--card-soft); border-radius: 10px; padding: 8px 10px; }
@@ -923,39 +934,72 @@ const calSteps = () => {
     <p class="calhint">Tryck <b>Lägg till</b> när Google frågar. Syns även i Samsung Kalender.</p>
     ${more(`<p><b>Android / Google</b><br>Tryck <i>Öppna Google Kalender</i>, logga in om det behövs och tryck <i>Lägg till</i>. Öppnas bara appen utan att fråga? Öppna länken i Chrome, välj <i>Datorversion</i> i menyn och tryck igen – eller tryck <i>Kopiera länken</i> under steg 2, gå till calendar.google.com → <i>Andra kalendrar → + → Från webbadress</i> och klistra in den. Syns inga matcher i appen: Google Kalender → Inställningar → kalendern → slå på <i>Synkronisera</i>.</p>`)}`;
 };
-const calChoices = () => calFeeds().map(f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}</button>`).join("");
+/* The app remembers (on this phone, in this browser) which calendars were added from here, to warn about duplicates. */
+const calSubsLoad = () => { try { const v = JSON.parse(localStorage.getItem("p11-calsubs") || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+let calSubs = calSubsLoad();
+const calSubsSave = () => { try { localStorage.setItem("p11-calsubs", JSON.stringify(calSubs)); } catch (e) {} };
+const calLabel = k => (calFeeds().find(f => f.key === k) || {}).label || k;
+const calList = ks => { const l = ks.map(calLabel); return l.length > 1 ? l.slice(0, -1).join(", ") + " och " + l[l.length - 1] : l[0] || ""; };
+const calWarn = () => {
+  const others = calSubs.filter(k => k !== "alla" && calFeeds().some(f => f.key === k));
+  if (calSubs.includes(calPick)) return `<div class="calwarn"><b>Du har redan lagt till ${esc(calLabel(calPick))} härifrån.</b> Lägger du till den igen visas matcherna dubbelt. <button type="button" class="callink" data-calforget>Har du tagit bort den? Glöm det.</button></div>`;
+  if (calPick === "alla" && others.length) return `<div class="calwarn"><b>Du har redan lagt till ${esc(calList(others))} härifrån.</b> Alla innehåller även de matcherna – ta bort ${others.length > 1 ? "dem" : "den"} i kalenderappen när du lagt till Alla, annars visas de dubbelt. <button type="button" class="callink" data-calforget>Redan borttagen? Glöm det.</button></div>`;
+  if (calPick !== "alla" && calSubs.includes("alla")) return `<div class="calwarn"><b>Du har redan lagt till Alla härifrån</b> – den innehåller redan ${esc(calLabel(calPick))}. Lägger du till den också visas matcherna dubbelt. <button type="button" class="callink" data-calforget>Har du tagit bort Alla? Glöm det.</button></div>`;
+  return "";
+};
+const calOpt = f => `<button type="button" class="calopt" data-cal="${f.key}" aria-pressed="${f.key === calPick}"${calIsNew(f) && f.note ? ` title="Nytt: ${esc(f.note)}"` : ""}>${esc(f.label)}${f.upcoming != null ? ` <span class="co-n">${f.upcoming}</span>` : ""}${calIsNew(f) ? `<span class="calnew">Ny</span>` : ""}${calSubs.includes(f.key) ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</button>`;
+const calChoices = () => {
+  const all = calFeeds().find(f => f.key === "alla"), rest = calFeeds().filter(f => f.key !== "alla");
+  return `${all ? `<button type="button" class="calopt calall" data-cal="alla" aria-pressed="${calPick === "alla"}">
+      <span class="ca-top">Alla matcher${all.upcoming != null ? ` <span class="co-n">${all.upcoming}</span>` : ""}${calSubs.includes("alla") ? `<span class="co-done" title="Tillagd härifrån">✓</span>` : ""}</span>
+      <span class="ca-sub">Rekommenderas – får även nya tävlingar och cuper automatiskt</span></button>` : ""}
+    <details class="calsome"${calPick !== "alla" ? " open" : ""}><summary>Bara vissa tävlingar?</summary>
+      <div class="calopts">${rest.map(calOpt).join("")}</div>
+      <p class="calsome-note">Väljer du enstaka tävlingar och senare <i>Alla</i> visas matcherna dubbelt – ta då bort de enstaka. Appen kommer ihåg vad du lagt till härifrån och varnar dig.</p></details>
+    <div id="calwarn">${calWarn()}</div>`;
+};
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
     <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera – uppdateras av sig själv</small></span></summary>
   <div class="calbody">
     <div class="calstep"><p class="calq"><span class="cnum">1</span>Matcher <span class="calq-s">kommande</span></p>
-      <div class="calopts" id="calopts">${calChoices()}</div></div>
+      <div class="calchoose" id="calopts">${calChoices()}</div></div>
     <div class="calstep"><p class="calq"><span class="cnum">2</span>Din kalender</p>
       <div class="calapps" id="calapps">${CAL_APPS.map(([k, l, ic]) => `<button type="button" class="calapp" data-app="${k}" aria-pressed="${k === calApp}"><span class="ca-i" aria-hidden="true">${ic}</span>${l}</button>`).join("")}</div>
       <p class="calother">Annan kalender, t.ex. Outlook? <button type="button" class="callink" data-calcopy data-other>Kopiera länken</button></p>
       <p class="calother-how" id="calotherhow" hidden>Klistra in länken i din kalender. I Outlook: Outlook på webben → <i>Lägg till kalender</i> → <i>Prenumerera från webben</i>. Den syns sedan även i Outlook-appen.</p></div>
     <div class="calstep"><p class="calq"><span class="cnum">3</span>Lägg till</p>
       <div id="calhow">${calSteps()}</div></div>
-    <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar · välj <i>Alla</i> eller enstaka, inte båda</p>
+    <p class="calfoot">Bara kommande matcher · ändringar kan dröja några timmar · appen kommer ihåg vad du lagt till härifrån och varnar för dubbletter</p>
   </div>
 </details>`;
 function calWire() {
   const box = document.querySelector("#kalender .calsub"); if (!box) return;
   box.addEventListener("toggle", () => { calOpen = box.open; });
+  const remember = () => { if (!calSubs.includes(calPick)) { calSubs.push(calPick); calSubsSave(); } };
+  const choose = () => {
+    const some = box.querySelector(".calsome"), wasOpen = some && some.open;
+    document.getElementById("calopts").innerHTML = calChoices();
+    const s2 = box.querySelector(".calsome"); if (s2 && wasOpen) s2.open = true;
+    box.querySelectorAll(".calopt").forEach(b => b.addEventListener("click", () => { calPick = b.dataset.cal; choose(); how(); }));
+    box.querySelectorAll("[data-calforget]").forEach(b => b.addEventListener("click", () => {
+      calSubs = calSubs.includes(calPick) ? calSubs.filter(k => k !== calPick) : calPick === "alla" ? calSubs.filter(k => k === "alla") : calSubs.filter(k => k !== "alla");
+      calSubsSave(); choose();
+    }));
+  };
   const how = () => {
     document.getElementById("calhow").innerHTML = calSteps();
     const md = document.getElementById("calmore"); if (md) md.addEventListener("toggle", () => { calMore = md.open; });
+    const main = box.querySelector("#calhow a.calbtn.main"); if (main) main.addEventListener("click", () => { remember(); setTimeout(choose, 300); });
     box.querySelectorAll("[data-calcopy]:not([data-wired])").forEach(cb => (cb.dataset.wired = "1", cb).addEventListener("click", async () => {
       const url = "https://" + calHost(), was = cb.textContent;
       if (cb.hasAttribute("data-other")) { const o = document.getElementById("calotherhow"); if (o) o.hidden = false; }
+      remember(); choose();
       try { await navigator.clipboard.writeText(url); cb.textContent = "Kopierad ✓"; } catch (e) { cb.textContent = url; }
       setTimeout(() => { cb.textContent = was; }, 2500);
     }));
   };
-  how();
-  box.querySelectorAll(".calopt").forEach(b => b.addEventListener("click", () => {
-    calPick = b.dataset.cal; box.querySelectorAll(".calopt").forEach(x => x.setAttribute("aria-pressed", String(x === b))); how();
-  }));
+  choose(); how();
   box.querySelectorAll(".calapp").forEach(b => b.addEventListener("click", () => {
     calApp = b.dataset.app; box.querySelectorAll(".calapp").forEach(x => x.setAttribute("aria-pressed", String(x === b))); how();
   }));
