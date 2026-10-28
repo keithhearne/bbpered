@@ -908,7 +908,7 @@ const cupRow = c => `<li class="row cup">${dayCell(c)}
   <div class="right"><a class="cupbadge" href="${c.url}" target="_blank" rel="noopener" aria-label="${esc(c.name)} hos Cup Manager">Cup <small>↗</small></a></div></li>`;
 /* Calendar subscription: the update job writes matcher*.ics next to data.json and lists them in data.json "calfeeds"
    (one per choice: all, league, USM, cups, plus new competitions and single cups). New ones get a "Ny" badge for 14 days. */
-const CAL_FEED = false;
+const CAL_FEED = true;
 const CAL_BASE = "keithhearne.github.io/bbpered/";
 const CALFEEDS_EMBED = [{"key": "alla", "file": "matcher.ics", "label": "Alla", "upcoming": 21, "since": "2026-10-20"}, {"key": "serie", "file": "matcher-serie.ics", "label": "Serien", "upcoming": 14, "since": "2026-10-20"}, {"key": "usm", "file": "matcher-usm.ics", "label": "USM", "upcoming": 4, "since": "2026-10-20", "note": "Omg 2 Grupp 1"}, {"key": "cup", "file": "matcher-cup.ics", "label": "Södertälje Open", "upcoming": 3, "since": "2026-10-20"}, {"key": "cup-sodertalje-open", "file": "matcher-cup-sodertalje-open.ics", "label": "Södertälje Open", "upcoming": 3, "since": "2026-10-20", "extra": "cup"}];
 const CAL_NEW_DAYS = 14;
