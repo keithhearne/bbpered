@@ -591,6 +591,7 @@ td.team .tm { display: inline-flex; align-items: center; gap: 8px; vertical-alig
 .livedot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; animation: livepulse 1.4s ease-in-out infinite; }
 @keyframes livepulse { 50% { opacity: .25; } }
 a.sbg { display: block; color: inherit; text-decoration: none; }
+.liveupd { color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: none; font-size: .78rem; }
 .sbext { margin: 8px 0 0; text-align: center; color: var(--accent); font-weight: 800; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
 a.sbg:hover .sbext { text-decoration: underline; }
 #livebox .sbbar { border: 3px solid var(--accent); animation: liveglow 3s ease-out infinite; }
@@ -816,7 +817,7 @@ const ORD = n => n + (n % 10 === 1 && n % 100 !== 11 ? ":a" : n % 10 === 2 && n 
 function liveCard() {
   const lv = matches.filter(m => m.live);
   if (!lv.length) return "";
-  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu</p><div class="sb3">${lv.map(m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; const ext = !has && m.url;
+  return `<div><p class="eyebrow red" style="margin-bottom:8px"><span class="livedot"></span>Pågår nu <span class="liveupd">· uppdateras varannan minut</span></p><div class="sb3">${lv.map(m => { const ourName = (SERIES[m.series] || SERIES.serie).team; const has = m.id && PBP[m.id]; const ext = !has && m.url;
     /* Cup games have no Matchspel: the whole card opens the cup's own live page (Cup Manager) in a new tab. */
     const tag = ext ? "a" : "div";
     const attrs = has ? ` data-match="${m.id}" role="button" tabindex="0" aria-label="Matchspel mot ${esc(m.opp)}"` : ext ? ` href="${esc(m.url)}" target="_blank" rel="noopener" aria-label="Följ matchen mot ${esc(m.opp)} live på Cup Manager"` : "";
