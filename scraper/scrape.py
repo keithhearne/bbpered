@@ -660,15 +660,20 @@ def write_ics(data):
     except (KeyError, ValueError):
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     today = now().strftime("%Y-%m-%d")
+    # Only games still to be played go into the calendars (owner, 28 Oct 2026): no old games, no results.
+    games = [g for g in games if g[5] is None and (g[0] or "") >= today]
+    cupnames = sorted({g[8] or "Cup" for g in games if g[10] == "cup"})
     seen = {f.get("key"): f.get("since") for f in data.get("calfeeds") or [] if isinstance(f, dict)}
     first_run = not seen  # calendars that already existed when this list was introduced are not "new"
     upcoming = lambda sel: sum(1 for g in sel if g[5] is None and (g[0] or "") >= today)  # noqa: E731
     feeds = []
     for fname, group, calname in ICS_FEEDS:
         sel = [g for g in games if group is None or g[10] == group]
+        if group == "cup" and len(cupnames) == 1:  # just one cup: call it by its name
+            calname = f"P11 Röd – {cupnames[0]}"
         write_feed(os.path.join(ROOT, fname), sel, calname, stamp)
         key = group or "alla"
-        f = {"key": key, "file": fname, "label": {"alla": "Alla", "serie": "Serien", "usm": "USM", "cup": "Cuper"}[key],
+        f = {"key": key, "file": fname, "label": cupnames[0] if key == "cup" and len(cupnames) == 1 else {"alla": "Alla", "serie": "Serien", "usm": "USM", "cup": "Cuper"}[key],
              "games": len(sel), "upcoming": upcoming(sel), "since": seen.get(key) or "2026-10-20"}
         if key == "usm":  # a new USM round counts as news for the USM calendar
             rounds = [c for c in comps.values() if c.get("short") == "USM" and c.get("found")]

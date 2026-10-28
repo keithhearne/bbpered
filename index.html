@@ -180,8 +180,7 @@ tr.us td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
 .plus { color: var(--win); } .minus { color: var(--loss); }
 .extra { display: none; }
 .wide .extra { display: table-cell; }
-.calsub { background: var(--surface, #fff); border: 2px solid var(--accent); border-radius: 14px; overflow: hidden; transition: box-shadow .2s; }
-.calsub:hover, .calsub[open] { box-shadow: 0 6px 18px rgba(168, 24, 46, .12); }
+.calsub { background: var(--surface, #fff); border: 2px solid var(--accent); border-radius: 14px; overflow: hidden; }
 .calsub > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; transition: background .15s; }
 .calsub > summary:hover { background: var(--card-soft); }
 .calsub > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 12px; }
@@ -888,12 +887,13 @@ const cupRow = c => `<li class="row cup">${dayCell(c)}
    (one per choice: all, league, USM, cups, plus new competitions and single cups). New ones get a "Ny" badge for 14 days. */
 const CAL_FEED = false;
 const CAL_BASE = "keithhearne.github.io/bbpered/";
-const CALFEEDS_EMBED = [{"key": "alla", "file": "matcher.ics", "label": "Alla", "upcoming": 21, "since": "2026-10-20"}, {"key": "serie", "file": "matcher-serie.ics", "label": "Serien", "upcoming": 14, "since": "2026-10-20"}, {"key": "usm", "file": "matcher-usm.ics", "label": "USM", "upcoming": 4, "since": "2026-10-20", "note": "Omg 2 Grupp 1"}, {"key": "cup", "file": "matcher-cup.ics", "label": "Cuper", "upcoming": 3, "since": "2026-10-20"}, {"key": "cup-sodertalje-open", "file": "matcher-cup-sodertalje-open.ics", "label": "Södertälje Open", "upcoming": 3, "since": "2026-10-20", "extra": "cup"}];
+const CALFEEDS_EMBED = [{"key": "alla", "file": "matcher.ics", "label": "Alla", "upcoming": 21, "since": "2026-10-20"}, {"key": "serie", "file": "matcher-serie.ics", "label": "Serien", "upcoming": 14, "since": "2026-10-20"}, {"key": "usm", "file": "matcher-usm.ics", "label": "USM", "upcoming": 4, "since": "2026-10-20", "note": "Omg 2 Grupp 1"}, {"key": "cup", "file": "matcher-cup.ics", "label": "Södertälje Open", "upcoming": 3, "since": "2026-10-20"}, {"key": "cup-sodertalje-open", "file": "matcher-cup-sodertalje-open.ics", "label": "Södertälje Open", "upcoming": 3, "since": "2026-10-20", "extra": "cup"}];
 const CAL_NEW_DAYS = 14;
 const calFeeds = () => {
   const all = (FRESH && Array.isArray(FRESH.calfeeds) && FRESH.calfeeds.length) ? FRESH.calfeeds : CALFEEDS_EMBED;
   const cups = all.filter(f => f.extra === "cup");
-  return all.filter(f => f.extra !== "cup" || cups.length > 1);  // single cups only once there is more than one cup
+  // Single cups are offered only once there is more than one cup; with just one, "Cuper" is called by the cup's name.
+  return all.filter(f => f.extra !== "cup" || cups.length > 1).map(f => f.key === "cup" && cups.length === 1 ? { ...f, label: cups[0].label } : f);
 };
 const calIsNew = f => (f.extra || f.note) && f.since && (Date.now() - new Date(f.since + "T00:00").getTime()) / 864e5 < CAL_NEW_DAYS;
 let calPick = "alla", calApp = "google", calOpen = false;
@@ -930,7 +930,7 @@ const calChoices = () => calFeeds().map(f => `<button type="button" class="calop
     <span class="co-s">${f.upcoming != null ? `${f.upcoming} kommande` : ""}${calIsNew(f) && f.note ? ` · ${esc(f.note)}` : ""}</span></button>`).join("");
 const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " open" : ""}>
   <summary><span class="calico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M12 13v5M9.5 15.5h5"/></svg></span>
-    <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera en gång – nya matcher, tider och resultat kommer in av sig själva</small></span></summary>
+    <span class="calt"><b>Matcherna i din kalender${calFeeds().some(calIsNew) ? `<span class="calnew">Ny</span>` : ""}</b><small>Prenumerera en gång – nya matcher och ändrade tider kommer in av sig själva</small></span></summary>
   <div class="calbody">
     <div class="calstep"><p class="calq"><span class="cnum">1</span>Vilka matcher vill du ha?</p>
       <div class="calopts" id="calopts">${calChoices()}</div></div>
@@ -940,7 +940,8 @@ const calCard = () => !CAL_FEED ? "" : `<details class="calsub"${calOpen ? " ope
       <div id="calhow">${calSteps()}</div></div>
     <div class="calfoot">
       <p><b>Bra att veta</b></p>
-      <ul><li>Välj <i>Alla</i> eller enstaka tävlingar – inte båda, annars kommer matcherna dubbelt.</li>
+      <ul><li>Bara kommande matcher läggs in. När en match är spelad försvinner den ur kalendern – resultaten finns här i appen.</li>
+        <li>Välj <i>Alla</i> eller enstaka tävlingar – inte båda, annars kommer matcherna dubbelt.</li>
         <li>Ändringar kan ta några timmar innan de syns; kalenderappen hämtar listan några gånger per dygn.</li>
         <li>Det är bara en lista med matcher. Inget installeras i telefonen, och du tar bort den som vilken kalender som helst.</li></ul>
     </div>
