@@ -823,7 +823,9 @@ def main():
             prev = json.load(f)
     force = "--force" in sys.argv or os.environ.get("FORCE") == "1"
     t = now()
-    mode, info = ("full", "manual run") if force else decide(prev, t)
+    mode, info = decide(prev, t)
+    if force and mode != "live":  # a manual run is a full update, unless a game is on/near: then follow it live
+        mode, info = "full", "manual run"
     log("mode:", mode, info if not isinstance(info, datetime) else "until " + info.strftime("%H:%M"))
     if "--plan" in sys.argv:  # tells the workflow whether to install the browser for this run
         out = os.environ.get("GITHUB_OUTPUT")
