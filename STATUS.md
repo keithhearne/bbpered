@@ -2,8 +2,8 @@
 
 This file is rewritten every time the update job runs (Swedish time).
 
-- **Last run:** 2026-10-30 11:05 — Live update (1 game(s) in progress)
-- **Data last refreshed:** 2026-10-30 11:05
+- **Last run:** 2026-10-30 11:21 — Live update (1 game(s) in progress)
+- **Data last refreshed:** 2026-10-30 11:21
 
 GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
 
@@ -11,6 +11,7 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 
 | Time | What happened |
 |---|---|
+| 2026-10-30 11:21 | Live update (1 game(s) in progress) |
 | 2026-10-30 11:05 | Live update (1 game(s) in progress) |
 | 2026-10-30 11:01 | Game day — waiting for tip-off at 11:15 |
 | 2026-10-30 11:00 | Full update (manual run) |
@@ -50,4 +51,3 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 | 2026-10-24 21:43 | Checked — nothing due |
 | 2026-10-24 19:33 | Full update (weekend check) |
 | 2026-10-24 16:26 | Checked — nothing due |
-| 2026-10-24 12:48 | Full update (weekend check) |
