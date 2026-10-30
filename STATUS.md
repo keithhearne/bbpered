@@ -2,8 +2,8 @@
 
 This file is rewritten every time the update job runs (Swedish time).
 
-- **Last run:** 2026-10-30 07:22 — Full update (nightly check)
-- **Data last refreshed:** 2026-10-30 07:22
+- **Last run:** 2026-10-30 11:00 — Full update (manual run)
+- **Data last refreshed:** 2026-10-30 11:00
 
 GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
 
@@ -11,6 +11,7 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 
 | Time | What happened |
 |---|---|
+| 2026-10-30 11:00 | Full update (manual run) |
 | 2026-10-30 07:22 | Full update (nightly check) |
 | 2026-10-30 01:14 | Checked — nothing due |
 | 2026-10-29 21:30 | Checked — nothing due |
@@ -50,4 +51,3 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 | 2026-10-24 12:48 | Full update (weekend check) |
 | 2026-10-24 07:41 | Checked — nothing due |
 | 2026-10-24 03:02 | Full update (nightly check) |
-| 2026-10-24 00:34 | Checked — nothing due |
