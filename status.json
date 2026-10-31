@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-31T16:31",
- "lastResult": "Live mode: waiting for / checking the game",
- "dataUpdated": "2026-10-31T16:31",
+ "lastCheck": "2026-10-31T16:48",
+ "lastResult": "Live update (1 game(s) in progress)",
+ "dataUpdated": "2026-10-31T16:48",
  "history": [
+  [
+   "2026-10-31T16:48",
+   "live",
+   "Live update (1 game(s) in progress)"
+  ],
   [
    "2026-10-31T16:31",
    "live",
@@ -197,11 +202,6 @@
    "2026-10-30T11:05",
    "live",
    "Live update (1 game(s) in progress)"
-  ],
-  [
-   "2026-10-30T11:01",
-   "live",
-   "Game day — waiting for tip-off at 11:15"
   ]
  ]
 }
