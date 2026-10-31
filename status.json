@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-31T11:11",
- "lastResult": "Live mode: waiting for / checking the game",
- "dataUpdated": "2026-10-31T11:11",
+ "lastCheck": "2026-10-31T11:28",
+ "lastResult": "Live update (1 game(s) in progress)",
+ "dataUpdated": "2026-10-31T11:28",
  "history": [
+  [
+   "2026-10-31T11:28",
+   "live",
+   "Live update (1 game(s) in progress)"
+  ],
   [
    "2026-10-31T11:11",
    "live",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-10-28T18:20",
-   "skip",
-   "Checked — nothing due"
-  ],
-  [
-   "2026-10-28T12:33",
    "skip",
    "Checked — nothing due"
   ]
