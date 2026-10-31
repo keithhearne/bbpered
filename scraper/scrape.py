@@ -53,6 +53,7 @@ LIVE_BRANCH = "live"                    # branch that holds live.json (not the w
 AFTER_GAME = timedelta(hours=6)         # hourly catch-up checks after a game
 NIGHT_START, NIGHT_END = 3, 9           # nightly full check: the first run after 03:00 each day (Swedish time)
 WEEKEND_EVERY = timedelta(hours=5)      # Fri–Sun daytime: a check at least every 5 hours
+WAIT_REFRESH = timedelta(minutes=15)    # while waiting for tip-off, re-read the fixtures this often
 LIVE_LEAD = timedelta(hours=3)          # a run this close before tip-off stays on and waits for the game
 
 S = requests.Session()
@@ -395,11 +396,25 @@ def scrape_cups(prev):
             n = n.get("sv") or n.get("en") or next(iter(n.values()), "") if isinstance(n, dict) else str(n)
             return OUR if n == cup["ourName"] else n
 
+        by_nr = {str((v.get("entity") or {}).get("matchNr")): v.get("entity") or {}
+                 for k, v in R.items() if re.fullmatch(r"Match\(\{id:\d+\}\)", k)}
+
+        def actor(m, side):
+            """Team name; a playoff slot like "Vinn. 31100406" (winner of match no. 31100406) becomes
+            "Vinnare Viby Basket 2/Duvbo ik P12" until Cup Manager fills in the real team."""
+            n = name((m.get(side) or {}).get("href"))
+            ph = re.fullmatch(r"(Vinn|Förl)\w*\.?\s*(\d+)", n or "")
+            src = by_nr.get(ph.group(2)) if ph else None
+            if src:
+                pair = [name((src.get(x) or {}).get("href")) for x in ("home", "away")]
+                n = ("Vinnare " if ph.group(1) == "Vinn" else "Förlorare ") + "/".join(pair)
+            return n
+
         for k, v in R.items():
             if not re.fullmatch(r"Match\(\{id:\d+\}\)", k):
                 continue
             m = v.get("entity") or {}
-            h, a = name((m.get("home") or {}).get("href")), name((m.get("away") or {}).get("href"))
+            h, a = actor(m, "home"), actor(m, "away")
             if OUR not in (h, a) or not m.get("start"):
                 continue
             kick = datetime.fromtimestamp(m["start"] / 1000, TZ)
@@ -557,10 +572,10 @@ def live_sources(prev, t=None):
     return prof, cup
 
 
-def build(prev, live_only=False, discover_new=False):
+def build(prev, live_only=False, discover_new=False, sources=None):
     if discover_new:
         prev = dict(prev, comps=discover(prev))
-    prof_due, cup_due = live_sources(prev) if live_only else (True, True)
+    prof_due, cup_due = sources or (live_sources(prev) if live_only else (True, True))
     if prof_due:
         p = scrape_profixio(prev, live_only)
     else:  # live window for a cup game only: keep the Profixio data as it is
@@ -857,9 +872,16 @@ def main():
         if not active and nxt:
             wait = (nxt - LIVE_BEFORE - t).total_seconds()
             log(f"waiting {int(wait // 60)} min for tip-off at {nxt.strftime('%H:%M')}")
+            try:  # refresh the fixtures meanwhile, so e.g. a playoff opponent shows up once it's decided
+                cup_next = any(f"{g[0]}T{g[1]}" == nxt.strftime("%Y-%m-%dT%H:%M") for g in prev.get("cupGames", []))
+                data = build(prev, live_only=True, sources=(not cup_next, cup_next))
+                save(data)
+                prev = data
+            except Exception as e:  # noqa: BLE001
+                log("refresh while waiting failed:", e)
             write_status(f"Game day — waiting for tip-off at {nxt.strftime('%H:%M')}", "live")
             commit("Status: waiting for game")
-            time.sleep(wait)
+            time.sleep(min(wait, WAIT_REFRESH.total_seconds()))
             continue
         finals_before = set(prev.get("final", [])) | {g[9] for g in prev.get("cupGames", []) if len(g) > 9 and g[7] is not None}
         data = build(prev, live_only=True)
