@@ -26,15 +26,15 @@ RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
 END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
-UID:p11rod-88323414@bbpered
-DTSTAMP:20261031T110000Z
-DTSTART;TZID=Europe/Stockholm:20261031T110500
-DTEND;TZID=Europe/Stockholm:20261031T123500
-SUMMARY:🏀 Viby Basket 2 – P11 Röd
+UID:p11rod-88323665@bbpered
+DTSTAMP:20261031T110700Z
+DTSTART;TZID=Europe/Stockholm:20261031T162500
+DTEND;TZID=Europe/Stockholm:20261031T175500
+SUMMARY:🏀 P11 Röd – Vinn. 31100406
 DESCRIPTION:Södertälje Open\nAllt om matchen: https://keithhearne.github
  .io/bbpered/\nhttps://sodertaljeopen.cupmanager.net/2026\,sv/result/match/
- 88323414
-LOCATION:Rosenborgshallen
-URL:https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323414
+ 88323665
+LOCATION:Tälje B
+URL:https://sodertaljeopen.cupmanager.net/2026,sv/result/match/88323665
 END:VEVENT
 END:VCALENDAR
