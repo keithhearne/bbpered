@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-31T20:30",
- "lastResult": "Full update (catch-up after a game)",
+ "lastCheck": "2026-10-31T23:46",
+ "lastResult": "Checked — nothing due",
  "dataUpdated": "2026-10-31T20:30",
  "history": [
+  [
+   "2026-10-31T23:46",
+   "skip",
+   "Checked — nothing due"
+  ],
   [
    "2026-10-31T20:30",
    "full",
@@ -197,11 +202,6 @@
    "2026-10-30T14:27",
    "live",
    "Game day — waiting for tip-off at 17:15"
-  ],
-  [
-   "2026-10-30T12:54",
-   "full",
-   "Full update after the game"
   ]
  ]
 }
