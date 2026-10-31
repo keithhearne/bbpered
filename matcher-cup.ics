@@ -27,10 +27,10 @@ END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
 UID:p11rod-88323665@bbpered
-DTSTAMP:20261031T114300Z
+DTSTAMP:20261031T140400Z
 DTSTART;TZID=Europe/Stockholm:20261031T162500
 DTEND;TZID=Europe/Stockholm:20261031T175500
-SUMMARY:🏀 P11 Röd – Vinn. 31100406
+SUMMARY:🏀 P11 Röd – Duvbo ik P12
 DESCRIPTION:Södertälje Open\nAllt om matchen: https://keithhearne.github
  .io/bbpered/\nhttps://sodertaljeopen.cupmanager.net/2026\,sv/result/match/
  88323665
