@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-10-31T18:04",
- "lastResult": "Full update after the game",
- "dataUpdated": "2026-10-31T18:04",
+ "lastCheck": "2026-10-31T20:30",
+ "lastResult": "Full update (catch-up after a game)",
+ "dataUpdated": "2026-10-31T20:30",
  "history": [
+  [
+   "2026-10-31T20:30",
+   "full",
+   "Full update (catch-up after a game)"
+  ],
   [
    "2026-10-31T18:04",
    "full",
@@ -197,11 +202,6 @@
    "2026-10-30T12:54",
    "full",
    "Full update after the game"
-  ],
-  [
-   "2026-10-30T12:41",
-   "live",
-   "Live mode: waiting for / checking the game"
   ]
  ]
 }
