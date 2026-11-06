@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-06T19:09",
+ "lastCheck": "2026-11-06T20:25",
  "lastResult": "Full update (manual run)",
- "dataUpdated": "2026-11-06T19:09",
+ "dataUpdated": "2026-11-06T20:25",
  "history": [
+  [
+   "2026-11-06T20:25",
+   "full",
+   "Full update (manual run)"
+  ],
   [
    "2026-11-06T19:09",
    "full",
@@ -197,11 +202,6 @@
    "2026-10-31T18:04",
    "full",
    "Full update after the game"
-  ],
-  [
-   "2026-10-31T18:01",
-   "live",
-   "Live mode: waiting for / checking the game"
   ]
  ]
 }
