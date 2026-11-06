@@ -120,12 +120,20 @@ def parse_matches(page):
     for b in blocks:
         mid = re.match(r"(\d+)", b).group(1)
         b = b.split("</li>")[0] if "</li>" in b else b
-        xd = re.search(r"homegoals: '(\d*)',\s*awaygoals: '(\d*)',\s*hasLivescore: (true|false),\s*hasResult: (true|false),.*?timestamp: (\d+)", b, re.S)
-        if not xd:
+        # Read each x-data field on its own and loosely (quotes optional, null allowed): Profixio changes the
+        # card while a game is live, and a strict pattern made the game vanish mid-game (6 Nov 2026).
+        def xv(k, pat=r"'?(\d*)'?"):
+            f = re.search(k + r"\s*:\s*" + pat, b)
+            return f.group(1) if f else None
+        hg, ag = xv("homegoals") or "", xv("awaygoals") or ""
+        live, res, ts = xv("hasLivescore", r"(true|false|1|0)"), xv("hasResult", r"(true|false|1|0)"), xv("timestamp", r"'?(\d+)'?")
+        if not ts:
+            log("  card without timestamp skipped:", mid)
             continue
-        hg, ag, live, res, ts = xd.groups()
-        names = [clean(x) for x in re.findall(r'class="leading-5 max-w-60[^"]*">(.*?)</div>', b, re.S)]
+        live, res = live in ("true", "1"), res in ("true", "1")
+        names = [clean(x) for x in re.findall(r'class="leading-5 max-w-60[^"]*"[^>]*>(.*?)</div>', b, re.S)]
         if len(names) < 2:
+            log("  card without team names skipped:", mid)
             continue
         venue = re.search(r'<div class="text-xs text-right">([^<]*)</div>', b)
         day = datetime.fromtimestamp(int(ts), TZ)  # the timestamp is the match day; the time is printed in the card
@@ -134,7 +142,7 @@ def parse_matches(page):
             "id": mid, "date": day.strftime("%Y-%m-%d"), "time": tm.group(1).zfill(5) if tm else "",
             "home": names[0], "away": names[1], "venue": html.unescape(venue.group(1)).strip() if venue else "",
             "hs": int(hg) if hg != "" else None, "as": int(ag) if ag != "" else None,
-            "result": res == "true", "live": live == "true", "log": "Matchlogg" in b,
+            "result": res, "live": live, "log": "Matchlogg" in b,
         })
     return out
 
@@ -271,6 +279,11 @@ def scrape_profixio(prev, live_only=False):
                         out["lineups"][m["id"]] = lu
                 except Exception as e:  # noqa: BLE001
                     log("  match log failed:", e)
+        seen = {r[7] for r in rows}
+        lost = [r for r in prev_series.get(key, {}).get("matches", []) if len(r) > 7 and r[7] and r[7] not in seen]
+        if lost:  # Profixio sometimes shows a card we can't read (e.g. mid-game) — keep what we knew
+            log("  kept", len(lost), "game(s) missing from this read:", [r[7] for r in lost])
+            rows = sorted(rows + lost, key=lambda r: (r[0], r[1]))
         out["series"][key] = {"matches": rows, "table": table}
         info = out["comps"].get(key) or prev.get("comps", {}).get(key)
         if info:
