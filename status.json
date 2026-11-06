@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-06T21:20",
- "lastResult": "Full update (manual run)",
+ "lastCheck": "2026-11-06T21:32",
+ "lastResult": "Checked — nothing due",
  "dataUpdated": "2026-11-06T21:20",
  "history": [
+  [
+   "2026-11-06T21:32",
+   "skip",
+   "Checked — nothing due"
+  ],
   [
    "2026-11-06T21:20",
    "full",
@@ -197,11 +202,6 @@
    "2026-10-31T23:46",
    "skip",
    "Checked — nothing due"
-  ],
-  [
-   "2026-10-31T20:30",
-   "full",
-   "Full update (catch-up after a game)"
   ]
  ]
 }
