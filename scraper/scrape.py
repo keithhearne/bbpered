@@ -47,13 +47,16 @@ CUPS = [
 
 LIVE_BEFORE = timedelta(minutes=10)     # start polling this long before tip-off
 LIVE_AFTER = timedelta(minutes=100)     # ...and keep going this long after tip-off
-LIVE_STEP = 120                         # seconds between live checks (score goes to the "live" branch, no site rebuild)
+LIVE_STEP = 60                          # seconds between live checks (score + play-by-play go to the "live" branch, no site rebuild)
 MAIN_EVERY = timedelta(minutes=15)      # during a game, the full data.json is published at most this often (plus when a game ends)
 LIVE_BRANCH = "live"                    # branch that holds live.json (not the website branch, so no GitHub Pages rebuild)
 AFTER_GAME = timedelta(hours=6)         # hourly catch-up checks after a game
 NIGHT_START, NIGHT_END = 3, 9           # nightly full check: the first run after 03:00 each day (Swedish time)
 WEEKEND_EVERY = timedelta(hours=5)      # Fri–Sun daytime: a check at least every 5 hours
-WAIT_REFRESH = timedelta(minutes=15)    # while waiting for tip-off, re-read the fixtures this often
+WAIT_REFRESH = timedelta(minutes=15)    # (unused since 8 Nov 2026 — game days use GAMEDAY_EVERY)
+GAMEDAY_FROM, GAMEDAY_TO = 8, 22         # on a day we play, the job stays on between these hours...
+GAMEDAY_EVERY = timedelta(minutes=30)   # ...and re-reads everything (tables, other teams' results) this often
+RUN_MAX = timedelta(hours=5, minutes=40) # GitHub stops a job after 6 h; end a bit before and let the next run continue
 LIVE_LEAD = timedelta(hours=3)          # a run this close before tip-off stays on and waits for the game
 
 S = requests.Session()
@@ -469,8 +472,15 @@ def decide(prev, t):
         return "full", "first run"
     games = fixtures(prev)
     soon = [k for k, _, done in games if not done and k - LIVE_LEAD <= t <= k + LIVE_AFTER]
-    if soon:
-        return "live", max(soon) + LIVE_AFTER
+    day_end = t.replace(hour=GAMEDAY_TO, minute=0, second=0, microsecond=0)
+    game_day = any(k.date() == t.date() for k, _, _ in games) and GAMEDAY_FROM <= t.hour < GAMEDAY_TO
+    if soon or game_day:
+        # Game day: stay on (live score during our games, a full re-read every 30 min in between,
+        # so the tables show other teams' results too) until 22:00 or the run time limit.
+        end = max([max(soon) + LIVE_AFTER] if soon else [t])
+        if game_day:
+            end = max(end, day_end)
+        return "live", min(end, t + RUN_MAX)
     try:
         last = datetime.fromisoformat(prev["updated"]).replace(tzinfo=TZ)
     except Exception:  # noqa: BLE001
@@ -799,10 +809,17 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 """)
 
 
+_LIVE_SHA = None
+
+
 def push_live(data):
     """Write live.json (just the live scores) to the "live" branch through the GitHub API.
-    The app reads it straight from GitHub every 2 minutes; pushing to this branch does not rebuild the website."""
-    payload = {"updated": now().strftime("%Y-%m-%dT%H:%M:%S"), "live": data.get("live", {}), "final": data.get("final", [])}
+    The app reads it straight from GitHub every minute during a game; pushing to this branch does not rebuild the website."""
+    live = data.get("live", {})
+    payload = {"updated": now().strftime("%Y-%m-%dT%H:%M:%S"), "live": live, "final": data.get("final", []),
+               # play-by-play + score sheet of games in progress, so Matchspel updates live too
+               "pbp": {k: v for k, v in data.get("pbp", {}).items() if k in live},
+               "lineups": {k: v for k, v in data.get("lineups", {}).items() if k in live}}
     body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(ROOT, "live.json"), "w", encoding="utf-8") as f:
         f.write(body)
@@ -817,14 +834,24 @@ def push_live(data):
         if r.status_code == 404:  # first time: create the branch from main
             main_sha = requests.get(f"{api}/git/ref/heads/main", headers=h, timeout=20).json()["object"]["sha"]
             requests.post(f"{api}/git/refs", headers=h, json={"ref": f"refs/heads/{LIVE_BRANCH}", "sha": main_sha}, timeout=20).raise_for_status()
-        cur = requests.get(f"{api}/contents/live.json", headers=h, params={"ref": LIVE_BRANCH}, timeout=20)
-        sha = cur.json().get("sha") if cur.ok else None
+        global _LIVE_SHA
+        sha = _LIVE_SHA
+        if not sha:
+            cur = requests.get(f"{api}/contents/live.json", headers=h, params={"ref": LIVE_BRANCH}, timeout=20)
+            sha = cur.json().get("sha") if cur.ok else None
         import base64
         put = {"message": "Live score", "branch": LIVE_BRANCH, "content": base64.b64encode(body.encode()).decode(),
                "committer": {"name": "p11-bot", "email": "actions@users.noreply.github.com"}}
         if sha:
             put["sha"] = sha
-        requests.put(f"{api}/contents/live.json", headers=h, json=put, timeout=20).raise_for_status()
+        r = requests.put(f"{api}/contents/live.json", headers=h, json=put, timeout=20)
+        if r.status_code in (409, 422) and _LIVE_SHA:  # our remembered version is out of date: ask GitHub and retry once
+            _LIVE_SHA = None
+            cur = requests.get(f"{api}/contents/live.json", headers=h, params={"ref": LIVE_BRANCH}, timeout=20)
+            put["sha"] = cur.json().get("sha")
+            r = requests.put(f"{api}/contents/live.json", headers=h, json=put, timeout=20)
+        r.raise_for_status()
+        _LIVE_SHA = r.json().get("content", {}).get("sha")
         log("live.json pushed:", len(payload["live"]), "live game(s)")
     except Exception as e:  # noqa: BLE001  (live.json is a bonus; the normal update carries on)
         log("live.json push failed:", e)
@@ -872,42 +899,55 @@ def main():
         write_status(f"Full update ({info})", "full")
         commit("Update data")
         return
-    # Live mode: wait for tip-off, then check the score every 2 minutes until the game window closes.
-    # Each check goes to live.json on the "live" branch (no website rebuild); the full data.json is
-    # published every 15 minutes and as soon as a game ends.
+    # Live / game-day mode. During our games: the score (and play-by-play) every minute to live.json on the
+    # "live" branch (no website rebuild); data.json is published every 15 minutes and as soon as a game ends.
+    # On a game day, also a full re-read (tables, other teams' results) every 30 minutes, until `end`.
     end = info
+    started = now()
     last_main = None
+    last_full = None
     while True:
         t = now()
         games = [(k, done) for k, _, done in fixtures(prev) if not done and k <= end]
         active = [k for k, _ in games if k - LIVE_BEFORE <= t <= k + LIVE_AFTER]
-        nxt = min((k for k, _ in games if k - LIVE_BEFORE > t), default=None)
-        if not active and nxt:
-            wait = (nxt - LIVE_BEFORE - t).total_seconds()
-            log(f"waiting {int(wait // 60)} min for tip-off at {nxt.strftime('%H:%M')}")
-            try:  # refresh the fixtures meanwhile, so e.g. a playoff opponent shows up once it's decided
-                cup_next = any(f"{g[0]}T{g[1]}" == nxt.strftime("%Y-%m-%dT%H:%M") for g in prev.get("cupGames", []))
-                data = build(prev, live_only=True, sources=(not cup_next, cup_next))
-                save(data)
-                prev = data
-            except Exception as e:  # noqa: BLE001
-                log("refresh while waiting failed:", e)
-            write_status(f"Game day — waiting for tip-off at {nxt.strftime('%H:%M')}", "live")
-            commit("Status: waiting for game")
-            time.sleep(min(wait, WAIT_REFRESH.total_seconds()))
+        full_due = last_full is None or t - last_full >= GAMEDAY_EVERY
+        if not active:
+            if full_due:
+                try:
+                    data = build(prev)
+                    save(data)
+                    push_live(data)
+                    prev = data
+                except Exception as e:  # noqa: BLE001
+                    log("game-day refresh failed:", e)
+                last_full = now()
+                nxt = min((k for k, _ in games if k - LIVE_BEFORE > now()), default=None)
+                write_status(f"Game day — next game {nxt.strftime('%H:%M')}" if nxt else "Game day — tables kept up to date", "live")
+                commit("Game day update")
+            nxt = min((k for k, _ in games if k - LIVE_BEFORE > now()), default=None)
+            wake = min([x for x in (nxt - LIVE_BEFORE if nxt else None, last_full + GAMEDAY_EVERY, end) if x])
+            if now() >= end or now() - started >= RUN_MAX:
+                break
+            secs = max(30, (wake - now()).total_seconds())
+            log(f"waiting {int(secs // 60)} min")
+            time.sleep(secs)
             continue
         finals_before = set(prev.get("final", [])) | {g[9] for g in prev.get("cupGames", []) if len(g) > 9 and g[7] is not None}
-        data = build(prev, live_only=True)
+        if full_due:  # every 30 min during a game too: tables + other games of the tournament
+            data = build(prev)
+            last_full = now()
+        else:
+            data = build(prev, live_only=True)
         save(data)
         push_live(data)
         finals_now = set(data.get("final", [])) | {g[9] for g in data.get("cupGames", []) if len(g) > 9 and g[7] is not None}
-        if last_main is None or now() - last_main >= MAIN_EVERY or finals_now != finals_before:
+        if last_main is None or now() - last_main >= MAIN_EVERY or finals_now != finals_before or full_due:
             write_status(f"Live update ({len(data['live'])} game(s) in progress)" if data["live"] else "Live mode: waiting for / checking the game", "live")
             commit("Live update")
             last_main = now()
         prev = data
         end = max([end] + [k + LIVE_AFTER for k, _, done in fixtures(prev) if not done and k <= now() + LIVE_BEFORE])
-        if now() + timedelta(seconds=LIVE_STEP) > end:
+        if now() + timedelta(seconds=LIVE_STEP) > end or now() - started >= RUN_MAX:
             break
         time.sleep(LIVE_STEP)
     data = build(prev)  # full update (tables too) when the window closes
