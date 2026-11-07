@@ -1,6 +1,6 @@
 # Instagram videos shown on Översikt in the app (the 3 links at the top are used).
-# Easiest: on GitHub open Actions > "Update Instagram" > Run workflow. It fetches the 3 newest videos itself.
-# If Instagram doesn't answer, paste the video's link (Share > Copy link) in the box and run it again.
+# Easiest: in Instagram open the video > Share > Copy link. On GitHub: Actions > "Update Instagram" >
+# Run workflow, paste the link in the box and press Run. The app shows it within a minute or two.
 # You can also edit this list by hand: newest link at the TOP, then "Commit changes".
 # Lines starting with # are notes and are ignored.
 

@@ -1,13 +1,14 @@
-# "Update Instagram" button: fetches the 3 newest videos from @blackebergp11_rod and shows them on Översikt.
-# Run it from the Actions tab (also works in the GitHub app on a phone): Actions > Update Instagram > Run workflow.
-# If Instagram doesn't let GitHub read the profile, paste a video link in the box and run it again.
+# "Update Instagram" button: puts a new video from @blackebergp11_rod at the top of the Instagram section on Översikt.
+# In Instagram: open the video > Share > Copy link. In the GitHub app (or github.com): Actions > Update Instagram >
+# Run workflow > paste the link > Run. Without a link it tries to read the newest videos from the profile itself,
+# but Instagram usually refuses GitHub's servers (429), so the link is the reliable way.
 name: Update Instagram
 
 on:
   workflow_dispatch:
     inputs:
       link:
-        description: "Länk till en ny video (valfritt – lämna tomt så hämtas de 3 senaste automatiskt)"
+        description: "Länk till den nya videon (i Instagram: Dela > Kopiera länk)"
         required: false
         default: ""
 
