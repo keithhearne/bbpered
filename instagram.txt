@@ -1,7 +1,7 @@
 # Instagram videos shown on Översikt in the app (the 3 links at the top are used).
-# To add a new video: open it in Instagram, tap Share > Copy link, and paste the link
-# on a new line at the TOP of the list below. Then click "Commit changes".
-# The app picks it up at the next update run (or run "Update data" by hand in the Actions tab).
+# Easiest: on GitHub open Actions > "Update Instagram" > Run workflow. It fetches the 3 newest videos itself.
+# If Instagram doesn't answer, paste the video's link (Share > Copy link) in the box and run it again.
+# You can also edit this list by hand: newest link at the TOP, then "Commit changes".
 # Lines starting with # are notes and are ignored.
 
 https://www.instagram.com/blackebergp11_rod/reel/Dfat4tAihL_/

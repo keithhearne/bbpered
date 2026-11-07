@@ -500,15 +500,36 @@ def decide(prev, t):
 # ---------- Instagram (the owner keeps the list in instagram.txt) ----------
 INSTA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "instagram.txt")
 INSTA_MAX = 3
+INSTA_USER = "blackebergp11_rod"
 MONTHS_EN = {m: i for i, m in enumerate(["January", "February", "March", "April", "May", "June", "July",
                                          "August", "September", "October", "November", "December"], 1)}
 
 
-def insta_ids():
+INSTA_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "insta.json")
+
+
+def repo_file(path):
+    """Text of a file as it is on GitHub right now (the "Update Instagram" button may have changed it while this
+    run was going), falling back to the local copy. Read-only: nothing in the working tree changes."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        try:
+            import subprocess
+            rel = os.path.relpath(path, ROOT)
+            subprocess.run(["git", "fetch", "-q", "origin", "main"], cwd=ROOT, timeout=60, check=True)
+            return subprocess.run(["git", "show", f"origin/main:{rel}"], cwd=ROOT, capture_output=True, text=True, timeout=30, check=True).stdout
+        except Exception as e:  # noqa: BLE001
+            log("  reading", os.path.basename(path), "from GitHub failed:", e)
+    try:
+        return open(path, encoding="utf-8").read()
+    except FileNotFoundError:
+        return ""
+
+
+def insta_ids(text=None):
     """Reel/post ids from instagram.txt, newest first (the top of the file)."""
     ids = []
     try:
-        for line in open(INSTA_FILE, encoding="utf-8"):
+        for line in (text if text is not None else repo_file(INSTA_FILE)).splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
@@ -565,8 +586,13 @@ def insta_post(rid):
 
 
 def scrape_insta(prev):
-    """Keep data.json "insta" in step with instagram.txt. Only new or incomplete entries are fetched."""
+    """Keep data.json "insta" in step with instagram.txt. Only new or incomplete entries are fetched.
+    insta.json (written by the "Update Instagram" button) is used first, as it already has the covers."""
     old = {x[0]: x for x in prev.get("insta", []) if x}
+    try:
+        old.update({x[0]: x for x in json.loads(repo_file(INSTA_JSON) or "[]") if x and x[3]})
+    except ValueError:
+        pass
     out = []
     for rid in insta_ids():
         x = old.get(rid)
@@ -871,7 +897,89 @@ def needs_browser(force, mode, info, prev):
     return mode == "full" and (force or "comps" not in prev or str(info).startswith(("nightly", "daily")))
 
 
+def insta_profile():
+    """The newest videos on the team's Instagram profile, read the way instagram.com's own page does.
+    Returns [[id, date, caption, cover], ...] newest first, or [] when Instagram doesn't answer (it sometimes
+    refuses servers it doesn't know)."""
+    try:
+        r = S.get(f"https://i.instagram.com/api/v1/users/web_profile_info/?username={INSTA_USER}", timeout=30,
+                  headers={"x-ig-app-id": "936619743392459", "Accept": "application/json",
+                           "User-Agent": "Mozilla/5.0 (Linux; Android 14; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"})
+        r.raise_for_status()
+        edges = r.json()["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
+    except Exception as e:  # noqa: BLE001
+        log("instagram profile not available:", e)
+        return []
+    out = []
+    for e in edges:
+        n = e.get("node", {})
+        if not (n.get("is_video") or n.get("product_type") == "clips"):
+            continue
+        cap = ((n.get("edge_media_to_caption", {}).get("edges") or [{}])[0].get("node", {}).get("text", ""))
+        t = re.sub(r"[#@][\w.]+", "", cap).replace("\n", " ")
+        t = re.split(r"(?<=[.!?])\s", re.sub(r"\s+", " ", t).strip())[0]
+        t = t if len(t) <= 110 else t[:107].rsplit(" ", 1)[0] + "…"
+        d = datetime.fromtimestamp(n.get("taken_at_timestamp", 0), TZ).strftime("%Y-%m-%d") if n.get("taken_at_timestamp") else ""
+        img = n.get("thumbnail_src") or n.get("display_url") or ""
+        out.append([n.get("shortcode", ""), d, t, insta_cover(img) if img else ""])
+        if len(out) >= INSTA_MAX:
+            break
+    return out
+
+
+def insta_update(link=""):
+    """The "Update Instagram" button: take the newest videos from the profile (or the link given), put them at the
+    top of instagram.txt and write insta.json (id, date, caption, cover) — the app shows it right away."""
+    txt = repo_file(INSTA_FILE)
+    have = insta_ids(txt)
+    new = []
+    m = re.search(r"instagram\.com/(?:[\w.]+/)?(?:reel|reels|p)/([\w-]+)", link or "")
+    if m:
+        new.append(m.group(1))
+    prof = insta_profile()
+    new += [x[0] for x in prof if x[0] not in new]
+    added = [i for i in new if i not in have]
+    lines = txt.splitlines()
+    head = [l for l in lines if l.strip().startswith("#") or not l.strip()]
+    body = [l for l in lines if l.strip() and not l.strip().startswith("#")]
+    first = len(head) and next((k for k, l in enumerate(lines) if l.strip() and not l.strip().startswith("#")), len(lines))
+    top = [f"https://www.instagram.com/{INSTA_USER}/reel/{i}/" for i in new[:INSTA_MAX]]
+    rest = [l for l in body if (re.search(r"/(?:reel|reels|p)/([\w-]+)", l) or [None, ""])[1] not in new]
+    newtxt = "\n".join(lines[:first] + top + rest) + "\n"
+    with open(INSTA_FILE, "w", encoding="utf-8") as f:
+        f.write(newtxt)
+    known = {x[0]: x for x in prof}
+    prev = {"insta": [x for x in (json.loads(repo_file(INSTA_JSON) or "[]") or []) if x]}
+    if os.path.exists(OUT):
+        prev["insta"] += json.load(open(OUT, encoding="utf-8")).get("insta", [])
+    cache = {x[0]: x for x in prev["insta"] if x and x[3]}
+    out = []
+    for rid in insta_ids(newtxt):
+        x = known.get(rid) if known.get(rid, [0, 0, 0, ""])[3] else cache.get(rid)
+        if not x:
+            log("instagram: fetching", rid)
+            x = insta_post(rid)
+        out.append(x)
+    with open(INSTA_JSON, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+    lines_ = [f"- {x[1] or '?'}: {x[2] or '(ingen text)'}{'' if x[3] else ' — ingen bild (Instagram svarade inte)'}" for x in out]
+    summary = ("Nya videor: " + ", ".join(added) if added else "Inga nya videor — de 3 senaste fanns redan.") + \
+              ("" if prof else "\n\n(Instagram-profilen gick inte att läsa just nu" + (" — länken du gav användes." if m else ". Klistra in länken till videon och kör igen.") + ")")
+    log(summary.replace("\n", " "))
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+            f.write("### Instagram\n\n" + summary + "\n\nVisas i appen:\n" + "\n".join(lines_) + "\n")
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        os.system('git config user.name "p11-bot" && git config user.email "actions@users.noreply.github.com"')
+        os.system("git add instagram.txt insta.json")
+        if os.system("git diff --cached --quiet") != 0:
+            os.system('git commit -q -m "Instagram update" && (git push -q || (git pull -q --rebase && git push -q))')
+
+
 def main():
+    if "--insta" in sys.argv:
+        insta_update(os.environ.get("INSTA_LINK", ""))
+        return
     prev = {}
     if os.path.exists(OUT):
         with open(OUT, encoding="utf-8") as f:

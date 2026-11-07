@@ -1,0 +1,34 @@
+# "Update Instagram" button: fetches the 3 newest videos from @blackebergp11_rod and shows them on Översikt.
+# Run it from the Actions tab (also works in the GitHub app on a phone): Actions > Update Instagram > Run workflow.
+# If Instagram doesn't let GitHub read the profile, paste a video link in the box and run it again.
+name: Update Instagram
+
+on:
+  workflow_dispatch:
+    inputs:
+      link:
+        description: "Länk till en ny video (valfritt – lämna tomt så hämtas de 3 senaste automatiskt)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-instagram
+  cancel-in-progress: false
+
+jobs:
+  instagram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3 pillow==10.4.0
+      - name: Fetch the newest videos
+        env:
+          INSTA_LINK: ${{ inputs.link }}
+        run: python scraper/scrape.py --insta
