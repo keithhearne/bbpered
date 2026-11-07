@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-07T09:15",
+ "lastCheck": "2026-11-07T09:31",
  "lastResult": "Game day — waiting for tip-off at 11:00",
- "dataUpdated": "2026-11-07T09:15",
+ "dataUpdated": "2026-11-07T09:31",
  "history": [
+  [
+   "2026-11-07T09:31",
+   "live",
+   "Game day — waiting for tip-off at 11:00"
+  ],
   [
    "2026-11-07T09:15",
    "live",
@@ -197,11 +202,6 @@
    "2026-11-01T21:46",
    "skip",
    "Checked — nothing due"
-  ],
-  [
-   "2026-11-01T17:17",
-   "full",
-   "Full update (weekend check)"
   ]
  ]
 }
