@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       link:
-        description: "Länk till den nya videon (i Instagram: Dela > Kopiera länk)"
+        description: "Länk till den nya videon (valfritt). Utan länk försöker den hämta de 3 senaste själv – Instagram säger ofta nej, klistra då in länken (Dela > Kopiera länk)."
         required: false
         default: ""
 
