@@ -38,9 +38,9 @@ Most runs stop after a few seconds, which keeps the load on Profixio light.
 |---|---|
 | **Every night: the first run after 03:00** (Swedish time) | Full check: new or changed fixtures, results and tables. It also checks the club's team list on Profixio for **new competitions** P11 Röd has been entered into (see below). |
 | **Fridays–Sundays, 08:00–22:00** | A check at least every 5 hours, for late changes before a game weekend. |
-| **Game day: from ~3 hours before tip-off** | The first run in this window stays on and waits for the game. |
-| **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** the score is checked **every 2 minutes** and written to `live.json` on the separate **`live`** branch. The full data (Matchspel, tables) is published every 15 minutes and as soon as a game ends. |
-| **Game day: after the live window** | One full update, including tables. |
+| **Game days (any day P11 Röd plays), 08:00–22:00** | A run stays on (up to ~5 h 40 min, then the next run carries on) and does a **full update every 30 minutes**, tables included, so other teams' results in a tournament show up during the day. It also starts up to ~3 hours before a tip-off outside these hours. |
+| **Game day: from 10 min before tip-off, for ~1 h 40 min** | **Live mode:** the score and the play-by-play are checked **every minute** and written to `live.json` on the separate **`live`** branch. The full data is published every 15 minutes, every 30 minutes with tables, and as soon as a game ends. |
+| **Game day: after the live window** | Back to a full update every 30 minutes until 22:00. |
 | **The 6 hours after a game** | Hourly catch-up, to pick up the final score sheet if it's uploaded late. |
 | **Any other time** | Nothing; the job exits straight away. |
 
@@ -51,12 +51,13 @@ GitHub doesn't guarantee that scheduled runs happen on time, and it sometimes sk
 The job works out game days by itself from the same fixture list you see in **Kalender**, for league, USM and cup games alike. Weekday games are covered too. Times follow Swedish time, including the summer/winter time change.
 
 ### What you see in the app during a game
-- **Why a separate `live` branch?** Every change on `main` makes GitHub rebuild the website, and GitHub only likes about 10 rebuilds an hour. The live score goes to the `live` branch instead, which isn't part of the website, so it can change every 2 minutes. The app reads it straight from GitHub and only redraws the score; the page doesn't reload. Don't delete the `live` branch.
+- **Why a separate `live` branch?** Every change on `main` makes GitHub rebuild the website, and GitHub only likes about 10 rebuilds an hour. The live score goes to the `live` branch instead, which isn't part of the website, so it can change every minute. The app reads it straight from GitHub and only redraws the score; the page doesn't reload. Don't delete the `live` branch.
 
-- **Översikt** shows a **"Pågår nu"** strip with the live score. Tap it to open Matchspel.
-- **Matchspel** fills in basket by basket and shows a **LIVE** badge instead of V/F.
-- While a game is on, the open app reads the live score every 2 minutes and the full data every 5 minutes. Normally it checks every 15 minutes, and whenever you switch back to it.
-- **Delay:** expect the score to be up to about **10–13 minutes** behind real life. It's fetched every 10 minutes, plus 1–3 minutes for GitHub to publish it.
+- **Översikt** shows a red **"Spelas nu"** box with the live score. Tap it to open Matchspel.
+- **Matchspel** fills in basket by basket (newest at the top) and shows a **LIVE** badge instead of V/F. The **Blackeberg** / **Motståndare** buttons show that team's score sheet (number, name, fouls, points).
+- While a game is on, the open app reads the live score and play-by-play every minute and the full data every 5 minutes. Normally it checks every 15 minutes, and whenever you switch back to it.
+- **Delay:** expect the score to be about **1–3 minutes** behind Profixio/Cup Manager (one minute for the job, one for the app). Profixio and Cup Manager themselves depend on the scorekeeper at the court.
+- **If GitHub doesn't start a run** before a game (it sometimes skips scheduled runs): Actions → **Update data** → **Run workflow**. Any time on a game day it goes straight into game-day/live mode.
 - **Each game is read from its own source.** League and USM games come from Profixio; cup games (e.g. Södertälje Open) come from Cup Manager, where the cup publishes its scores. During a cup game the job only asks Cup Manager, and during a league/USM game only Profixio.
 - **It depends on the scorers.** Live data only exists if they enter it during the game (in Profixio, or in Cup Manager for cups). If a hall uses a paper score sheet, the result appears once it has been uploaded.
 
@@ -100,13 +101,13 @@ Two limits:
 Every update also writes calendars with P11 Röd's games: **`matcher.ics`** (all games), **`matcher-serie.ics`** (the league), **`matcher-usm.ics`** (all USM rounds), **`matcher-cup.ics`** (all cups), and one extra calendar for each new competition the job finds and for each cup. The list is stored in `data.json` under `calfeeds`, so the app can offer each one (new ones get a "Ny" badge for two weeks). People subscribe once, and new games, changed times and results then show up in their calendar by themselves (calendar apps check a few times a day, so changes can take some hours). They are plain text lists of games; nothing is installed on anyone's phone.
 The collapsible "Matcherna i din kalender" box at the top of **Kalender** walks people through it: pick which games, pick their calendar (Google/Android, iPhone/Mac or Outlook), then follow the steps. It is only shown in the private version for now; set `PUBLIC_CAL_FEED = True` in `build_site.py` (or ask Claude) to show it on the public site.
 
-### Add a new Instagram video
-The **@Instagram** section on Översikt shows the 3 newest videos listed in **`instagram.txt`** in this repository.
+### Add a new Instagram video (works from the phone)
+The **@Instagram** section on Översikt shows the 3 newest videos listed in **`instagram.txt`**.
 1. In Instagram, open the video → **Share** → **Copy link**.
-2. On GitHub, open `instagram.txt` → the pencil icon (**Edit**).
-3. Paste the link on a new line at the **top** of the list, then click **Commit changes**.
+2. In the GitHub app (or github.com): your repo → **Actions** → **Update Instagram** → **Run workflow**.
+3. Paste the link in the box and press **Run workflow**. After about a minute the video shows in the app (it reads `insta.json`).
 
-The next update run (at the latest the nightly check, or straight away with **Run workflow**) reads the date and caption from Instagram and fetches the cover picture. If Instagram refuses to give the job the cover picture, the video shows as a red tile with a play button instead; ask Claude to fill in the cover. The private copy shows new videos only when Claude republishes it.
+The button puts the link at the top of `instagram.txt` and fetches the caption, date and cover picture into `insta.json`. Run without a link it tries to read the newest videos from the profile, but Instagram usually refuses GitHub's servers ("Too Many Requests"), so the link is the reliable way. You can still edit `instagram.txt` by hand (newest at the top). The private copy shows new videos only when Claude republishes it.
 
 ### Add a new cup
 Cups are not on Profixio, so each new cup is added by hand in `scraper/scrape.py` under `CUPS`. That needs the cup's Cup Manager address, plus its `tournamentId` and `categoryId`. The easiest way is to ask Claude to add it, giving the cup's link.
