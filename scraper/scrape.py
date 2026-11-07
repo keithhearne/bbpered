@@ -574,6 +574,11 @@ def insta_post(rid):
     m = re.search(r" on (\w+) (\d{1,2}), (\d{4})", desc)
     if m and m.group(1) in MONTHS_EN:
         date = f"{m.group(3)}-{MONTHS_EN[m.group(1)]:02d}-{int(m.group(2)):02d}"
+    if not date:  # other places the page keeps the posting time
+        m = re.search(r'"(?:taken_at|taken_at_timestamp)"\s*:\s*(\d{9,})', html_) or re.search(r'"uploadDate"\s*:\s*"(\d{4}-\d{2}-\d{2})', html_) \
+            or re.search(r'datetime="(\d{4}-\d{2}-\d{2})', html_)
+        if m:
+            date = m.group(1) if "-" in m.group(1) else datetime.fromtimestamp(int(m.group(1)), TZ).strftime("%Y-%m-%d")
     m = re.search(r'"(.*)"', title, re.S) or re.search(r': "(.*)', desc, re.S)
     if m:
         t = re.sub(r"[#@][\w.]+", "", m.group(1)).replace("\n", " ")
@@ -959,6 +964,8 @@ def insta_update(link=""):
         if not x:
             log("instagram: fetching", rid)
             x = insta_post(rid)
+            if not x[1] and rid in added:
+                x[1] = now().strftime("%Y-%m-%d")  # just posted
         out.append(x)
     with open(INSTA_JSON, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
