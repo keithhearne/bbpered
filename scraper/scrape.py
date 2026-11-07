@@ -906,14 +906,27 @@ def insta_profile():
     """The newest videos on the team's Instagram profile, read the way instagram.com's own page does.
     Returns [[id, date, caption, cover], ...] newest first, or [] when Instagram doesn't answer (it sometimes
     refuses servers it doesn't know)."""
-    try:
-        r = S.get(f"https://i.instagram.com/api/v1/users/web_profile_info/?username={INSTA_USER}", timeout=30,
-                  headers={"x-ig-app-id": "936619743392459", "Accept": "application/json",
-                           "User-Agent": "Mozilla/5.0 (Linux; Android 14; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"})
-        r.raise_for_status()
-        edges = r.json()["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
-    except Exception as e:  # noqa: BLE001
-        log("instagram profile not available:", e)
+    hdr = {"x-ig-app-id": "936619743392459", "Accept": "application/json", "X-Requested-With": "XMLHttpRequest",
+           "Referer": f"https://www.instagram.com/{INSTA_USER}/",
+           "User-Agent": "Mozilla/5.0 (Linux; Android 14; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36"}
+    tries = [f"https://i.instagram.com/api/v1/users/web_profile_info/?username={INSTA_USER}",
+             f"https://www.instagram.com/api/v1/users/web_profile_info/?username={INSTA_USER}",
+             f"https://www.instagram.com/{INSTA_USER}/?__a=1&__d=dis"]
+    edges = None
+    for k, url in enumerate(tries):  # Instagram often refuses servers; try the ways its own pages use
+        try:
+            r = requests.get(url, timeout=30, headers=hdr)
+            log(f"instagram profile try {k + 1}: HTTP {r.status_code}, {len(r.content)} bytes")
+            r.raise_for_status()
+            j = r.json()
+            u = (j.get("data") or j.get("graphql") or {}).get("user") or {}
+            edges = u["edge_owner_to_timeline_media"]["edges"]
+            break
+        except Exception as e:  # noqa: BLE001
+            log(f"instagram profile try {k + 1} failed:", str(e)[:120])
+            time.sleep(3)
+    if edges is None:
+        log("instagram profile not available")
         return []
     out = []
     for e in edges:
