@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-08T15:33",
- "lastResult": "Full update after the game",
- "dataUpdated": "2026-11-08T15:33",
+ "lastCheck": "2026-11-08T15:46",
+ "lastResult": "Game day — next game 17:30",
+ "dataUpdated": "2026-11-08T15:46",
  "history": [
+  [
+   "2026-11-08T15:46",
+   "live",
+   "Game day — next game 17:30"
+  ],
   [
    "2026-11-08T15:33",
    "full",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-11-07T12:38",
-   "live",
-   "Live update (1 game(s) in progress)"
-  ],
-  [
-   "2026-11-07T12:23",
    "live",
    "Live update (1 game(s) in progress)"
   ]
