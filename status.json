@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-08T11:54",
+ "lastCheck": "2026-11-08T12:24",
  "lastResult": "Game day — tables kept up to date",
- "dataUpdated": "2026-11-08T11:54",
+ "dataUpdated": "2026-11-08T12:24",
  "history": [
+  [
+   "2026-11-08T12:24",
+   "live",
+   "Game day — tables kept up to date"
+  ],
   [
    "2026-11-08T11:54",
    "live",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-11-07T10:46",
-   "live",
-   "Game day — waiting for tip-off at 11:00"
-  ],
-  [
-   "2026-11-07T10:31",
    "live",
    "Game day — waiting for tip-off at 11:00"
   ]
