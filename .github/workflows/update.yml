@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # lets a run that hits the 6-hour limit on a game day start the next run itself
 
 concurrency:
   group: update-data

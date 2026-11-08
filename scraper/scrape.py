@@ -1081,8 +1081,27 @@ def main():
     data = build(prev)  # full update (tables too) when the window closes
     save(data)
     push_live(data)
-    write_status("Full update after the game", "full")
+    cut_short = now() < end  # stopped by the run-time limit, not because the day is done
+    write_status("Run time limit reached — a new run takes over" if cut_short else "Full update after the game", "full")
     commit("Update data after game")
+    if cut_short:
+        relaunch()
+
+
+def relaunch():
+    """Start the next run ourselves. GitHub caps a run at 6 hours and its own schedule is unreliable, so on a
+    long game day the job hands over to a fresh run instead of hoping the schedule fires (8 Nov 2026: the day's
+    run ended at 15:33 and nothing started before the 17:30 game)."""
+    tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not (tok and repo):
+        return
+    try:
+        r = requests.post(f"https://api.github.com/repos/{repo}/actions/workflows/update.yml/dispatches", timeout=20,
+                          headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"},
+                          json={"ref": "main", "inputs": {"force": "false"}})
+        log("started the next run" if r.status_code == 204 else f"could not start the next run: HTTP {r.status_code} {r.text[:200]}")
+    except Exception as e:  # noqa: BLE001
+        log("could not start the next run:", e)
 
 
 if __name__ == "__main__":
