@@ -2,8 +2,8 @@
 
 This file is rewritten every time the update job runs (Swedish time).
 
-- **Last run:** 2026-11-08 11:24 — Game day — tables kept up to date
-- **Data last refreshed:** 2026-11-08 11:24
+- **Last run:** 2026-11-08 11:54 — Game day — tables kept up to date
+- **Data last refreshed:** 2026-11-08 11:54
 
 GitHub decides when scheduled runs actually start, and sometimes skips them; see the README.
 
@@ -11,6 +11,7 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 
 | Time | What happened |
 |---|---|
+| 2026-11-08 11:54 | Game day — tables kept up to date |
 | 2026-11-08 11:24 | Game day — tables kept up to date |
 | 2026-11-08 10:53 | Game day — tables kept up to date |
 | 2026-11-08 10:23 | Game day — tables kept up to date |
@@ -50,4 +51,3 @@ GitHub decides when scheduled runs actually start, and sometimes skips them; see
 | 2026-11-07 10:50 | Live mode: waiting for / checking the game |
 | 2026-11-07 10:46 | Game day — waiting for tip-off at 11:00 |
 | 2026-11-07 10:31 | Game day — waiting for tip-off at 11:00 |
-| 2026-11-07 10:16 | Game day — waiting for tip-off at 11:00 |
