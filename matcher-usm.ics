@@ -25,15 +25,4 @@ DTSTART:19701025T030000
 RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
 END:STANDARD
 END:VTIMEZONE
-BEGIN:VEVENT
-UID:p11rod-32802826@bbpered
-DTSTAMP:20261108T182000Z
-DTSTART;TZID=Europe/Stockholm:20261108T173000
-DTEND;TZID=Europe/Stockholm:20261108T190000
-SUMMARY:🏀 KFUM Huddinge Basketklubb – P11 Röd
-DESCRIPTION:USM U16 · Omg 2 Grupp 1 · Borta\nAllt om matchen: https://ke
- ithhearne.github.io/bbpered/
-LOCATION:Vinstahallen CC
-URL:https://keithhearne.github.io/bbpered/
-END:VEVENT
 END:VCALENDAR
