@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-22T18:38",
+ "lastCheck": "2026-11-22T19:08",
  "lastResult": "Game day — tables kept up to date",
- "dataUpdated": "2026-11-22T18:38",
+ "dataUpdated": "2026-11-22T19:08",
  "history": [
+  [
+   "2026-11-22T19:08",
+   "live",
+   "Game day — tables kept up to date"
+  ],
   [
    "2026-11-22T18:38",
    "live",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-11-15T17:58",
-   "full",
-   "Full update (weekend check)"
-  ],
-  [
-   "2026-11-15T10:50",
    "full",
    "Full update (weekend check)"
   ]
