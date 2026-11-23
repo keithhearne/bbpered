@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-23T02:56",
- "lastResult": "Checked — nothing due",
- "dataUpdated": "2026-11-22T22:00",
+ "lastCheck": "2026-11-23T11:45",
+ "lastResult": "Full update (daily check (the night run was missed))",
+ "dataUpdated": "2026-11-23T11:44",
  "history": [
+  [
+   "2026-11-23T11:45",
+   "full",
+   "Full update (daily check (the night run was missed))"
+  ],
   [
    "2026-11-23T02:56",
    "skip",
@@ -197,11 +202,6 @@
    "2026-11-18T12:29",
    "skip",
    "Checked — nothing due"
-  ],
-  [
-   "2026-11-18T03:51",
-   "full",
-   "Full update (nightly check)"
   ]
  ]
 }
