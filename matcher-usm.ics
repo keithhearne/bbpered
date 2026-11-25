@@ -25,4 +25,37 @@ DTSTART:19701025T030000
 RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
 END:STANDARD
 END:VTIMEZONE
+BEGIN:VEVENT
+UID:p11rod-32828921@bbpered
+DTSTAMP:20261125T024500Z
+DTSTART;TZID=Europe/Stockholm:20261212T100000
+DTEND;TZID=Europe/Stockholm:20261212T113000
+SUMMARY:🏀 P11 Röd – Södertälje BBK
+DESCRIPTION:USM U16 · Omg 3 Grupp 1 · Hemma\nAllt om matchen: https://ke
+ ithhearne.github.io/bbpered/
+LOCATION:Västerbergsskolan
+URL:https://keithhearne.github.io/bbpered/
+END:VEVENT
+BEGIN:VEVENT
+UID:p11rod-32828923@bbpered
+DTSTAMP:20261125T024500Z
+DTSTART;TZID=Europe/Stockholm:20261212T174500
+DTEND;TZID=Europe/Stockholm:20261212T191500
+SUMMARY:🏀 Eastside Falcons – P11 Röd
+DESCRIPTION:USM U16 · Omg 3 Grupp 1 · Borta\nAllt om matchen: https://ke
+ ithhearne.github.io/bbpered/
+LOCATION:Västerbergsskolan
+URL:https://keithhearne.github.io/bbpered/
+END:VEVENT
+BEGIN:VEVENT
+UID:p11rod-32828925@bbpered
+DTSTAMP:20261125T024500Z
+DTSTART;TZID=Europe/Stockholm:20261213T113000
+DTEND;TZID=Europe/Stockholm:20261213T130000
+SUMMARY:🏀 Kvarnby Basket – P11 Röd
+DESCRIPTION:USM U16 · Omg 3 Grupp 1 · Borta\nAllt om matchen: https://ke
+ ithhearne.github.io/bbpered/
+LOCATION:Sörgårdshallen
+URL:https://keithhearne.github.io/bbpered/
+END:VEVENT
 END:VCALENDAR
