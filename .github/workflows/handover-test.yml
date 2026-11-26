@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - run: pip install requests==2.32.3 pillow==10.4.0 && python -c "import sys; sys.path.insert(0,'scraper'); import scrape; scrape.relaunch()"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
