@@ -6,6 +6,8 @@
 #  - game days (08-22, and up to 3 hours before any tip-off): a run stays on, does a full update (tables too)
 #    every 30 minutes, and during our games checks score + play-by-play every minute (live.json on the "live"
 #    branch; data.json every 15 min and when a game ends); hourly catch-up afterwards
+#  - a run can only last 6 hours, so a long game day is split: the run starts the next one itself, and never
+#    during one of our games (it hands over ~25 min before tip-off, so the new run is live from the start)
 #  GitHub sometimes skips scheduled runs, so the checks are based on "how long since the last update"
 #  rather than exact times.
 # Free on a public repository. Run it by hand from the Actions tab ("Run workflow").

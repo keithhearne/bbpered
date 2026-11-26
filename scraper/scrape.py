@@ -480,7 +480,7 @@ def decide(prev, t):
         end = max([max(soon) + LIVE_AFTER] if soon else [t])
         if game_day:
             end = max(end, day_end)
-        return "live", min(end, t + RUN_MAX)
+        return "live", end  # the run itself hands over to a fresh run before GitHub's 6-hour limit (see main)
     try:
         last = datetime.fromisoformat(prev["updated"]).replace(tzinfo=TZ)
     except Exception:  # noqa: BLE001
@@ -1031,7 +1031,11 @@ def main():
     # "live" branch (no website rebuild); data.json is published every 15 minutes and as soon as a game ends.
     # On a game day, also a full re-read (tables, other teams' results) every 30 minutes, until `end`.
     end = info
+    global _LIVE_END
+    _LIVE_END = end
     started = now()
+    stop = handover_at(prev, started, end)
+    log("this run hands over at", stop.strftime("%H:%M") if stop < end else "— (finishes the window itself)")
     last_main = None
     last_full = None
     while True:
@@ -1054,7 +1058,8 @@ def main():
                 commit("Game day update")
             nxt = min((k for k, _ in games if k - LIVE_BEFORE > now()), default=None)
             wake = min([x for x in (nxt - LIVE_BEFORE if nxt else None, last_full + GAMEDAY_EVERY, end) if x])
-            if now() >= end or now() - started >= RUN_MAX:
+            wake = min(wake, stop)
+            if now() >= end or now() >= stop:
                 break
             secs = max(30, (wake - now()).total_seconds())
             log(f"waiting {int(secs // 60)} min")
@@ -1075,17 +1080,37 @@ def main():
             last_main = now()
         prev = data
         end = max([end] + [k + LIVE_AFTER for k, _, done in fixtures(prev) if not done and k <= now() + LIVE_BEFORE])
-        if now() + timedelta(seconds=LIVE_STEP) > end or now() - started >= RUN_MAX:
+        stop = handover_at(prev, started, end)
+        if now() + timedelta(seconds=LIVE_STEP) > end or now() >= stop:
             break
         time.sleep(LIVE_STEP)
     data = build(prev)  # full update (tables too) when the window closes
     save(data)
     push_live(data)
-    cut_short = now() < end  # stopped by the run-time limit, not because the day is done
+    cut_short = now() < end - timedelta(minutes=2)  # handing over to a fresh run, not because the day is done
     write_status("Run time limit reached — a new run takes over" if cut_short else "Full update after the game", "full")
     commit("Update data after game")
     if cut_short:
         relaunch()
+
+
+def handover_at(prev, started, end):
+    """When this run should stop and start a fresh one. GitHub stops a job after 6 hours, so a long game day is
+    split over several runs. The switch is never made during one of our games: if the time limit would fall in
+    or just before a game, hand over before the game instead, so the new run is already following it at
+    tip-off (22 Nov 2026: the run hit its limit at 14:01, the game started 14:15, and the ticker never came)."""
+    stop = started + RUN_MAX
+    if stop >= end:
+        return end
+    margin = timedelta(minutes=15)
+    for k, _, done in sorted(fixtures(prev)):
+        if done:
+            continue
+        a, b = k - LIVE_BEFORE - margin, k + LIVE_AFTER
+        if a <= stop <= b:
+            # Hand over before the game if there's time; else (a game already on at the start) as late as allowed
+            return a if a > started + timedelta(minutes=20) else stop
+    return stop
 
 
 def relaunch():
@@ -1095,14 +1120,27 @@ def relaunch():
     tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
     if not (tok and repo):
         return
-    try:
-        r = requests.post(f"https://api.github.com/repos/{repo}/actions/workflows/update.yml/dispatches", timeout=20,
-                          headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"},
-                          json={"ref": "main", "inputs": {"force": "false"}})
-        log("started the next run" if r.status_code == 204 else f"could not start the next run: HTTP {r.status_code} {r.text[:200]}")
-    except Exception as e:  # noqa: BLE001
-        log("could not start the next run:", e)
+    for attempt in range(4):
+        try:
+            r = requests.post(f"https://api.github.com/repos/{repo}/actions/workflows/update.yml/dispatches", timeout=20,
+                              headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"},
+                              json={"ref": "main", "inputs": {"force": "false"}})
+            if r.status_code == 204:
+                log("started the next run")
+                return
+            log(f"could not start the next run: HTTP {r.status_code} {r.text[:200]}")
+        except Exception as e:  # noqa: BLE001
+            log("could not start the next run:", e)
+        time.sleep(15)
 
+
+_LIVE_END = None  # set while a game-day run is on, so a crash still hands over to a fresh run
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        if _LIVE_END and now() < _LIVE_END - timedelta(minutes=2):
+            log("the run failed — starting a fresh one so the game day carries on")
+            relaunch()
+        raise
