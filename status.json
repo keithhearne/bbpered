@@ -1,8 +1,13 @@
 {
- "lastCheck": "2026-11-28T20:14",
- "lastResult": "Game day — tables kept up to date",
- "dataUpdated": "2026-11-28T20:14",
+ "lastCheck": "2026-11-28T20:45",
+ "lastResult": "Run time limit reached — a new run takes over",
+ "dataUpdated": "2026-11-28T20:45",
  "history": [
+  [
+   "2026-11-28T20:45",
+   "full",
+   "Run time limit reached — a new run takes over"
+  ],
   [
    "2026-11-28T20:14",
    "live",
@@ -195,11 +200,6 @@
   ],
   [
    "2026-11-22T20:09",
-   "live",
-   "Game day — tables kept up to date"
-  ],
-  [
-   "2026-11-22T19:38",
    "live",
    "Game day — tables kept up to date"
   ]
